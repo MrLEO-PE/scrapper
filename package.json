@@ -1,0 +1,28 @@
+{
+  "name": "pe-schools-scrapper",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Finds Physical Education / Head of Sport vacancies at international schools and enriches them into a Google Sheets-ready table.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.6"
+  },
+  "scripts": {
+    "scrape": "node --experimental-strip-types --no-warnings src/cli.ts scrape",
+    "enrich": "node --experimental-strip-types --no-warnings src/cli.ts enrich",
+    "export": "node --experimental-strip-types --no-warnings src/cli.ts export",
+    "run-all": "node --experimental-strip-types --no-warnings src/cli.ts run",
+    "fields": "node --experimental-strip-types --no-warnings src/cli.ts fields",
+    "stats": "node --experimental-strip-types --no-warnings src/cli.ts stats",
+    "typecheck": "tsc --noEmit",
+    "locations": "node --experimental-strip-types --no-warnings src/cli.ts locations",
+    "directory": "node --experimental-strip-types --no-warnings src/cli.ts directory",
+    "watch": "node --experimental-strip-types --no-warnings src/cli.ts watch",
+    "schedule": "node --experimental-strip-types --no-warnings src/cli.ts schedule",
+    "test": "node --experimental-strip-types --no-warnings --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/node": "^22.7.0"
+  }
+}

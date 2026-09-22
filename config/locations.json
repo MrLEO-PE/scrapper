@@ -1,0 +1,1124 @@
+{
+  "//": "Tick countries with \"on\": true to target them. Cities let you narrow to a single hub.",
+  "//usage": "npm run locations -- --list          show everything",
+  "//usage2": "npm run locations -- --on ae,qa,sg  tick countries by code",
+  "//usage3": "npm run locations -- --cities dubai,doha   tick specific cities only",
+  "//note": "Regions follow the international-schools market, not strict geography.",
+  "countries": [
+    {
+      "code": "AE",
+      "name": "United Arab Emirates",
+      "region": "Middle East",
+      "on": true,
+      "cities": [
+        "Dubai",
+        "Abu Dhabi",
+        "Sharjah",
+        "Al Ain",
+        "Ras Al Khaimah",
+        "Ajman",
+        "Fujairah"
+      ]
+    },
+    {
+      "code": "QA",
+      "name": "Qatar",
+      "region": "Middle East",
+      "on": true,
+      "cities": [
+        "Doha",
+        "Al Rayyan",
+        "Al Wakrah",
+        "Lusail"
+      ]
+    },
+    {
+      "code": "SA",
+      "name": "Saudi Arabia",
+      "region": "Middle East",
+      "on": false,
+      "cities": [
+        "Riyadh",
+        "Jeddah",
+        "Dhahran",
+        "Khobar",
+        "Dammam",
+        "NEOM",
+        "Yanbu",
+        "Jubail"
+      ]
+    },
+    {
+      "code": "KW",
+      "name": "Kuwait",
+      "region": "Middle East",
+      "on": false,
+      "cities": [
+        "Kuwait City",
+        "Salmiya",
+        "Hawally",
+        "Ahmadi"
+      ]
+    },
+    {
+      "code": "OM",
+      "name": "Oman",
+      "region": "Middle East",
+      "on": false,
+      "cities": [
+        "Muscat",
+        "Salalah",
+        "Sohar"
+      ]
+    },
+    {
+      "code": "BH",
+      "name": "Bahrain",
+      "region": "Middle East",
+      "on": false,
+      "cities": [
+        "Manama",
+        "Riffa",
+        "Saar"
+      ]
+    },
+    {
+      "code": "JO",
+      "name": "Jordan",
+      "region": "Middle East",
+      "on": false,
+      "cities": [
+        "Amman",
+        "Aqaba"
+      ]
+    },
+    {
+      "code": "LB",
+      "name": "Lebanon",
+      "region": "Middle East",
+      "on": false,
+      "cities": [
+        "Beirut"
+      ]
+    },
+    {
+      "code": "TR",
+      "name": "Türkiye",
+      "region": "Middle East",
+      "on": false,
+      "cities": [
+        "Istanbul",
+        "Ankara",
+        "Izmir"
+      ]
+    },
+    {
+      "code": "IL",
+      "name": "Israel",
+      "region": "Middle East",
+      "on": false,
+      "cities": [
+        "Tel Aviv",
+        "Jerusalem"
+      ]
+    },
+    {
+      "code": "CN",
+      "name": "China",
+      "region": "East Asia",
+      "on": false,
+      "cities": [
+        "Shanghai",
+        "Beijing",
+        "Shenzhen",
+        "Guangzhou",
+        "Suzhou",
+        "Hangzhou",
+        "Chengdu",
+        "Tianjin",
+        "Nanjing",
+        "Wuhan",
+        "Qingdao",
+        "Xi'an",
+        "Chongqing",
+        "Dalian",
+        "Ningbo",
+        "Xiamen",
+        "Zhuhai"
+      ]
+    },
+    {
+      "code": "HK",
+      "name": "Hong Kong",
+      "region": "East Asia",
+      "on": false,
+      "cities": [
+        "Hong Kong",
+        "Kowloon",
+        "New Territories"
+      ]
+    },
+    {
+      "code": "JP",
+      "name": "Japan",
+      "region": "East Asia",
+      "on": false,
+      "cities": [
+        "Tokyo",
+        "Yokohama",
+        "Osaka",
+        "Kobe",
+        "Nagoya",
+        "Kyoto"
+      ]
+    },
+    {
+      "code": "KR",
+      "name": "South Korea",
+      "region": "East Asia",
+      "on": false,
+      "cities": [
+        "Seoul",
+        "Busan",
+        "Incheon",
+        "Jeju",
+        "Daegu"
+      ]
+    },
+    {
+      "code": "TW",
+      "name": "Taiwan",
+      "region": "East Asia",
+      "on": false,
+      "cities": [
+        "Taipei",
+        "Kaohsiung",
+        "Taichung"
+      ]
+    },
+    {
+      "code": "MO",
+      "name": "Macao",
+      "region": "East Asia",
+      "on": false,
+      "cities": [
+        "Macao"
+      ]
+    },
+    {
+      "code": "MN",
+      "name": "Mongolia",
+      "region": "East Asia",
+      "on": false,
+      "cities": [
+        "Ulaanbaatar"
+      ]
+    },
+    {
+      "code": "SG",
+      "name": "Singapore",
+      "region": "South-East Asia",
+      "on": false,
+      "cities": [
+        "Singapore"
+      ]
+    },
+    {
+      "code": "MY",
+      "name": "Malaysia",
+      "region": "South-East Asia",
+      "on": false,
+      "cities": [
+        "Kuala Lumpur",
+        "Penang",
+        "Johor Bahru",
+        "Selangor",
+        "Kota Kinabalu"
+      ]
+    },
+    {
+      "code": "TH",
+      "name": "Thailand",
+      "region": "South-East Asia",
+      "on": false,
+      "cities": [
+        "Bangkok",
+        "Chiang Mai",
+        "Phuket",
+        "Pattaya",
+        "Hua Hin"
+      ]
+    },
+    {
+      "code": "VN",
+      "name": "Vietnam",
+      "region": "South-East Asia",
+      "on": false,
+      "cities": [
+        "Ho Chi Minh City",
+        "Hanoi",
+        "Da Nang"
+      ]
+    },
+    {
+      "code": "ID",
+      "name": "Indonesia",
+      "region": "South-East Asia",
+      "on": false,
+      "cities": [
+        "Jakarta",
+        "Bali",
+        "Surabaya",
+        "Bandung"
+      ]
+    },
+    {
+      "code": "PH",
+      "name": "Philippines",
+      "region": "South-East Asia",
+      "on": false,
+      "cities": [
+        "Manila",
+        "Cebu",
+        "Makati"
+      ]
+    },
+    {
+      "code": "KH",
+      "name": "Cambodia",
+      "region": "South-East Asia",
+      "on": false,
+      "cities": [
+        "Phnom Penh",
+        "Siem Reap"
+      ]
+    },
+    {
+      "code": "MM",
+      "name": "Myanmar",
+      "region": "South-East Asia",
+      "on": false,
+      "cities": [
+        "Yangon"
+      ]
+    },
+    {
+      "code": "LA",
+      "name": "Laos",
+      "region": "South-East Asia",
+      "on": false,
+      "cities": [
+        "Vientiane"
+      ]
+    },
+    {
+      "code": "BN",
+      "name": "Brunei",
+      "region": "South-East Asia",
+      "on": false,
+      "cities": [
+        "Bandar Seri Begawan"
+      ]
+    },
+    {
+      "code": "IN",
+      "name": "India",
+      "region": "South Asia",
+      "on": false,
+      "cities": [
+        "Mumbai",
+        "Delhi",
+        "Bangalore",
+        "Hyderabad",
+        "Chennai",
+        "Pune",
+        "Kolkata",
+        "Gurgaon"
+      ]
+    },
+    {
+      "code": "PK",
+      "name": "Pakistan",
+      "region": "South Asia",
+      "on": false,
+      "cities": [
+        "Karachi",
+        "Lahore",
+        "Islamabad"
+      ]
+    },
+    {
+      "code": "BD",
+      "name": "Bangladesh",
+      "region": "South Asia",
+      "on": false,
+      "cities": [
+        "Dhaka",
+        "Chittagong"
+      ]
+    },
+    {
+      "code": "LK",
+      "name": "Sri Lanka",
+      "region": "South Asia",
+      "on": false,
+      "cities": [
+        "Colombo",
+        "Kandy"
+      ]
+    },
+    {
+      "code": "NP",
+      "name": "Nepal",
+      "region": "South Asia",
+      "on": false,
+      "cities": [
+        "Kathmandu"
+      ]
+    },
+    {
+      "code": "MV",
+      "name": "Maldives",
+      "region": "South Asia",
+      "on": false,
+      "cities": [
+        "Malé"
+      ]
+    },
+    {
+      "code": "GB",
+      "name": "United Kingdom",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "London",
+        "Manchester",
+        "Birmingham",
+        "Edinburgh",
+        "Bristol",
+        "Leeds"
+      ]
+    },
+    {
+      "code": "ES",
+      "name": "Spain",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Madrid",
+        "Barcelona",
+        "Marbella",
+        "Valencia",
+        "Alicante",
+        "Málaga",
+        "Seville",
+        "Mallorca"
+      ]
+    },
+    {
+      "code": "PT",
+      "name": "Portugal",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Lisbon",
+        "Porto",
+        "Algarve",
+        "Cascais"
+      ]
+    },
+    {
+      "code": "FR",
+      "name": "France",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Paris",
+        "Lyon",
+        "Nice",
+        "Toulouse",
+        "Bordeaux"
+      ]
+    },
+    {
+      "code": "DE",
+      "name": "Germany",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Berlin",
+        "Munich",
+        "Frankfurt",
+        "Hamburg",
+        "Düsseldorf",
+        "Cologne",
+        "Stuttgart"
+      ]
+    },
+    {
+      "code": "CH",
+      "name": "Switzerland",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Geneva",
+        "Zurich",
+        "Lausanne",
+        "Zug",
+        "Basel",
+        "Lugano",
+        "Verbier"
+      ]
+    },
+    {
+      "code": "IT",
+      "name": "Italy",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Rome",
+        "Milan",
+        "Florence",
+        "Turin"
+      ]
+    },
+    {
+      "code": "NL",
+      "name": "Netherlands",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Amsterdam",
+        "The Hague",
+        "Rotterdam",
+        "Eindhoven"
+      ]
+    },
+    {
+      "code": "BE",
+      "name": "Belgium",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Brussels",
+        "Antwerp"
+      ]
+    },
+    {
+      "code": "AT",
+      "name": "Austria",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Vienna",
+        "Salzburg"
+      ]
+    },
+    {
+      "code": "IE",
+      "name": "Ireland",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Dublin",
+        "Cork"
+      ]
+    },
+    {
+      "code": "PL",
+      "name": "Poland",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Warsaw",
+        "Kraków",
+        "Wrocław",
+        "Gdańsk"
+      ]
+    },
+    {
+      "code": "CZ",
+      "name": "Czechia",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Prague",
+        "Brno"
+      ]
+    },
+    {
+      "code": "HU",
+      "name": "Hungary",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Budapest"
+      ]
+    },
+    {
+      "code": "RO",
+      "name": "Romania",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Bucharest",
+        "Cluj-Napoca"
+      ]
+    },
+    {
+      "code": "GR",
+      "name": "Greece",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Athens",
+        "Thessaloniki"
+      ]
+    },
+    {
+      "code": "SE",
+      "name": "Sweden",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Stockholm",
+        "Gothenburg"
+      ]
+    },
+    {
+      "code": "NO",
+      "name": "Norway",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Oslo",
+        "Stavanger"
+      ]
+    },
+    {
+      "code": "DK",
+      "name": "Denmark",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Copenhagen",
+        "Aarhus"
+      ]
+    },
+    {
+      "code": "FI",
+      "name": "Finland",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Helsinki"
+      ]
+    },
+    {
+      "code": "LU",
+      "name": "Luxembourg",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Luxembourg"
+      ]
+    },
+    {
+      "code": "MT",
+      "name": "Malta",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Valletta",
+        "Sliema"
+      ]
+    },
+    {
+      "code": "CY",
+      "name": "Cyprus",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Nicosia",
+        "Limassol",
+        "Paphos"
+      ]
+    },
+    {
+      "code": "RS",
+      "name": "Serbia",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Belgrade"
+      ]
+    },
+    {
+      "code": "BG",
+      "name": "Bulgaria",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Sofia"
+      ]
+    },
+    {
+      "code": "HR",
+      "name": "Croatia",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Zagreb"
+      ]
+    },
+    {
+      "code": "UA",
+      "name": "Ukraine",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Kyiv"
+      ]
+    },
+    {
+      "code": "AZ",
+      "name": "Azerbaijan",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Baku"
+      ]
+    },
+    {
+      "code": "KZ",
+      "name": "Kazakhstan",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Almaty",
+        "Astana",
+        "Atyrau"
+      ]
+    },
+    {
+      "code": "UZ",
+      "name": "Uzbekistan",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Tashkent"
+      ]
+    },
+    {
+      "code": "GE",
+      "name": "Georgia",
+      "region": "Europe",
+      "on": false,
+      "cities": [
+        "Tbilisi"
+      ]
+    },
+    {
+      "code": "EG",
+      "name": "Egypt",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Cairo",
+        "Alexandria",
+        "New Cairo",
+        "Giza"
+      ]
+    },
+    {
+      "code": "MA",
+      "name": "Morocco",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Casablanca",
+        "Rabat",
+        "Marrakech",
+        "Tangier"
+      ]
+    },
+    {
+      "code": "TN",
+      "name": "Tunisia",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Tunis"
+      ]
+    },
+    {
+      "code": "ZA",
+      "name": "South Africa",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Johannesburg",
+        "Cape Town",
+        "Durban",
+        "Pretoria"
+      ]
+    },
+    {
+      "code": "KE",
+      "name": "Kenya",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Nairobi",
+        "Mombasa"
+      ]
+    },
+    {
+      "code": "TZ",
+      "name": "Tanzania",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Dar es Salaam",
+        "Arusha",
+        "Moshi"
+      ]
+    },
+    {
+      "code": "UG",
+      "name": "Uganda",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Kampala"
+      ]
+    },
+    {
+      "code": "NG",
+      "name": "Nigeria",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Lagos",
+        "Abuja"
+      ]
+    },
+    {
+      "code": "GH",
+      "name": "Ghana",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Accra"
+      ]
+    },
+    {
+      "code": "ET",
+      "name": "Ethiopia",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Addis Ababa"
+      ]
+    },
+    {
+      "code": "ZM",
+      "name": "Zambia",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Lusaka"
+      ]
+    },
+    {
+      "code": "BW",
+      "name": "Botswana",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Gaborone"
+      ]
+    },
+    {
+      "code": "RW",
+      "name": "Rwanda",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Kigali"
+      ]
+    },
+    {
+      "code": "SN",
+      "name": "Senegal",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Dakar"
+      ]
+    },
+    {
+      "code": "CI",
+      "name": "Côte d'Ivoire",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Abidjan"
+      ]
+    },
+    {
+      "code": "AO",
+      "name": "Angola",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Luanda"
+      ]
+    },
+    {
+      "code": "MZ",
+      "name": "Mozambique",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Maputo"
+      ]
+    },
+    {
+      "code": "MU",
+      "name": "Mauritius",
+      "region": "Africa",
+      "on": false,
+      "cities": [
+        "Port Louis"
+      ]
+    },
+    {
+      "code": "US",
+      "name": "United States",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "New York",
+        "Washington",
+        "Boston",
+        "Miami",
+        "Los Angeles",
+        "San Francisco",
+        "Chicago"
+      ]
+    },
+    {
+      "code": "CA",
+      "name": "Canada",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Toronto",
+        "Vancouver",
+        "Montreal",
+        "Calgary"
+      ]
+    },
+    {
+      "code": "MX",
+      "name": "Mexico",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Mexico City",
+        "Monterrey",
+        "Guadalajara",
+        "Querétaro"
+      ]
+    },
+    {
+      "code": "BR",
+      "name": "Brazil",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "São Paulo",
+        "Rio de Janeiro",
+        "Brasília",
+        "Curitiba"
+      ]
+    },
+    {
+      "code": "AR",
+      "name": "Argentina",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Buenos Aires",
+        "Córdoba"
+      ]
+    },
+    {
+      "code": "CL",
+      "name": "Chile",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Santiago",
+        "Viña del Mar",
+        "Lo Barnechea"
+      ]
+    },
+    {
+      "code": "CO",
+      "name": "Colombia",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Bogotá",
+        "Medellín",
+        "Cali",
+        "Barranquilla"
+      ]
+    },
+    {
+      "code": "PE",
+      "name": "Peru",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Lima"
+      ]
+    },
+    {
+      "code": "EC",
+      "name": "Ecuador",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Quito",
+        "Guayaquil"
+      ]
+    },
+    {
+      "code": "UY",
+      "name": "Uruguay",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Montevideo"
+      ]
+    },
+    {
+      "code": "PA",
+      "name": "Panama",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Panama City"
+      ]
+    },
+    {
+      "code": "CR",
+      "name": "Costa Rica",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "San José"
+      ]
+    },
+    {
+      "code": "GT",
+      "name": "Guatemala",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Guatemala City"
+      ]
+    },
+    {
+      "code": "DO",
+      "name": "Dominican Republic",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Santo Domingo",
+        "Punta Cana"
+      ]
+    },
+    {
+      "code": "VE",
+      "name": "Venezuela",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Caracas"
+      ]
+    },
+    {
+      "code": "BS",
+      "name": "Bahamas",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Nassau"
+      ]
+    },
+    {
+      "code": "BM",
+      "name": "Bermuda",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "Hamilton"
+      ]
+    },
+    {
+      "code": "KY",
+      "name": "Cayman Islands",
+      "region": "Americas",
+      "on": false,
+      "cities": [
+        "George Town"
+      ]
+    },
+    {
+      "code": "AU",
+      "name": "Australia",
+      "region": "Oceania",
+      "on": false,
+      "cities": [
+        "Sydney",
+        "Melbourne",
+        "Brisbane",
+        "Perth",
+        "Adelaide"
+      ]
+    },
+    {
+      "code": "NZ",
+      "name": "New Zealand",
+      "region": "Oceania",
+      "on": false,
+      "cities": [
+        "Auckland",
+        "Wellington",
+        "Christchurch"
+      ]
+    },
+    {
+      "code": "FJ",
+      "name": "Fiji",
+      "region": "Oceania",
+      "on": false,
+      "cities": [
+        "Suva"
+      ]
+    },
+    {
+      "code": "PG",
+      "name": "Papua New Guinea",
+      "region": "Oceania",
+      "on": false,
+      "cities": [
+        "Port Moresby"
+      ]
+    }
+  ]
+}

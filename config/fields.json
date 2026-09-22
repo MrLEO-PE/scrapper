@@ -1,0 +1,37 @@
+{
+  "//": "Tick the columns you want in the sheet. true = included, false = left out.",
+  "//order": "Columns appear in the order listed here. Run `npm run fields` to see every option.",
+
+  "country": true,
+  "city": true,
+  "school_name": true,
+  "curriculum": true,
+  "pe_team_size": true,
+  "student_count": true,
+  "school_type": true,
+  "salary_estimate": true,
+  "package": true,
+  "school_email": true,
+  "career_email": true,
+
+  "job_title": true,
+  "seniority": true,
+  "status": true,
+  "job_url": true,
+  "deadline": true,
+  "source": true,
+
+  "careers_page": false,
+  "all_emails": false,
+  "website": false,
+  "contract": false,
+  "start_date": false,
+  "apply_url": false,
+  "pe_score": false,
+  "description": false,
+  "first_seen": false,
+  "last_seen": false,
+  "posted": false,
+  "enriched_at": false,
+  "country_rank": false
+}

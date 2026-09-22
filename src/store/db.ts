@@ -1,0 +1,523 @@
+/**
+ * Persistence: node:sqlite (built into Node 22, so no native module to build).
+ *
+ * The database is what makes this more than a one-shot scrape:
+ *   - it remembers every vacancy ever seen, so a thin source like Teacher
+ *     Horizons accumulates coverage over daily runs;
+ *   - it tracks a vacancy's lifecycle (open -> stale -> closed) so the sheet
+ *     can say whether a role is still available;
+ *   - it caches school enrichment, which is the expensive part, and lets the
+ *     directory mode share the same school table as the job-driven one.
+ */
+
+import { DatabaseSync } from "node:sqlite";
+import { mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { log } from "../core/logger.ts";
+import type { Job, SchoolProfile, SourceId } from "../core/types.ts";
+
+export type JobStatus = "open" | "stale" | "closed";
+
+export const DB_PATH = process.env.SCRAPPER_DB || join(process.cwd(), "data", "jobs.db");
+
+const SCHEMA = `
+CREATE TABLE IF NOT EXISTS jobs (
+  id              TEXT PRIMARY KEY,
+  source          TEXT NOT NULL,
+  source_job_id   TEXT NOT NULL,
+  dedupe_key      TEXT NOT NULL,
+  title           TEXT NOT NULL,
+  url             TEXT NOT NULL,
+  school_name     TEXT,
+  school_key      TEXT,
+  country         TEXT,
+  city            TEXT,
+  description     TEXT,
+  posted_at       TEXT,
+  deadline_at     TEXT,
+  start_date      TEXT,
+  salary_json     TEXT,
+  contract_type   TEXT,
+  contract_term   TEXT,
+  curriculum_json TEXT,
+  grade_json      TEXT,
+  benefits_json   TEXT,
+  school_website  TEXT,
+  emails_json     TEXT,
+  application_url TEXT,
+  attachments_json TEXT,
+  pe_score        INTEGER NOT NULL DEFAULT 0,
+  pe_seniority    TEXT,
+  pe_matched_json TEXT,
+  is_pe           INTEGER NOT NULL DEFAULT 0,
+  status          TEXT NOT NULL DEFAULT 'open',
+  first_seen_at   TEXT NOT NULL,
+  last_seen_at    TEXT NOT NULL,
+  closed_at       TEXT,
+  last_checked_at TEXT,
+  raw_json        TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_jobs_dedupe  ON jobs(dedupe_key);
+CREATE INDEX IF NOT EXISTS idx_jobs_school  ON jobs(school_key);
+CREATE INDEX IF NOT EXISTS idx_jobs_status  ON jobs(status);
+CREATE INDEX IF NOT EXISTS idx_jobs_pe      ON jobs(is_pe, pe_score);
+
+CREATE TABLE IF NOT EXISTS schools (
+  school_key      TEXT PRIMARY KEY,
+  name            TEXT NOT NULL,
+  country         TEXT,
+  city            TEXT,
+  website         TEXT,
+  curriculum_json TEXT,
+  pe_team_size    INTEGER,
+  student_count   INTEGER,
+  school_type     TEXT,
+  salary_json     TEXT,
+  package_json    TEXT,
+  school_email    TEXT,
+  career_email    TEXT,
+  careers_url     TEXT,
+  emails_json     TEXT,
+  provenance_json TEXT,
+  notes_json      TEXT,
+  origin          TEXT NOT NULL DEFAULT 'job',
+  country_rank    INTEGER,
+  enriched_at     TEXT,
+  created_at      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_schools_country ON schools(country);
+CREATE INDEX IF NOT EXISTS idx_schools_origin  ON schools(origin);
+
+CREATE TABLE IF NOT EXISTS runs (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  mode        TEXT NOT NULL,
+  started_at  TEXT NOT NULL,
+  finished_at TEXT,
+  stats_json  TEXT
+);
+
+CREATE TABLE IF NOT EXISTS sightings (
+  run_id  INTEGER NOT NULL,
+  job_id  TEXT NOT NULL,
+  seen_at TEXT NOT NULL,
+  PRIMARY KEY (run_id, job_id)
+);
+`;
+
+let db: DatabaseSync | null = null;
+
+/**
+ * Columns added after the first release. `CREATE TABLE IF NOT EXISTS` leaves an
+ * existing database untouched, so new columns are applied here instead —
+ * keeping older databases usable without a manual rebuild.
+ */
+const MIGRATIONS: { table: string; column: string; ddl: string }[] = [
+  { table: "jobs", column: "attachments_json", ddl: "ALTER TABLE jobs ADD COLUMN attachments_json TEXT" },
+];
+
+function migrate(d: DatabaseSync): void {
+  for (const m of MIGRATIONS) {
+    try {
+      const cols = d.prepare(`PRAGMA table_info(${m.table})`).all() as { name: string }[];
+      if (!cols.length) continue; // table not created yet; SCHEMA covers it
+      if (cols.some((c) => c.name === m.column)) continue;
+      d.exec(m.ddl);
+      log.debug(`migrated: ${m.table}.${m.column}`);
+    } catch (err) {
+      log.warn(`migration ${m.table}.${m.column} failed: ${(err as Error).message}`);
+    }
+  }
+}
+
+export function getDb(): DatabaseSync {
+  if (db) return db;
+  mkdirSync(dirname(DB_PATH), { recursive: true });
+  db = new DatabaseSync(DB_PATH);
+  db.exec("PRAGMA journal_mode = WAL;");
+  db.exec("PRAGMA foreign_keys = ON;");
+  db.exec(SCHEMA);
+  migrate(db);
+  return db;
+}
+
+export function closeDb(): void {
+  db?.close();
+  db = null;
+}
+
+const j = (v: unknown): string | null => (v == null ? null : JSON.stringify(v));
+const unj = <T>(s: unknown, fallback: T): T => {
+  if (typeof s !== "string" || !s) return fallback;
+  try {
+    return JSON.parse(s) as T;
+  } catch {
+    return fallback;
+  }
+};
+
+export interface UpsertResult {
+  inserted: number;
+  updated: number;
+  reopened: number;
+}
+
+/** Insert new vacancies, refresh ones we already know. */
+export function upsertJobs(jobs: Job[], runId: number): UpsertResult {
+  const d = getDb();
+  const now = new Date().toISOString();
+  const res: UpsertResult = { inserted: 0, updated: 0, reopened: 0 };
+
+  const existing = d.prepare("SELECT id, status FROM jobs WHERE id = ?");
+  const insert = d.prepare(`
+    INSERT INTO jobs (
+      id, source, source_job_id, dedupe_key, title, url, school_name, school_key,
+      country, city, description, posted_at, deadline_at, start_date, salary_json,
+      contract_type, contract_term, curriculum_json, grade_json, benefits_json,
+      school_website, emails_json, application_url, pe_score, pe_seniority,
+      pe_matched_json, is_pe, attachments_json, status, first_seen_at, last_seen_at, last_checked_at, raw_json
+    ) VALUES (
+      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?
+    )`);
+  const update = d.prepare(`
+    UPDATE jobs SET
+      title = ?, url = ?, school_name = ?, school_key = ?, country = ?, city = ?,
+      description = COALESCE(NULLIF(?, ''), description),
+      posted_at = COALESCE(?, posted_at), deadline_at = COALESCE(?, deadline_at),
+      start_date = COALESCE(?, start_date), salary_json = COALESCE(?, salary_json),
+      contract_type = COALESCE(?, contract_type), contract_term = COALESCE(?, contract_term),
+      curriculum_json = COALESCE(?, curriculum_json), grade_json = COALESCE(?, grade_json),
+      benefits_json = COALESCE(?, benefits_json), school_website = COALESCE(?, school_website),
+      emails_json = COALESCE(?, emails_json), application_url = COALESCE(?, application_url),
+      pe_score = ?, pe_seniority = ?, pe_matched_json = ?, is_pe = ?,
+      attachments_json = COALESCE(?, attachments_json),
+      status = 'open', closed_at = NULL, last_seen_at = ?, last_checked_at = ?
+    WHERE id = ?`);
+  const sight = d.prepare("INSERT OR IGNORE INTO sightings (run_id, job_id, seen_at) VALUES (?, ?, ?)");
+
+  d.exec("BEGIN");
+  try {
+    for (const job of jobs) {
+      const prev = existing.get(job.id) as { id: string; status: string } | undefined;
+      const schoolKeyValue = job.schoolName ? job.dedupeKey.split("::")[0] ?? null : null;
+
+      if (!prev) {
+        insert.run(
+          job.id, job.source, job.sourceJobId, job.dedupeKey, job.title, job.url,
+          job.schoolName ?? null, schoolKeyValue, job.country ?? null, job.city ?? null,
+          job.description ?? null, job.postedAt ?? null, job.deadlineAt ?? null,
+          job.startDate ?? null, j(job.salary), job.contractType ?? null,
+          job.contractTerm ?? null, j(job.curriculum), j(job.gradeLevels),
+          j(job.benefits), job.schoolWebsite ?? null, j(job.schoolEmails),
+          job.applicationUrl ?? null, job.pe.score, job.pe.seniority,
+          j(job.pe.matched), job.pe.isPe ? 1 : 0, j(job.attachments), job.firstSeenAt, now, now, j(job.raw),
+        );
+        res.inserted++;
+      } else {
+        if (prev.status === "closed") res.reopened++;
+        update.run(
+          job.title, job.url, job.schoolName ?? null, schoolKeyValue,
+          job.country ?? null, job.city ?? null, job.description ?? "",
+          job.postedAt ?? null, job.deadlineAt ?? null, job.startDate ?? null,
+          j(job.salary), job.contractType ?? null, job.contractTerm ?? null,
+          j(job.curriculum), j(job.gradeLevels), j(job.benefits),
+          job.schoolWebsite ?? null, j(job.schoolEmails), job.applicationUrl ?? null,
+          job.pe.score, job.pe.seniority, j(job.pe.matched), job.pe.isPe ? 1 : 0,
+          j(job.attachments), now, now, job.id,
+        );
+        res.updated++;
+      }
+      sight.run(runId, job.id, now);
+    }
+    d.exec("COMMIT");
+  } catch (err) {
+    d.exec("ROLLBACK");
+    throw err;
+  }
+  return res;
+}
+
+/**
+ * Record that these job ids were seen in this run, without writing job rows.
+ *
+ * Needed for cross-board duplicates: when the same vacancy appears on two
+ * boards we keep only the richer record, but the discarded one is still live
+ * on its own board. Without a sighting it would look like it had disappeared
+ * and the sweep below would wrongly close it.
+ */
+export function recordSightings(runId: number, jobIds: string[]): void {
+  if (!jobIds.length) return;
+  const d = getDb();
+  const stmt = d.prepare("INSERT OR IGNORE INTO sightings (run_id, job_id, seen_at) VALUES (?, ?, ?)");
+  const now = new Date().toISOString();
+  d.exec("BEGIN");
+  try {
+    for (const id of jobIds) stmt.run(runId, id, now);
+    d.exec("COMMIT");
+  } catch (err) {
+    d.exec("ROLLBACK");
+    throw err;
+  }
+}
+
+/**
+ * Lifecycle sweep. A vacancy from a source that fully enumerates its listings
+ * and did NOT appear in this run has probably been taken down: mark it stale
+ * on the first miss, closed on the second. Sources that only expose a rolling
+ * window (Teacher Horizons) are exempt — absence there means nothing.
+ */
+export function sweepMissing(runId: number, enumeratedSources: SourceId[]): { stale: number; closed: number } {
+  if (!enumeratedSources.length) return { stale: 0, closed: 0 };
+  const d = getDb();
+  const now = new Date().toISOString();
+  const marks = enumeratedSources.map(() => "?").join(",");
+
+  const staled = d
+    .prepare(
+      `UPDATE jobs SET status = 'stale', last_checked_at = ?
+       WHERE status = 'open' AND source IN (${marks})
+         AND id NOT IN (SELECT job_id FROM sightings WHERE run_id = ?)`,
+    )
+    .run(now, ...enumeratedSources, runId);
+
+  const closed = d
+    .prepare(
+      `UPDATE jobs SET status = 'closed', closed_at = ?, last_checked_at = ?
+       WHERE status = 'stale' AND source IN (${marks})
+         AND id NOT IN (SELECT job_id FROM sightings WHERE run_id = ?)
+         AND last_seen_at < ?`,
+    )
+    .run(now, now, ...enumeratedSources, runId, now);
+
+  return { stale: Number(staled.changes ?? 0), closed: Number(closed.changes ?? 0) };
+}
+
+/** Deadline-based expiry, independent of whether a source still lists the job. */
+export function expirePastDeadline(): number {
+  const now = new Date().toISOString();
+  const r = getDb()
+    .prepare(
+      `UPDATE jobs SET status = 'closed', closed_at = ?, last_checked_at = ?
+       WHERE status != 'closed' AND deadline_at IS NOT NULL AND deadline_at < ?`,
+    )
+    .run(now, now, now);
+  return Number(r.changes ?? 0);
+}
+
+export function startRun(mode: string): number {
+  const r = getDb()
+    .prepare("INSERT INTO runs (mode, started_at) VALUES (?, ?)")
+    .run(mode, new Date().toISOString());
+  return Number(r.lastInsertRowid);
+}
+
+export function finishRun(runId: number, stats: unknown): void {
+  getDb()
+    .prepare("UPDATE runs SET finished_at = ?, stats_json = ? WHERE id = ?")
+    .run(new Date().toISOString(), j(stats), runId);
+}
+
+export interface JobRow {
+  id: string;
+  source: SourceId;
+  title: string;
+  url: string;
+  school_name: string | null;
+  school_key: string | null;
+  country: string | null;
+  city: string | null;
+  description: string | null;
+  posted_at: string | null;
+  deadline_at: string | null;
+  start_date: string | null;
+  salary_json: string | null;
+  contract_type: string | null;
+  benefits_json: string | null;
+  curriculum_json: string | null;
+  school_website: string | null;
+  emails_json: string | null;
+  application_url: string | null;
+  attachments_json: string | null;
+  pe_score: number;
+  pe_seniority: string | null;
+  is_pe: number;
+  status: JobStatus;
+  first_seen_at: string;
+  last_seen_at: string;
+}
+
+export interface QueryOptions {
+  peOnly?: boolean;
+  status?: JobStatus | "any";
+  minScore?: number;
+  countries?: string[];
+  seniority?: string[];
+  /** ISO date; only jobs first seen on/after it. */
+  since?: string;
+  limit?: number;
+}
+
+export function queryJobs(opts: QueryOptions = {}): JobRow[] {
+  const where: string[] = [];
+  const args: (string | number)[] = [];
+
+  if (opts.peOnly !== false) where.push("is_pe = 1");
+  if (opts.status && opts.status !== "any") {
+    where.push("status = ?");
+    args.push(opts.status);
+  }
+  if (opts.minScore != null) {
+    where.push("pe_score >= ?");
+    args.push(opts.minScore);
+  }
+  if (opts.since) {
+    where.push("first_seen_at >= ?");
+    args.push(opts.since);
+  }
+  if (opts.countries?.length) {
+    where.push(`(${opts.countries.map(() => "LOWER(country) LIKE ?").join(" OR ")})`);
+    for (const c of opts.countries) args.push(`%${c.toLowerCase()}%`);
+  }
+  if (opts.seniority?.length) {
+    where.push(`pe_seniority IN (${opts.seniority.map(() => "?").join(",")})`);
+    args.push(...opts.seniority);
+  }
+
+  const sql =
+    "SELECT * FROM jobs" +
+    (where.length ? " WHERE " + where.join(" AND ") : "") +
+    " ORDER BY pe_score DESC, last_seen_at DESC" +
+    (opts.limit ? ` LIMIT ${Number(opts.limit)}` : "");
+
+  return getDb().prepare(sql).all(...args) as unknown as JobRow[];
+}
+
+/** Schools referenced by stored vacancies, newest activity first. */
+export function schoolsNeedingEnrichment(maxAgeDays = 30, limit = 0): { school_key: string; name: string; country: string | null; city: string | null; website: string | null }[] {
+  const cutoff = new Date(Date.now() - maxAgeDays * 86400_000).toISOString();
+  const sql = `
+    SELECT j.school_key, MAX(j.school_name) AS name, MAX(j.country) AS country,
+           MAX(j.city) AS city, MAX(j.school_website) AS website
+    FROM jobs j
+    LEFT JOIN schools s ON s.school_key = j.school_key
+    WHERE j.school_key IS NOT NULL AND j.is_pe = 1
+      AND (s.enriched_at IS NULL OR s.enriched_at < ?)
+    GROUP BY j.school_key
+    ORDER BY MAX(j.pe_score) DESC
+    ${limit ? `LIMIT ${Number(limit)}` : ""}`;
+  return getDb().prepare(sql).all(cutoff) as any;
+}
+
+export function upsertSchool(p: SchoolProfile, origin: "job" | "directory" = "job", countryRank?: number): void {
+  const now = new Date().toISOString();
+  const provenance: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(p)) {
+    if (v && typeof v === "object" && "provenance" in (v as object)) {
+      provenance[k] = (v as { provenance: unknown }).provenance;
+    }
+  }
+
+  getDb()
+    .prepare(
+      `INSERT INTO schools (
+        school_key, name, country, city, website, curriculum_json, pe_team_size,
+        student_count, school_type, salary_json, package_json, school_email,
+        career_email, careers_url, emails_json, provenance_json, notes_json,
+        origin, country_rank, enriched_at, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(school_key) DO UPDATE SET
+        name = excluded.name,
+        country = COALESCE(excluded.country, schools.country),
+        city = COALESCE(excluded.city, schools.city),
+        website = COALESCE(excluded.website, schools.website),
+        curriculum_json = COALESCE(excluded.curriculum_json, schools.curriculum_json),
+        pe_team_size = COALESCE(excluded.pe_team_size, schools.pe_team_size),
+        student_count = COALESCE(excluded.student_count, schools.student_count),
+        school_type = COALESCE(excluded.school_type, schools.school_type),
+        salary_json = COALESCE(excluded.salary_json, schools.salary_json),
+        package_json = COALESCE(excluded.package_json, schools.package_json),
+        -- Enrichment recomputes both addresses from the same candidate set, so
+        -- a fresh run must be able to move an address from one column to the
+        -- other. COALESCE alone would strand the previous value.
+        school_email = CASE WHEN excluded.emails_json IS NOT NULL
+                            THEN excluded.school_email
+                            ELSE COALESCE(excluded.school_email, schools.school_email) END,
+        career_email = CASE WHEN excluded.emails_json IS NOT NULL
+                            THEN excluded.career_email
+                            ELSE COALESCE(excluded.career_email, schools.career_email) END,
+        careers_url = COALESCE(excluded.careers_url, schools.careers_url),
+        emails_json = COALESCE(excluded.emails_json, schools.emails_json),
+        provenance_json = excluded.provenance_json,
+        notes_json = excluded.notes_json,
+        country_rank = COALESCE(excluded.country_rank, schools.country_rank),
+        enriched_at = excluded.enriched_at`,
+    )
+    .run(
+      p.schoolKey, p.schoolName, p.country?.value ?? null, p.city?.value ?? null,
+      p.website?.value ?? null, j(p.curriculum?.value), p.peTeamSize?.value ?? null,
+      p.studentCount?.value ?? null, p.schoolType?.value ?? null, j(p.salaryEstimate?.value),
+      j(p.packageNotes?.value), p.schoolEmail?.value ?? null, p.careerEmail?.value ?? null,
+      p.careersPageUrl?.value ?? null, j(p.allEmails), j(provenance), j(p.notes),
+      origin, countryRank ?? null, p.enrichedAt ?? now, now,
+    );
+}
+
+export interface SchoolRow {
+  school_key: string;
+  name: string;
+  country: string | null;
+  city: string | null;
+  website: string | null;
+  curriculum_json: string | null;
+  pe_team_size: number | null;
+  student_count: number | null;
+  school_type: string | null;
+  salary_json: string | null;
+  package_json: string | null;
+  school_email: string | null;
+  career_email: string | null;
+  careers_url: string | null;
+  emails_json: string | null;
+  origin: string;
+  country_rank: number | null;
+  enriched_at: string | null;
+}
+
+export function getSchools(keys?: string[]): Map<string, SchoolRow> {
+  const d = getDb();
+  const rows = (
+    keys?.length
+      ? d.prepare(`SELECT * FROM schools WHERE school_key IN (${keys.map(() => "?").join(",")})`).all(...keys)
+      : d.prepare("SELECT * FROM schools").all()
+  ) as unknown as SchoolRow[];
+  return new Map(rows.map((r) => [r.school_key, r]));
+}
+
+export function parseJsonColumn<T>(value: string | null, fallback: T): T {
+  return unj(value, fallback);
+}
+
+export function stats(): Record<string, number> {
+  const d = getDb();
+  const one = (sql: string): number => {
+    const row = d.prepare(sql).get() as Record<string, unknown> | undefined;
+    return Number(Object.values(row ?? {})[0] ?? 0);
+  };
+  return {
+    jobsTotal: one("SELECT COUNT(*) FROM jobs"),
+    jobsPe: one("SELECT COUNT(*) FROM jobs WHERE is_pe = 1"),
+    jobsOpen: one("SELECT COUNT(*) FROM jobs WHERE is_pe = 1 AND status = 'open'"),
+    jobsStale: one("SELECT COUNT(*) FROM jobs WHERE is_pe = 1 AND status = 'stale'"),
+    jobsClosed: one("SELECT COUNT(*) FROM jobs WHERE is_pe = 1 AND status = 'closed'"),
+    leadership: one(
+      "SELECT COUNT(*) FROM jobs WHERE is_pe = 1 AND pe_seniority IN ('director_of_sport','head_of_department','second_in_department')",
+    ),
+    schools: one("SELECT COUNT(*) FROM schools"),
+    schoolsEnriched: one("SELECT COUNT(*) FROM schools WHERE enriched_at IS NOT NULL"),
+    schoolsWithCareerEmail: one("SELECT COUNT(*) FROM schools WHERE career_email IS NOT NULL"),
+    runs: one("SELECT COUNT(*) FROM runs"),
+  };
+}
+
+export function logDbPath(): void {
+  log.debug(`database: ${DB_PATH}`);
+}
