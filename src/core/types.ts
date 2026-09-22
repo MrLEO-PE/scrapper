@@ -6,7 +6,13 @@
  * user ticked.
  */
 
-export type SourceId = "tes" | "teachaway" | "teacherhorizons";
+export type SourceId =
+  | "tes"
+  | "teachaway"
+  | "teacherhorizons"
+  // School groups running their own SuccessFactors career site.
+  | "nordanglia"
+  | "inspired";
 
 /** How sure we are about a single enriched value, and where it came from. */
 export interface Provenance {

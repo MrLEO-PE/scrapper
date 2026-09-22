@@ -34,6 +34,10 @@ export const CORE_TERMS: Term[] = [
   { label: "exercise science", re: /\bexercise\s+(?:science|physiology)\b/i, weight: 45 },
   { label: "SEHS (IB)", re: /\b(?:sehs|sports?,?\s*exercise\s*(?:&|and)\s*health\s*science)\b/i, weight: 50 },
   { label: "kinesiology", re: /\bkinesiolog/i, weight: 40 },
+  // Spanish/Portuguese-medium schools in the groups' LatAm and Iberian
+  // networks advertise the subject in the local language.
+  { label: "educación/educação física", re: /\beducaci[óo]n\s+f[íi]sica\b|\beduca[çc][ãa]o\s+f[íi]sica\b/i, weight: 55 },
+  { label: "profesor de deportes", re: /\b(?:profesor|professor)a?\s+de\s+(?:educaci[óo]n\s+f[íi]sica|deportes?|esportes?)\b/i, weight: 50 },
   { label: "BTEC sport", re: /\bbtec\s+(?:national\s+)?sport\b/i, weight: 45 },
   // Both word orders: "Games Teacher" and "Teacher of Games".
   { label: "games teacher", re: /\bgames\s+(?:teacher|master|mistress|staff|coach)\b|\b(?:teacher|master|mistress|head)\s+of\s+games\b/i, weight: 45 },
@@ -82,6 +86,15 @@ export const VETO_TERMS: Term[] = [
   { label: "physical plant/facilities", re: /\bphysical\s+plant\b|\bgrounds\s*(?:man|keeper)\b/i, weight: 45 },
   // "Games" also means video games — keep those out of a PE search.
   { label: "video games/esports", re: /\b(?:video\s+game|game\s+(?:design|development)|gaming|esports?)\b/i, weight: 45 },
+  /*
+   * "PE" is also the ISO code for the Brazilian state of Pernambuco, written
+   * "City/PE" in local job adverts. Brazilian school groups post nurses,
+   * teaching assistants and music teachers with that suffix, all of which
+   * matched the bare \bPE\b token before this veto.
+   */
+  // Slash only: "Recife/PE" is the state suffix, whereas an en-dash or hyphen
+  // before PE is ordinary English titling ("Head of Department - PE").
+  { label: "Brazilian state code (Pernambuco)", re: /[a-zà-ÿ]\s*\/\s*PE\b/i, weight: 75 },
 ];
 
 /** Title patterns that place a role on the seniority ladder. Order matters. */

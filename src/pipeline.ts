@@ -21,6 +21,7 @@ import { syncToSheet } from "./export/gsheets.ts";
 import { tesSource } from "./sources/tes.ts";
 import { teachawaySource } from "./sources/teachaway.ts";
 import { teacherHorizonsSource } from "./sources/teacherhorizons.ts";
+import { successFactorsSources } from "./sources/successfactors.ts";
 import type { Source } from "./sources/base.ts";
 import {
   expirePastDeadline,
@@ -39,14 +40,19 @@ import {
   type QueryOptions,
 } from "./store/db.ts";
 
-export const ALL_SOURCES: Source[] = [tesSource, teachawaySource, teacherHorizonsSource];
+export const ALL_SOURCES: Source[] = [
+  tesSource,
+  teachawaySource,
+  teacherHorizonsSource,
+  ...successFactorsSources,
+];
 
 /**
  * Sources that list their whole inventory each run. Only these can be used to
  * infer that a missing vacancy has been taken down — Teacher Horizons shows a
  * rolling window, so absence there means nothing.
  */
-const ENUMERATED: SourceId[] = ["tes", "teachaway"];
+const ENUMERATED: SourceId[] = ["tes", "teachaway", "nordanglia", "inspired"];
 
 export interface ScrapeOptions {
   sources?: string[];

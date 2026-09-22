@@ -85,6 +85,35 @@ test("PE beats Physics when both appear", () => {
   assert.ok(!classify("Teacher of Physics").isPe);
 });
 
+test("does not fire on PE as a Brazilian state code", () => {
+  // Real titles from a group careers site. "PE" here is Pernambuco, written
+  // "City/PE" in Brazilian adverts — none of these are PE roles.
+  for (const t of [
+    "Jovem Aprendiz - Recife/PE",
+    "Enfermeiro(a) Escolar - Recife/PE",
+    "Auxiliar de Professor - Infantil - Recife/PE",
+    "Professor(a) de Música - Infantil e Fundamental - Recife/PE",
+  ]) {
+    assert.ok(!classify(t).isPe, `${t} should not match`);
+  }
+  // But a genuine PE role in Pernambuco still matches: a real subject term
+  // outweighs the state-code veto.
+  assert.ok(classify("Professor de Educação Física - Recife/PE").isPe);
+  // And an ordinary dash before PE is English titling, not a state code.
+  assert.ok(classify("Head of Department - PE").isPe);
+  assert.ok(classify("Teacher of Games/PE").isPe);
+});
+
+test("recognises the subject in Spanish and Portuguese", () => {
+  for (const t of [
+    "Profesor de Educación Física",
+    "Professor de Educação Física",
+    "Docente de Educación Física - Primaria",
+  ]) {
+    assert.ok(classify(t).isPe, `${t} should match`);
+  }
+});
+
 test("does not fire on PE inside a longer word", () => {
   for (const t of ["Pension Administrator", "Head of People", "Performance Analyst", "Pedagogy Lead"]) {
     assert.ok(!classify(t).isPe, `${t} should not match`);

@@ -59,11 +59,21 @@ npm run run-all
 
 ### 1. `scrape` — find the vacancies
 
-| Board | How it is read | Notes |
+| Source | How it is read | Notes |
 |---|---|---|
 | **TES Jobs** | Public JSON API behind the jobs board, `International` filter | Strongest source. ~700 international vacancies scanned per run |
 | **Teach Away** | Job records embedded in the board page, `phys-ed` filter + sitemap sweep | Carries school profile, curriculum, salary, benefits and the recruitment email |
 | **Teacher Horizons** | Public "latest vacancies" feed | Limited by design — see [below](#a-note-on-teacher-horizons) |
+| **Nord Anglia Education** | Group careers site (SAP SuccessFactors) | ~195 vacancies across 80+ schools |
+| **Inspired Education** | Group careers site (SAP SuccessFactors) | ~270 vacancies across Europe, LatAm, Africa, Asia |
+
+The last two are *employers* rather than boards, which matters: roles appear on a group's own
+careers site that never reach an aggregator, and the school is named directly. Both run on
+SuccessFactors, so one parser serves both — adding another group that uses it is a single entry
+in `SUCCESSFACTORS_SITES` in [`src/sources/successfactors.ts`](src/sources/successfactors.ts).
+
+Limit a run to particular sources with
+`--sources tes,teachaway,nordanglia,inspired,teacherhorizons`.
 
 By default the scraper also opens each matching TES vacancy page, which yields the school's
 website, its country, the address applications go to, and any job-pack PDFs — none of which the
@@ -310,6 +320,13 @@ The matching is deliberately careful about look-alikes. "Teacher of Physics", "P
 rejected, while "Physics **and PE** Teacher" is kept — a veto only wins when no genuine PE term
 is present. Titles score at full weight and body text at a quarter, so a long advert that happens
 to mention "sport" cannot outrank a title that says "Head of PE".
+
+One look-alike is worth calling out because it is not obvious: **"PE" is also the state code for
+Pernambuco in Brazil**, written "Recife/PE". Brazilian school groups advertise nurses, teaching
+assistants and music teachers with that suffix, and all of them matched before a veto was added.
+A genuine "Professor de Educação Física - Recife/PE" still matches, because a real subject term
+outweighs the veto. Spanish and Portuguese subject names are recognised, since the school groups
+run Iberian and Latin American schools.
 
 The vocabulary lives in `src/match/taxonomy.ts` as plain data and is easy to extend. `test/`
 covers 29 real titles that must match and 16 look-alikes that must not:
