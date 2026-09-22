@@ -112,6 +112,30 @@ Two further columns are worth knowing about: `all_emails` shows every address fo
 classification, which is the fastest way to sanity-check a wrong pick, and `careers_page` links
 straight to the school's vacancies page.
 
+### How full each column actually gets
+
+Some of this data simply is not published, and the scraper leaves a cell blank rather than
+guessing. Measured over a real run of 71 schools:
+
+| Column | Filled | Why |
+|---|---|---|
+| Country, Website, School Type | 85–99% | Reliable from board data |
+| **Career Email** | **86%** | The column that matters most, and it holds up |
+| City, Curriculum, Package | 75–80% | Usually stated somewhere |
+| School Email | 55% | Many schools publish only one address, which becomes the career email |
+| Students in School | 39% | Only where the school states a roll |
+| Approx. Salary | 39% | Most international schools advertise "competitive" and no figure |
+| Careers Page | 35% | Not every school has a dedicated vacancies page |
+| **PE Team (teachers)** | **4%** | Schools almost never publish this — see below |
+
+**PE team size is the honest weak spot.** Schools essentially never write "our PE department has
+six teachers", so the only route is counting PE roles on a staff directory — which many schools
+do not publish at all, and which is a proxy rather than a headcount. An earlier version inferred
+it from job adverts and was wrong: an advert for a PE role repeats "PE Teacher" several times,
+and counting those reported the advert's own title as the size of the department. That is now
+blocked, which is why the number is small but trustworthy. Treat a filled cell as a hint and
+verify before relying on it.
+
 ---
 
 ## Keeping it up to date
@@ -324,12 +348,14 @@ Everything lands in `data/`: `jobs.db` (the database), `cache/` (HTTP cache, saf
 
 ## Things worth knowing
 
-- **PE team size is an estimate.** Where a school states it ("a team of six PE teachers") it is
-  accurate; otherwise it is inferred from how many PE roles appear on staff pages, which is a
-  proxy. The stored confidence reflects that, and `all_emails`-style provenance is kept for every
-  enriched value.
-- **Student counts come from marketing copy** and can pick up a group-wide figure rather than one
-  campus. Spot-check outliers.
+- **PE team size is an estimate, and usually blank.** Where a school states it ("a team of six PE
+  teachers") it is accurate; otherwise it is counted from PE roles on a staff directory page,
+  which is a proxy. It is never inferred from a job advert. The stored confidence reflects this,
+  and provenance — source and the exact sentence — is kept for every enriched value.
+- **Student counts come from marketing copy.** Group-wide totals ("9,000 students across our 11
+  schools"), boarding-house capacities ("each accommodating up to 70 students") and dates
+  ("since 2011 students have…") are all rejected, because each of them produced a wrong number
+  in testing. Anything that survives is a stated roll, but spot-check outliers anyway.
 - **Salary is indicative.** Many international schools do not publish figures; where they do, the
   number is averaged across that school's adverts, grouped by currency and period so that
   monthly AED is never averaged against annual GBP.

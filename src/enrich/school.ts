@@ -236,7 +236,11 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
   }
 
   // ---- fall back to the advert and its job packs for anything missing ---
-  const advertText = `${jobCorpus}\n${packText}`;
+  // Salary free-text is worth including: boards rarely publish a figure, but
+  // the field routinely lists the package ("tax-free salary + housing
+  // allowance + flights"), which is exactly what the Package column wants.
+  const salaryText = input.salaries.map((s) => s.text ?? "").filter(Boolean).join("\n");
+  const advertText = `${jobCorpus}\n${packText}\n${salaryText}`;
   if (!profile.curriculum) {
     const c = extractCurriculum(advertText);
     if (c) profile.curriculum = sourced(c.value, "job advert", c.confidence * 0.9, c.evidence);
@@ -249,14 +253,17 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
     const pk = extractPackage(advertText);
     if (pk) profile.packageNotes = sourced(pk.value, "job advert", pk.confidence * 0.9, pk.evidence);
   }
-  // A job pack usually states the roll; the website may not.
-  if (!profile.studentCount && packText) {
-    const sc = extractStudentCount(packText);
-    if (sc) profile.studentCount = sourced(sc.value, "job pack", sc.confidence * 0.9, sc.evidence);
+  // Adverts and job packs routinely describe the school ("a co-educational
+  // school of 1,300 students"), so they are worth mining when the website did
+  // not say. Only explicit statements count for the PE team size — see
+  // countPeStaff, which must not be run over advert text.
+  if (!profile.studentCount && advertText.trim()) {
+    const sc = extractStudentCount(advertText);
+    if (sc) profile.studentCount = sourced(sc.value, "job advert", sc.confidence * 0.9, sc.evidence);
   }
-  if (!profile.peTeamSize && packText) {
-    const pt = extractPeTeamSize(packText);
-    if (pt) profile.peTeamSize = sourced(pt.value, "job pack", pt.confidence, pt.evidence);
+  if (!profile.peTeamSize && advertText.trim()) {
+    const pt = extractPeTeamSize(advertText);
+    if (pt) profile.peTeamSize = sourced(pt.value, "job advert", pt.confidence, pt.evidence);
   }
 
   // ---- pick the two email columns --------------------------------------

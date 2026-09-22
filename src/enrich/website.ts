@@ -31,10 +31,12 @@ import { pdfToText } from "./pdf.ts";
 const LINK_PRIORITIES: { re: RegExp; score: number; tag: string }[] = [
   { re: /(?:^|[\/\-_])(?:careers?|vacanc(?:y|ies)|recruit(?:ment)?|employment|job-?opportunities|jobs?|work-?(?:with|for)-?us|join-?(?:us|our-?team)|hiring|opportunities)(?:[\/\-_.?#]|$)/i, score: 100, tag: "careers" },
   { re: /(?:^|[\/\-_])(?:work-?here|staff-?vacancies|teaching-?vacancies|current-?vacancies|apply)(?:[\/\-_.?#]|$)/i, score: 95, tag: "careers" },
-  { re: /(?:^|[\/\-_])(?:contact|contact-?us|get-?in-?touch|enquir)/i, score: 70, tag: "contact" },
+  { re: /(?:^|[\/\-_])(?:contact|contact-?us|get-?in-?touch|enquir)/i, score: 75, tag: "contact" },
+  // Staff directories and PE department pages are the only places a PE team
+  // size is ever countable, so they outrank the general "about" pages.
+  { re: /(?:^|[\/\-_])(?:staff|faculty|our-?team|meet-?the-?team|leadership|senior-?leadership|directory|people)/i, score: 72, tag: "staff" },
+  { re: /(?:^|[\/\-_])(?:pe|physical-?education|sport|sports|athletics|games)(?:[\/\-_.?#]|$)/i, score: 70, tag: "staff" },
   { re: /(?:^|[\/\-_])(?:about|about-?us|our-?school|who-?we-?are|welcome|overview|at-?a-?glance|fast-?facts|key-?facts)/i, score: 60, tag: "about" },
-  { re: /(?:^|[\/\-_])(?:staff|faculty|our-?team|meet-?the-?team|leadership|senior-?leadership|directory|people)/i, score: 55, tag: "staff" },
-  { re: /(?:^|[\/\-_])(?:pe|physical-?education|sport|sports|athletics|games)(?:[\/\-_.?#]|$)/i, score: 50, tag: "pe" },
   { re: /(?:^|[\/\-_])(?:curriculum|academics|programmes?|programs?)/i, score: 40, tag: "curriculum" },
   { re: /(?:^|[\/\-_])(?:admissions?|fees|prospectus)/i, score: 30, tag: "admissions" },
 ];
@@ -137,6 +139,9 @@ export async function crawlSchoolSite(
   // Text gathered across the whole site, for facts that may appear anywhere.
   let corpus = "";
   let careersText = "";
+  // Staff and PE-department pages only. Counting PE role mentions is a valid
+  // headcount proxy here and nowhere else.
+  let staffText = "";
 
   while (frontier.length && findings.pagesVisited < maxPages && Date.now() < deadline) {
     frontier.sort((a, b) => b.score - a.score);
@@ -153,6 +158,8 @@ export async function crawlSchoolSite(
     if (next.tag === "careers") {
       findings.careersPageUrl ??= next.url;
       careersText += "\n" + text;
+    } else if (next.tag === "staff") {
+      staffText += "\n" + text;
     }
 
     // Emails from the page body and from any mailto: links.
@@ -221,7 +228,10 @@ export async function crawlSchoolSite(
   findings.curriculum = extractCurriculum(both) ?? undefined;
   findings.phase = extractPhase(both) ?? undefined;
   findings.packageNotes = extractPackage(careersText || both) ?? undefined;
-  findings.peTeamSize = extractPeTeamSize(both) ?? countPeStaff(both) ?? undefined;
+  // An explicit statement anywhere on the site is trusted; otherwise fall back
+  // to counting PE roles, but only on staff/department pages.
+  findings.peTeamSize =
+    extractPeTeamSize(both) ?? (staffText ? countPeStaff(staffText) ?? undefined : undefined);
 
   return findings;
 }

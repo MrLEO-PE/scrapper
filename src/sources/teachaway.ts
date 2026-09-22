@@ -11,6 +11,11 @@
  *   2. a sitemap slug sweep for sport roles filed under another subject, read
  *      from each page's schema.org JobPosting.
  *
+ * A third pass over the unfiltered board was tried and removed: sweeping 229
+ * distinct titles across the whole board surfaced exactly the same PE roles the
+ * subject filter already returns, including the leadership ones. It cost ~50
+ * extra requests per run for nothing, so the subject filter is trusted.
+ *
  * robots.txt allows everything except /api, /trpc-me and a few utility paths.
  */
 

@@ -38,8 +38,9 @@ const GROUP_SCALE = new RegExp(
     // "across seven Academies", "across our schools", "across 12 campuses"
     /across\s+[^.]{0,30}?\b(?:schools|academies|campuses|colleges|institutions|settings|sites)\b/
       .source,
-    // "in our 8 schools", "three academies"
-    /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+(?:schools|academies|campuses)\b/
+    // "our 11 international schools", "three academies", "8 campuses" —
+    // adjectives may sit between the number and the noun.
+    /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+(?:[a-z-]+\s+){0,2}(?:schools|academies|campuses|colleges|pre-?schools|nurseries)\b/
       .source,
     /group[\s-]?wide/.source,
     /\bour\s+(?:group|network|family|schools|academies)\b/.source,
@@ -54,6 +55,13 @@ const GROUP_SCALE = new RegExp(
  */
 const YEAR_BEFORE = /\b(?:since|in|from|founded(?:\s+in)?|established(?:\s+in)?|opened(?:\s+in)?|between)\s*$/i;
 
+/**
+ * Figures that describe one part of the school rather than the whole roll — a
+ * boarding house's capacity, a class size, an intake per year group.
+ */
+const PARTIAL_SCALE =
+  /\b(?:each\s+(?:accommodat|hous|with|of|hold)|accommodat\w*\s+up\s+to|capacity\s+(?:of|for)|per\s+(?:class|year|grade|house|cohort|campus)|boarding\s+hous|dormitor|bedroom|class\s+size|classes\s+of|maximum\s+of|intake\s+of)/i;
+
 function looksLikeYear(value: number, text: string, matchIndex: number): boolean {
   if (value < 1900 || value > 2099) return false;
   return YEAR_BEFORE.test(text.slice(Math.max(0, matchIndex - 24), matchIndex));
@@ -67,8 +75,10 @@ export function extractStudentCount(text: string): Extracted<number> | null {
     if (n == null || n < MIN_STUDENTS || n > MAX_STUDENTS) continue;
 
     const evidence = snippet(text, m.index);
-    // A group total is not this school's roll — skip it rather than record it.
+    // A group total, a boarding-house capacity or a date is not this school's
+    // roll — skip rather than record a number we know to be the wrong thing.
     if (GROUP_SCALE.test(evidence)) continue;
+    if (PARTIAL_SCALE.test(evidence)) continue;
     if (looksLikeYear(n, text, m.index)) continue;
 
     return { value: n, evidence, confidence };
@@ -101,8 +111,12 @@ export function extractPeTeamSize(text: string): Extracted<number> | null {
 }
 
 /**
- * Count distinct staff whose listed role is PE. Used on staff/faculty pages,
- * where an explicit team size is rarely stated.
+ * Count staff whose listed role is PE.
+ *
+ * **Only valid on a staff or faculty directory page**, where each mention is a
+ * different person. Never run it over a job advert: an advert for a PE role
+ * repeats "PE Teacher" several times, and counting those would report the
+ * advert's own title as the size of the department.
  */
 const PE_STAFF_ROLE =
   /\b(?:pe|p\.e\.|physical\s+education|games|sports?)\s*(?:teacher|instructor|coach|coordinator|co-ordinator|specialist|master|mistress|department)\b|\b(?:teacher|head|director)\s+of\s+(?:pe|physical\s+education|sport|sports|games)\b/gi;
@@ -114,6 +128,12 @@ export function countPeStaff(text: string): Extracted<number> | null {
   const distinct = new Set(matches.map((m) => m.toLowerCase().replace(/\s+/g, " ").trim()));
   const n = matches.length;
   if (n < 2 || n > 60) return null;
+
+  // Two mentions of one identical role string is far more often a repeated
+  // navigation link than two people. Require either two different role titles
+  // ("PE Teacher" and "Head of PE") or three or more mentions.
+  if (distinct.size < 2 && n < 3) return null;
+
   return {
     value: n,
     evidence: `${n} PE staff role mentions (${distinct.size} distinct)`,
