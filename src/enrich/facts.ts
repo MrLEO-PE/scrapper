@@ -28,13 +28,50 @@ const STUDENT_PATTERNS: { re: RegExp; confidence: number }[] = [
   { re: /\b([0-9][0-9,\s]{1,6})\s*(?:\+\s*)?(?:students|pupils|learners)\b/i, confidence: 0.6 },
 ];
 
+/**
+ * Phrases that mean the number describes a whole group or network rather than
+ * this campus. School groups (GEMS, Aldar, Nord Anglia…) advertise combined
+ * rolls, which would otherwise be recorded as one school's size.
+ */
+const GROUP_SCALE = new RegExp(
+  [
+    // "across seven Academies", "across our schools", "across 12 campuses"
+    /across\s+[^.]{0,30}?\b(?:schools|academies|campuses|colleges|institutions|settings|sites)\b/
+      .source,
+    // "in our 8 schools", "three academies"
+    /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+(?:schools|academies|campuses)\b/
+      .source,
+    /group[\s-]?wide/.source,
+    /\bour\s+(?:group|network|family|schools|academies)\b/.source,
+    /\b(?:worldwide|globally|combined|in\s+total\s+across)\b/.source,
+  ].join("|"),
+  "i",
+);
+
+/**
+ * "Since 2011 students have enjoyed..." reads as a roll of 2011 to a bare
+ * number match. A year-shaped figure introduced by a date word is a date.
+ */
+const YEAR_BEFORE = /\b(?:since|in|from|founded(?:\s+in)?|established(?:\s+in)?|opened(?:\s+in)?|between)\s*$/i;
+
+function looksLikeYear(value: number, text: string, matchIndex: number): boolean {
+  if (value < 1900 || value > 2099) return false;
+  return YEAR_BEFORE.test(text.slice(Math.max(0, matchIndex - 24), matchIndex));
+}
+
 export function extractStudentCount(text: string): Extracted<number> | null {
   for (const { re, confidence } of STUDENT_PATTERNS) {
     const m = re.exec(text);
     if (!m?.[1]) continue;
     const n = parseCount(m[1]);
     if (n == null || n < MIN_STUDENTS || n > MAX_STUDENTS) continue;
-    return { value: n, evidence: snippet(text, m.index), confidence };
+
+    const evidence = snippet(text, m.index);
+    // A group total is not this school's roll — skip it rather than record it.
+    if (GROUP_SCALE.test(evidence)) continue;
+    if (looksLikeYear(n, text, m.index)) continue;
+
+    return { value: n, evidence, confidence };
   }
   return null;
 }

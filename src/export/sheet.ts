@@ -104,11 +104,24 @@ export function writeHtml(path: string, rows: SheetRow[], fieldKeys: string[], s
   };
 
   const statusIndex = fields.findIndex((f) => f.key === "status");
+  const seniorityIndex = fields.findIndex((f) => f.key === "seniority");
+  /** Leadership roles are the point of the search, so they are marked. */
+  const LEADERSHIP = new Set(["Director of Sport", "Head of Department", "2nd in Department"]);
+
   const rowClass = (r: string[]) => {
-    if (statusIndex < 0) return "";
-    const s = r[statusIndex];
-    return s === "Closed" ? ' class="closed"' : s === "Possibly filled" ? ' class="stale"' : "";
+    const classes: string[] = [];
+    if (statusIndex >= 0) {
+      const s = r[statusIndex];
+      if (s === "Closed") classes.push("closed");
+      else if (s === "Possibly filled") classes.push("stale");
+    }
+    if (seniorityIndex >= 0 && LEADERSHIP.has(r[seniorityIndex] ?? "")) classes.push("lead");
+    return classes.length ? ` class="${classes.join(" ")}"` : "";
   };
+
+  const leadershipCount = body.filter((r) =>
+    seniorityIndex >= 0 ? LEADERSHIP.has(r[seniorityIndex] ?? "") : false,
+  ).length;
 
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -130,11 +143,16 @@ export function writeHtml(path: string, rows: SheetRow[], fieldKeys: string[], s
   th:hover { text-decoration: underline; }
   tr.closed { opacity: .45; }
   tr.stale { background: color-mix(in srgb, orange 9%, transparent); }
+  tr.lead { background: color-mix(in srgb, dodgerblue 10%, transparent); }
+  tr.lead td:first-child { box-shadow: inset 3px 0 0 dodgerblue; }
+  tr.lead.stale { background: color-mix(in srgb, orange 12%, transparent); }
+  label.only { margin-left: 14px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
   a { color: inherit; }
 </style></head><body>
 <h1>${esc(title)}</h1>
-<p class="meta">${body.length} rows · generated ${new Date().toISOString().slice(0, 16).replace("T", " ")} · click a header to sort</p>
+<p class="meta">${body.length} rows${leadershipCount ? ` · ${leadershipCount} leadership` : ""} · generated ${new Date().toISOString().slice(0, 16).replace("T", " ")} · click a header to sort</p>
 <input id="q" placeholder="Filter rows…" autocomplete="off">
+${leadershipCount ? '<label class="only"><input type="checkbox" id="leadOnly"> leadership roles only</label>' : ""}
 <div class="wrap"><table>
 <thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
 <tbody>
@@ -142,10 +160,20 @@ ${body.map((r) => `<tr${rowClass(r)}>${r.map((v, i) => `<td>${cell(v, fields[i]!
 </tbody></table></div>
 <script>
 const rows = [...document.querySelectorAll("tbody tr")];
-document.getElementById("q").addEventListener("input", e => {
-  const q = e.target.value.toLowerCase();
-  for (const r of rows) r.style.display = r.textContent.toLowerCase().includes(q) ? "" : "none";
-});
+const q = document.getElementById("q");
+const leadOnly = document.getElementById("leadOnly");
+
+function applyFilters() {
+  const needle = q.value.toLowerCase();
+  const onlyLead = leadOnly && leadOnly.checked;
+  for (const r of rows) {
+    const matchesText = r.textContent.toLowerCase().includes(needle);
+    const matchesLead = !onlyLead || r.classList.contains("lead");
+    r.style.display = matchesText && matchesLead ? "" : "none";
+  }
+}
+q.addEventListener("input", applyFilters);
+if (leadOnly) leadOnly.addEventListener("change", applyFilters);
 document.querySelectorAll("th").forEach((th, i) => {
   let asc = true;
   th.addEventListener("click", () => {

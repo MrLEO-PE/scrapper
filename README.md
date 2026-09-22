@@ -8,7 +8,7 @@ email address a PE application should go to.
 Output is a Google-Sheets-ready table whose columns you tick.
 
 ```
-npm run scrape -- --deep     # find vacancies
+npm run scrape               # find vacancies
 npm run enrich               # profile the schools
 npm run export               # write the sheet
 ```
@@ -29,7 +29,7 @@ editor support and `npm run typecheck`.
 ## Quick start
 
 ```bash
-npm run scrape -- --deep     # ~3 min: all three boards, full detail pages
+npm run scrape               # ~3 min: all three boards, full detail pages
 npm run enrich               # ~10 min: visits each school's website
 npm run export               # writes CSV + an HTML report to data/out/
 ```
@@ -40,7 +40,7 @@ Then open `data/out/pe-jobs-<date>.html` to review, or import the `.csv` into Go
 Or do all three at once:
 
 ```bash
-npm run run-all -- --deep
+npm run run-all
 ```
 
 ---
@@ -55,9 +55,10 @@ npm run run-all -- --deep
 | **Teach Away** | Job records embedded in the board page, `phys-ed` filter + sitemap sweep | Carries school profile, curriculum, salary, benefits and the recruitment email |
 | **Teacher Horizons** | Public "latest vacancies" feed | Limited by design — see [below](#a-note-on-teacher-horizons) |
 
-`--deep` additionally opens each matching TES vacancy page, which yields the school's website,
-its country, the address applications go to, and any job-pack PDFs. It costs about a minute and
-roughly triples the useful data, so **it is worth using every time**.
+By default the scraper also opens each matching TES vacancy page, which yields the school's
+website, its country, the address applications go to, and any job-pack PDFs — none of which the
+search API returns. It costs about a minute and roughly triples the usable data. Pass
+`--shallow` to skip it.
 
 Seven search passes run against TES: the Physical Education subject filter, plus keyword passes
 for *head of sport*, *director of sport*, *head of physical education*, *sports coordinator*,
@@ -77,7 +78,8 @@ only inside the job pack.
 ### 3. `export` — write the sheet
 
 Writes the ticked columns as CSV (for import), TSV (to paste directly), JSON, and a sortable,
-filterable HTML report.
+filterable HTML report. In the HTML report, leadership roles — Director of Sport, Head of
+Department, 2nd in Department — are highlighted, with a **leadership roles only** toggle.
 
 ---
 
@@ -197,6 +199,21 @@ npm run export -- --sheet-id 1AbC...xyz --sheet-tab "PE Jobs" --schools
 
 The tab is cleared and rewritten each time, so deleted rows do not linger, and the header row is
 frozen and bolded. Set `GOOGLE_SHEET_ID` to avoid passing `--sheet-id` every run.
+
+### Settings via `.env`
+
+A `.env` file in the project root is read automatically, which is the easiest way to give
+scheduled runs the same settings as interactive ones:
+
+```ini
+GOOGLE_SHEET_ID=1AbC...xyz
+GOOGLE_APPLICATION_CREDENTIALS=C:\keys\sheets-key.json
+# SCRAPPER_MIN_GAP_MS=1200
+# TH_AUTHENTICATED=1
+# TH_COOKIE=...
+```
+
+It is git-ignored, so credentials stay local.
 
 ---
 

@@ -10,6 +10,7 @@
  *   stats    what is in the database
  */
 
+import { join } from "node:path";
 import { loadFields, loadTargets, writeFieldsConfig } from "./config.ts";
 import { stats as httpStats } from "./core/http.ts";
 import { log, setLogLevel, type LogLevel } from "./core/logger.ts";
@@ -177,7 +178,7 @@ WATCH / SCHEDULE
 SCRAPE
   --sources tes,teachaway            limit to certain boards
   --fresh                            ignore the cache
-  --deep                             also fetch each vacancy's detail page
+  --shallow                          skip vacancy detail pages (faster, much less data)
   --max-jobs 50                      stop early (useful for a quick test)
 
 ENRICH
@@ -209,6 +210,15 @@ GLOBAL
 `;
 
 async function main(): Promise<void> {
+  // Pick up GOOGLE_SHEET_ID, GOOGLE_APPLICATION_CREDENTIALS, TH_COOKIE and the
+  // SCRAPPER_* tuning knobs from a .env file, so scheduled runs get the same
+  // environment as interactive ones without exporting anything.
+  try {
+    process.loadEnvFile(join(process.cwd(), ".env"));
+  } catch {
+    /* no .env file — everything has a default */
+  }
+
   const args = parseArgs(process.argv.slice(2));
 
   if (bool(args, "verbose")) setLogLevel("debug");
@@ -224,7 +234,11 @@ async function main(): Promise<void> {
   const scrapeOpts = {
     sources: csv(args, "sources"),
     fresh: bool(args, "fresh"),
-    deep: bool(args, "deep"),
+    // On by default: vacancy detail pages carry the school website, country,
+    // application email and job-pack PDFs, none of which the search API
+    // returns. It costs about a minute and roughly triples the usable data,
+    // so the useful mode should not depend on remembering a flag.
+    deep: !bool(args, "shallow"),
     maxJobs: num(args, "max-jobs"),
     targets,
   };
