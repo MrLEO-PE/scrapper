@@ -34,8 +34,18 @@ npm run enrich               # ~10 min: visits each school's website
 npm run export               # writes CSV + an HTML report to data/out/
 ```
 
-Then open `data/out/pe-jobs-<date>.html` to review, or import the `.csv` into Google Sheets
-(**File → Import → Upload**).
+Then:
+
+```bash
+npm run report               # opens the newest HTML report in your browser
+```
+
+The report is a single self-contained file, so it opens straight from disk — **no web server or
+Live Server extension needed**. You can also double-click `data/out/pe-jobs-<date>.html`, or in
+VS Code right-click it and choose *Reveal in File Explorer* then open it.
+
+For the spreadsheet, import the `.csv` into Google Sheets (**File → Import → Upload**), or paste
+the `.tsv` straight into a tab.
 
 Or do all three at once:
 

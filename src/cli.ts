@@ -10,8 +10,10 @@
  *   stats    what is in the database
  */
 
+import { execFile } from "node:child_process";
+import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { loadFields, loadTargets, writeFieldsConfig } from "./config.ts";
+import { OUT_DIR, loadFields, loadTargets, writeFieldsConfig } from "./config.ts";
 import { stats as httpStats } from "./core/http.ts";
 import { log, setLogLevel, type LogLevel } from "./core/logger.ts";
 import { FIELDS, FIELD_MAP } from "./export/fields.ts";
@@ -138,6 +140,47 @@ function showFields(args: Args): void {
   log.plain("                npm run fields -- --disable description");
 }
 
+/**
+ * Open the newest HTML report in the default browser.
+ *
+ * The report is a single self-contained file — inline styles and script, no
+ * external assets — so it opens straight from disk and needs no web server.
+ */
+function openLatestReport(outDir?: string): void {
+  const dir = outDir ?? OUT_DIR;
+  let newest: { path: string; at: number } | null = null;
+
+  try {
+    for (const name of readdirSync(dir)) {
+      if (!name.endsWith(".html")) continue;
+      const full = join(dir, name);
+      const at = statSync(full).mtimeMs;
+      if (!newest || at > newest.at) newest = { path: full, at };
+    }
+  } catch {
+    /* directory does not exist yet */
+  }
+
+  if (!newest) {
+    log.warn(`no HTML report in ${dir}`);
+    log.plain("  Generate one with:  npm run export");
+    return;
+  }
+
+  const opener =
+    process.platform === "win32" ? ["cmd", ["/c", "start", "", newest.path]]
+    : process.platform === "darwin" ? ["open", [newest.path]]
+    : ["xdg-open", [newest.path]];
+
+  try {
+    execFile(opener[0] as string, opener[1] as string[], { windowsHide: true });
+    log.ok(`opened ${newest.path}`);
+  } catch (err) {
+    log.warn(`could not open it automatically: ${(err as Error).message}`);
+    log.plain(`  Open this file yourself: ${newest.path}`);
+  }
+}
+
 const HELP = `
 International school PE job scraper
 
@@ -151,6 +194,7 @@ USAGE
   npm run directory                  top schools per country, recruiting or not
   npm run watch -- --every 24h       keep running on an interval
   npm run schedule -- --daily 07:00  install an OS scheduled task
+  npm run report                     open the latest HTML report
   npm run stats                      what's in the database
 
 LOCATIONS
@@ -387,6 +431,10 @@ async function main(): Promise<void> {
       }
       break;
     }
+
+    case "report":
+      openLatestReport(str(args, "out"));
+      break;
 
     case "stats":
       printStats();

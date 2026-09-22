@@ -19,7 +19,8 @@
     "directory": "node --experimental-strip-types --no-warnings src/cli.ts directory",
     "watch": "node --experimental-strip-types --no-warnings src/cli.ts watch",
     "schedule": "node --experimental-strip-types --no-warnings src/cli.ts schedule",
-    "test": "node --experimental-strip-types --no-warnings --test test/*.test.ts"
+    "test": "node --experimental-strip-types --no-warnings --test test/*.test.ts",
+    "report": "node --experimental-strip-types --no-warnings src/cli.ts report"
   },
   "devDependencies": {
     "typescript": "^5.6.0",
