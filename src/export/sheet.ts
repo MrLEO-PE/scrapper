@@ -108,7 +108,11 @@ export function writeHtml(
   const cell = (value: string, field: FieldDef): string => {
     if (!value) return "";
     if (/^https?:\/\//.test(value)) {
-      const label = field.key === "job_url" ? "open" : field.key === "careers_page" ? "careers" : "link";
+      const label =
+        field.key === "job_url" ? "open"
+        : field.key === "careers_page" ? "careers"
+        : field.key === "form_link" ? "form"
+        : "link";
       return `<a href="${esc(value)}" target="_blank" rel="noopener">${label}</a>`;
     }
     if (field.key === "career_email" || field.key === "school_email") {

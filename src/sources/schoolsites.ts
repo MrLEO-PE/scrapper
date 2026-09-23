@@ -21,6 +21,7 @@ import { fetchText } from "../core/http.ts";
 import { log } from "../core/logger.ts";
 import { decodeEntities, htmlToText, slugify } from "../core/text.ts";
 import type { RawJob } from "../core/types.ts";
+import { detectApplicationForm } from "../match/appform.ts";
 import { classify } from "../match/classify.ts";
 import type { ScrapeContext, Source } from "./base.ts";
 
@@ -185,9 +186,18 @@ function scanPage(
   out: Map<string, RawJob>,
 ): number {
   let found = 0;
+  const pageLinks = anchors(html, pageUrl);
+
+  // A downloadable application form is usually linked once on the careers
+  // page and applies to every vacancy listed there.
+  const form = detectApplicationForm({
+    links: pageLinks.map((a) => ({ url: a.url, text: a.text })),
+    text: htmlToText(html),
+  });
 
   const remember = (title: string, url: string): void => {
     const job = toRawJob(school, title, url);
+    if (form.kind !== "none") job.applicationForm = form;
     if (!out.has(job.sourceJobId)) {
       out.set(job.sourceJobId, job);
       found++;
@@ -195,7 +205,7 @@ function scanPage(
   };
 
   // Linked roles, including PDF job descriptions.
-  for (const a of anchors(html, pageUrl)) {
+  for (const a of pageLinks) {
     const text = a.text;
     if (!text || text.length < 6 || text.length > 140) continue;
     if (DUTY_LINE.test(text)) continue;

@@ -172,6 +172,28 @@ sheet. Ticked by default:
 | School Email | Best general inbox |
 | Career Email | Best recruitment/HR address, including ones found inside PDFs |
 | Job Title, Role Level, Still Available?, Job Link, Deadline, Source | The vacancy |
+| Days Left | Days until the deadline — sort by it to see what is urgent |
+| Form to Fill? / Form Link | Whether applying needs an application form, and where it is |
+
+### "Form to Fill?" — what the values mean
+
+Schools ask for applications in different ways, and the difference is worth knowing before you
+start, because one of them is work you must do in advance:
+
+| Value | Meaning |
+|---|---|
+| **Yes — PDF** / **Yes — Word** | A document to download, complete and send back. **Form Link** has it |
+| **Yes — online** | A web form — the board's own apply flow, a Google Form, Quick Apply |
+| **No** | No form was mentioned. **Not a guarantee there isn't one** — only that nothing said so |
+
+Evidence is taken in order of reliability: a document attached to the advert, then a form link on
+the careers page, then the advert's wording. A "Recruitment Pack" or "Candidate Brochure" is
+reading material, not a form, and is excluded — those names are common and would otherwise
+produce a false yes on most adverts.
+
+On the current data 6 of 85 roles ask for a form, all of them online. Downloadable forms are
+rarer on the big boards, which run their own apply flow; they turn up more often on a school's
+own careers page.
 
 Two further columns are worth knowing about: `all_emails` shows every address found with its
 classification, which is the fastest way to sanity-check a wrong pick, and `careers_page` links

@@ -70,6 +70,29 @@ export interface Salary {
   text?: string;
 }
 
+export interface Attachment {
+  url: string;
+  /** The label the board gave it, e.g. "Job Description", "Application Form". */
+  caption?: string;
+}
+
+/**
+ * How a school wants to be applied to.
+ *
+ * The distinction matters: a downloadable form is work you must do before
+ * applying, whereas an online form is filled in on the site. "none" means
+ * nothing was stated, which is not the same as knowing there is no form.
+ */
+export type ApplicationFormKind = "pdf" | "word" | "online" | "none";
+
+export interface ApplicationForm {
+  kind: ApplicationFormKind;
+  /** Direct link to the form, when one was found. */
+  url?: string;
+  /** Where this was established — a caption, a link, or advert wording. */
+  evidence?: string;
+}
+
 /** What a source hands back before normalisation. */
 export interface RawJob {
   source: SourceId;
@@ -93,10 +116,14 @@ export interface RawJob {
   schoolEmails?: string[];
   applicationUrl?: string;
   /**
-   * Documents attached to the advert — job description packs, prospectuses.
-   * Enrichment reads these for careers emails and school facts.
+   * Documents attached to the advert — job description packs, prospectuses,
+   * and sometimes an application form the candidate must fill in. Enrichment
+   * reads these for careers emails and school facts; the caption is what
+   * distinguishes a form from a brochure.
    */
-  attachments?: string[];
+  attachments?: Attachment[];
+  /** How this school wants the application submitted, if stated. */
+  applicationForm?: ApplicationForm;
   /** Untouched source payload, kept for debugging and re-parsing. */
   raw?: unknown;
 }

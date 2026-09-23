@@ -4,6 +4,7 @@
  */
 
 import { countryForCity } from "../locations.ts";
+import { detectApplicationForm } from "../match/appform.ts";
 import { classify } from "../match/classify.ts";
 import { countryCode, countryName, schoolKey, slugify } from "./text.ts";
 import type { Job, RawJob } from "./types.ts";
@@ -86,6 +87,10 @@ export interface NormalizeOptions {
 export function normalize(raw: RawJob, opts: NormalizeOptions = {}): Job {
   const { country, city } = resolveLocation(raw.country, raw.city);
   const pe = classify(raw.title, raw.description ?? "", { threshold: opts.threshold });
+  // Detected here so every source benefits without repeating the logic.
+  const applicationForm =
+    raw.applicationForm ??
+    detectApplicationForm({ attachments: raw.attachments, text: raw.description });
   const now = new Date().toISOString();
 
   // Some boards withhold the school until you are signed in (Teacher Horizons
@@ -97,6 +102,7 @@ export function normalize(raw: RawJob, opts: NormalizeOptions = {}): Job {
 
   return {
     ...raw,
+    applicationForm,
     country,
     city,
     id: `${raw.source}:${raw.sourceJobId}`,

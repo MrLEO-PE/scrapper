@@ -56,6 +56,8 @@ CREATE TABLE IF NOT EXISTS jobs (
   closed_at       TEXT,
   last_checked_at TEXT,
   alerted_at      TEXT,
+  app_form        TEXT,
+  app_form_url    TEXT,
   raw_json        TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_jobs_dedupe  ON jobs(dedupe_key);
@@ -117,6 +119,9 @@ const MIGRATIONS: { table: string; column: string; ddl: string }[] = [
   // When this vacancy was last included in an alert, so a daily run does not
   // report the same role every morning.
   { table: "jobs", column: "alerted_at", ddl: "ALTER TABLE jobs ADD COLUMN alerted_at TEXT" },
+  // Whether the school makes you complete an application form, and where it is.
+  { table: "jobs", column: "app_form", ddl: "ALTER TABLE jobs ADD COLUMN app_form TEXT" },
+  { table: "jobs", column: "app_form_url", ddl: "ALTER TABLE jobs ADD COLUMN app_form_url TEXT" },
 ];
 
 function migrate(d: DatabaseSync): void {
@@ -178,9 +183,9 @@ export function upsertJobs(jobs: Job[], runId: number): UpsertResult {
       country, city, description, posted_at, deadline_at, start_date, salary_json,
       contract_type, contract_term, curriculum_json, grade_json, benefits_json,
       school_website, emails_json, application_url, pe_score, pe_seniority,
-      pe_matched_json, is_pe, attachments_json, status, first_seen_at, last_seen_at, last_checked_at, raw_json
+      pe_matched_json, is_pe, attachments_json, app_form, app_form_url, status, first_seen_at, last_seen_at, last_checked_at, raw_json
     ) VALUES (
-      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?
+      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?
     )`);
   const update = d.prepare(`
     UPDATE jobs SET
@@ -194,6 +199,7 @@ export function upsertJobs(jobs: Job[], runId: number): UpsertResult {
       emails_json = COALESCE(?, emails_json), application_url = COALESCE(?, application_url),
       pe_score = ?, pe_seniority = ?, pe_matched_json = ?, is_pe = ?,
       attachments_json = COALESCE(?, attachments_json),
+      app_form = COALESCE(?, app_form), app_form_url = COALESCE(?, app_form_url),
       status = 'open', closed_at = NULL, last_seen_at = ?, last_checked_at = ?
     WHERE id = ?`);
   const sight = d.prepare("INSERT OR IGNORE INTO sightings (run_id, job_id, seen_at) VALUES (?, ?, ?)");
@@ -213,7 +219,9 @@ export function upsertJobs(jobs: Job[], runId: number): UpsertResult {
           job.contractTerm ?? null, j(job.curriculum), j(job.gradeLevels),
           j(job.benefits), job.schoolWebsite ?? null, j(job.schoolEmails),
           job.applicationUrl ?? null, job.pe.score, job.pe.seniority,
-          j(job.pe.matched), job.pe.isPe ? 1 : 0, j(job.attachments), job.firstSeenAt, now, now, j(job.raw),
+          j(job.pe.matched), job.pe.isPe ? 1 : 0, j(job.attachments),
+          job.applicationForm?.kind ?? null, job.applicationForm?.url ?? null,
+          job.firstSeenAt, now, now, j(job.raw),
         );
         res.inserted++;
       } else {
@@ -226,7 +234,9 @@ export function upsertJobs(jobs: Job[], runId: number): UpsertResult {
           j(job.curriculum), j(job.gradeLevels), j(job.benefits),
           job.schoolWebsite ?? null, j(job.schoolEmails), job.applicationUrl ?? null,
           job.pe.score, job.pe.seniority, j(job.pe.matched), job.pe.isPe ? 1 : 0,
-          j(job.attachments), now, now, job.id,
+          j(job.attachments),
+          job.applicationForm?.kind ?? null, job.applicationForm?.url ?? null,
+          now, now, job.id,
         );
         res.updated++;
       }
@@ -348,6 +358,8 @@ export interface JobRow {
   first_seen_at: string;
   last_seen_at: string;
   alerted_at: string | null;
+  app_form: string | null;
+  app_form_url: string | null;
 }
 
 export interface QueryOptions {

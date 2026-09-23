@@ -19,6 +19,8 @@
   "deadline": true,
   "days_left": true,
   "source": true,
+  "application_form": true,
+  "form_link": true,
   "careers_page": false,
   "all_emails": false,
   "website": false,

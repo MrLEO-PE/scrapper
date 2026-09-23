@@ -188,7 +188,13 @@ export async function runEnrich(opts: EnrichRunOptions = {}): Promise<{ enriched
       gradeLevels: [],
       benefits: rows.flatMap((r) => parseJsonColumn<string[]>(r.benefits_json, [])),
       salaries: rows.map((r) => parseJsonColumn<Salary | null>(r.salary_json, null)).filter((s): s is Salary => !!s),
-      attachments: rows.flatMap((r) => parseJsonColumn<string[]>(r.attachments_json, [])),
+      // Attachments used to be stored as bare URLs and are now {url, caption};
+      // accept either so an existing database keeps working.
+      attachments: rows.flatMap((r) =>
+        parseJsonColumn<(string | { url?: string })[]>(r.attachments_json, [])
+          .map((a) => (typeof a === "string" ? a : a?.url))
+          .filter((u): u is string => typeof u === "string" && u.length > 0),
+      ),
       sourceLabel: rows[0]?.source ?? "job board",
     };
 

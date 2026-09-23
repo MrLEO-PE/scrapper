@@ -175,12 +175,17 @@ async function fetchDetail(job: RawJob, fresh: boolean): Promise<void> {
       }
     }
 
-    // Job packs and prospectuses — read downstream for emails and school facts.
+    // Job packs, prospectuses and sometimes an application form. The caption
+    // is what tells a form apart from a brochure, so keep it.
     const attachments = [...(item.attachments ?? []), ...(employer?.attachments ?? [])];
     const docs = attachments
       .filter((a: any) => a?.url && !/\.(?:png|jpe?g|gif|webp|svg)(?:$|\?)/i.test(a.url))
-      .map((a: any) => String(a.url));
-    if (docs.length) job.attachments = uniq([...(job.attachments ?? []), ...docs]);
+      .map((a: any) => ({ url: String(a.url), caption: a.caption ? String(a.caption) : undefined }));
+
+    if (docs.length) {
+      const seen = new Set((job.attachments ?? []).map((a) => a.url));
+      job.attachments = [...(job.attachments ?? []), ...docs.filter((d) => !seen.has(d.url))];
+    }
 
     if (emails.length) job.schoolEmails = uniq(emails);
   } catch (err) {

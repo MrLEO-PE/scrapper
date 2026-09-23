@@ -10,7 +10,8 @@
 
 import { parseJsonColumn, type JobRow, type SchoolRow } from "../store/db.ts";
 import { countryName, truncate } from "../core/text.ts";
-import type { DiscoveredEmail, Salary } from "../core/types.ts";
+import type { ApplicationForm, DiscoveredEmail, Salary } from "../core/types.ts";
+import { formLabel } from "../match/appform.ts";
 
 export interface FieldContext {
   job?: JobRow;
@@ -256,6 +257,16 @@ export const FIELDS: FieldDef[] = [
     key: "apply_url", label: "Apply Link", group: "job", scope: "job",
     help: "Direct application URL where the board gives one.",
     get: (c) => c.job?.application_url ?? "",
+  },
+  {
+    key: "application_form", label: "Form to Fill?", group: "job", scope: "job",
+    help: "Whether the school makes you complete an application form — 'Yes — PDF' or 'Yes — Word' means a document to download, 'Yes — online' is filled in on the site. 'No' means none was mentioned, not that none exists.",
+    get: (c) => formLabel(c.job?.app_form ? ({ kind: c.job.app_form } as ApplicationForm) : null),
+  },
+  {
+    key: "form_link", label: "Form Link", group: "job", scope: "job",
+    help: "Direct link to the downloadable application form, when one was found.",
+    get: (c) => c.job?.app_form_url ?? "",
   },
   {
     key: "pe_score", label: "PE Match", group: "job", scope: "job",
