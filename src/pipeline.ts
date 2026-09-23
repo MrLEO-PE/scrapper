@@ -16,7 +16,13 @@ import type { Job, Salary, SourceId } from "./core/types.ts";
 import { fetchCountryDirectory, phaseFromOrgType, type DirectorySchool } from "./directory.ts";
 import { enrichSchool, type EnrichOptions, type SchoolInput } from "./enrich/school.ts";
 import { selectedCountries } from "./locations.ts";
-import { loadDirectoryTargets, plannedTotal, type DirectoryTarget } from "./directoryconfig.ts";
+import {
+  isTargetCountry,
+  loadDirectoryTargets,
+  plannedTotal,
+  targetCountries,
+  type DirectoryTarget,
+} from "./directoryconfig.ts";
 import { buildTable, writeCsv, writeHtml, writeJson, writeTsv, type SheetRow } from "./export/sheet.ts";
 import { resetHiring } from "./export/fields.ts";
 import { syncToSheet } from "./export/gsheets.ts";
@@ -408,6 +414,8 @@ export interface ExportOptions {
   query?: QueryOptions;
   /** One row per school instead of one per vacancy. */
   schoolsOnly?: boolean;
+  /** Include schools outside config/directory.json, which are vacancy-only. */
+  allCountries?: boolean;
   /** Push the same table to a Google Sheet. */
   sheetId?: string;
   sheetTab?: string;
@@ -429,7 +437,20 @@ export async function runExport(opts: ExportOptions = {}): Promise<{ rows: numbe
   if (opts.schoolsOnly) {
     scope = "school";
     title = "International schools — PE profile";
-    rows = [...getSchools().values()].sort(byCountryRank).map((school) => ({ school }));
+    // The top-schools list answers "where should I be teaching, out of the
+    // places I would move to", so it holds to the countries in
+    // config/directory.json. Vacancy scraping still covers the world, and
+    // --all-countries shows every school it has ever touched.
+    const targets = targetCountries();
+    const all = [...getSchools().values()];
+    const inScope = opts.allCountries ? all : all.filter((s) => isTargetCountry(s.country, targets));
+    if (!opts.allCountries && inScope.length < all.length) {
+      log.info(
+        `${all.length - inScope.length} schools outside config/directory.json left out ` +
+          `(--all-countries to include them)`,
+      );
+    }
+    rows = inScope.sort(byCountryRank).map((school) => ({ school }));
   } else {
     scope = "job";
     title = "International school PE vacancies";

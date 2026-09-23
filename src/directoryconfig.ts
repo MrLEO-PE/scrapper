@@ -40,3 +40,36 @@ export function loadDirectoryTargets(): DirectoryTarget[] {
 export function plannedTotal(targets: DirectoryTarget[]): number {
   return targets.reduce((sum, t) => sum + t.top, 0);
 }
+
+/**
+ * The countries you actually care about, for filtering what gets shown.
+ *
+ * The school table holds more than the directory collected: a vacancy anywhere
+ * in the world creates a school row, so Chile, Zimbabwe and Oman turn up in a
+ * list that is meant to answer "where should I be teaching, out of the places
+ * I would move to". Those rows are worth keeping — their vacancies are real —
+ * but they do not belong in the top-schools list.
+ */
+export function targetCountries(): Set<string> {
+  return new Set(loadDirectoryTargets().map((t) => t.name.toLowerCase()));
+}
+
+/** Country aliases the boards use that the directory config does not. */
+const ALIASES = new Map([
+  ["turkiye", "türkiye"],
+  ["turkey", "türkiye"],
+  ["korea, republic of", "south korea"],
+  ["republic of korea", "south korea"],
+  ["viet nam", "vietnam"],
+  ["timor leste", "timor-leste"],
+  ["east timor", "timor-leste"],
+  ["lao people's democratic republic", "laos"],
+  ["micronesia, federated states of", "micronesia"],
+  ["federated states of micronesia", "micronesia"],
+]);
+
+export function isTargetCountry(country: string | null | undefined, targets: Set<string>): boolean {
+  if (!country) return false;
+  const c = country.trim().toLowerCase();
+  return targets.has(c) || targets.has(ALIASES.get(c) ?? "");
+}

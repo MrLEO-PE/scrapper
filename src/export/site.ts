@@ -18,6 +18,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { log } from "../core/logger.ts";
 import { byCountryRank, getSchools, queryJobs, stats as dbStats } from "../store/db.ts";
+import { isTargetCountry, targetCountries } from "../directoryconfig.ts";
 import { writeCsv, writeHtml, type SheetRow } from "./sheet.ts";
 
 /**
@@ -90,7 +91,12 @@ export function buildSite(opts: SiteOptions): { dir: string; jobs: number; schoo
 
   const open = toRows("open");
   const closed = toRows("closed");
+  // Same scoping as the schools export: the top-schools list holds to the
+  // countries in config/directory.json, while Open roles still shows vacancies
+  // from everywhere.
+  const targets = targetCountries();
   const schoolRows: SheetRow[] = [...schools.values()]
+    .filter((s) => isTargetCountry(s.country, targets))
     .sort(byCountryRank)
     .map((school) => ({ school }));
 

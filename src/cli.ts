@@ -432,6 +432,7 @@ async function main(): Promise<void> {
     outDir: str(args, "out"),
     name: str(args, "name"),
     schoolsOnly: bool(args, "schools"),
+    allCountries: bool(args, "all-countries"),
     sheetId: str(args, "sheet-id"),
     sheetTab: str(args, "sheet-tab"),
     keyFile: str(args, "key-file"),
