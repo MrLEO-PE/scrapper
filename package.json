@@ -22,7 +22,8 @@
     "test": "node --experimental-strip-types --no-warnings --test test/*.test.ts",
     "report": "node --experimental-strip-types --no-warnings src/cli.ts report",
     "site": "node --experimental-strip-types --no-warnings src/cli.ts site",
-    "alerts": "node --experimental-strip-types --no-warnings src/cli.ts alerts"
+    "alerts": "node --experimental-strip-types --no-warnings src/cli.ts alerts",
+    "track": "node --experimental-strip-types --no-warnings src/cli.ts track"
   },
   "devDependencies": {
     "typescript": "^5.6.0",

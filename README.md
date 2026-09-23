@@ -175,6 +175,38 @@ sheet. Ticked by default:
 | Days Left | Days until the deadline — sort by it to see what is urgent |
 | Form to Fill? / Form Link | Whether applying needs an application form, and where it is |
 
+## Tracking what you have applied to
+
+The sheet tells you what exists. This tells you where **you** stand with it — which turns a list
+into a pipeline, and lets the scraper answer the question that actually matters each morning:
+*what will I lose if I do nothing today?*
+
+```bash
+npm run track                                   # pipeline + what closes soon
+npm run track -- applied "head of sports kdu"   # mark one
+npm run track -- interview "athletic director dalian"
+npm run track -- skip "volleyball coach" --note "too junior"
+```
+
+Statuses: `interested`, `applied`, `interview`, `offer`, `rejected`, `skip`.
+
+Roles are picked by typing part of the title or school, because job ids are unreadable. **An
+ambiguous phrase never guesses** — it lists the matches and asks you to add a word or pass
+`--pick 2`. Marking the wrong role "applied" would silently cost you a real application.
+
+With nothing tracked, `npm run track` still earns its place by listing everything closing inside
+a week that you have not dealt with.
+
+Two things follow from marking a role:
+
+- **A scrape never touches it.** Your status survives every future run, including the one that
+  closes the vacancy. It is the only data in the database you own rather than collect.
+- **Alerts go quiet about it.** Applying or skipping removes a role from the daily email, so the
+  alert stays about things that still need you. `interested` deliberately does not — you have
+  noticed it, not dealt with it.
+
+The **My Status** column carries this into the sheet and the site.
+
 ### "Prepared Email" — a draft you can actually send
 
 A personalised application email, about 180 words, following the structure in

@@ -18,6 +18,7 @@
   "draft_email": true,
   "job_title": true,
   "seniority": true,
+  "my_status": true,
   "status": true,
   "job_url": true,
   "deadline": true,
@@ -37,5 +38,6 @@
   "last_seen": false,
   "posted": false,
   "enriched_at": false,
-  "country_rank": false
+  "country_rank": false,
+  "my_note": false
 }

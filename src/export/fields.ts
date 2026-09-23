@@ -19,6 +19,7 @@ import { countryName, truncate } from "../core/text.ts";
 import type { ApplicationForm, DiscoveredEmail, Salary } from "../core/types.ts";
 import { formLabel } from "../match/appform.ts";
 import { draftEmail, emailCell, resetProfile } from "./email.ts";
+import { STATUS_LABEL as MY_STATUS_LABEL } from "../track.ts";
 
 export interface FieldContext {
   job?: JobRow;
@@ -358,6 +359,16 @@ export const FIELDS: FieldDef[] = [
   },
 
   // ---- tracking -------------------------------------------------------
+  {
+    key: "my_status", label: "My Status", group: "tracking", scope: "job",
+    help: "Where you stand with this role — set with 'npm run track'. A scrape never touches it.",
+    get: (c) => MY_STATUS_LABEL[c.job?.my_status ?? ""] ?? "",
+  },
+  {
+    key: "my_note", label: "My Note", group: "tracking", scope: "job",
+    help: "Your own note, attached with --note when marking a status.",
+    get: (c) => c.job?.my_note ?? "",
+  },
   {
     key: "status", label: "Still Available?", group: "tracking", scope: "job",
     help: "Open, Possibly filled, or Closed — refreshed on every run.",

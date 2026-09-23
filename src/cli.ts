@@ -31,6 +31,16 @@ import {
   watch,
 } from "./schedule.ts";
 import { findAlerts, formatAlerts, markAlerted, summariseAlerts } from "./alerts.ts";
+import {
+  STATUSES,
+  STATUS_LABEL,
+  counts,
+  findJobs,
+  isStatus,
+  needsAttention,
+  pipeline,
+  setStatus,
+} from "./track.ts";
 import { closeDb } from "./store/db.ts";
 import {
   ALL_SOURCES,
@@ -183,6 +193,109 @@ function openLatestReport(outDir?: string): void {
   }
 }
 
+/**
+ * `track` — record where you stand with a role, and show what needs doing.
+ *
+ * Roles are chosen by typing part of the title or school; an exact id is
+ * accepted too. An ambiguous phrase lists the candidates rather than guessing,
+ * because marking the wrong role "applied" quietly loses you a real one.
+ */
+function trackCommand(args: Args): void {
+  const [verb, ...rest] = args.positional;
+  const query = rest.join(" ").trim();
+
+  // No arguments: show the pipeline and what is about to close.
+  if (!verb) {
+    const entries = pipeline();
+    const urgent = needsAttention(7);
+
+    if (entries.length) {
+      log.step("Your pipeline");
+      for (const { job, daysLeft } of entries) {
+        const due = daysLeft === null ? "" : daysLeft < 0 ? " · closed" : ` · ${daysLeft}d left`;
+        log.plain(
+          `  ${(STATUS_LABEL[job.my_status ?? ""] ?? "").padEnd(12)}` +
+            `${job.title.slice(0, 44).padEnd(46)}${String(job.school_name ?? "").slice(0, 26)}${due}`,
+        );
+      }
+      const c = counts();
+      log.plain(
+        "\n  " + Object.entries(c).map(([k, v]) => `${v} ${STATUS_LABEL[k] ?? k}`).join(" · "),
+      );
+    } else {
+      log.info("Nothing tracked yet.");
+    }
+
+    if (urgent.length) {
+      log.step(`Closing within 7 days and not dealt with (${urgent.length})`);
+      for (const { job, daysLeft } of urgent) {
+        log.plain(
+          `  ${String(daysLeft).padStart(2)}d  ${job.title.slice(0, 46).padEnd(48)}` +
+            `${String(job.school_name ?? "").slice(0, 28)}`,
+        );
+      }
+      log.plain(`\n  Mark one with:  npm run track -- applied "part of the title"`);
+    }
+
+    if (!entries.length && !urgent.length) {
+      log.plain(`\n  npm run track -- applied "head of sport kdu"`);
+      log.plain(`  statuses: ${STATUSES.join(", ")}`);
+    }
+    return;
+  }
+
+  if (!isStatus(verb)) {
+    log.error(`"${verb}" is not a status.`);
+    log.plain(`  Try one of: ${STATUSES.join(", ")}`);
+    process.exitCode = 1;
+    return;
+  }
+  if (!query) {
+    log.error("Say which role — part of the title or school is enough.");
+    log.plain(`  npm run track -- ${verb} "head of sport kdu"`);
+    process.exitCode = 1;
+    return;
+  }
+
+  const matches = findJobs(query, true);
+  if (!matches.length) {
+    log.error(`Nothing matches "${query}".`);
+    return;
+  }
+
+  const pick = num(args, "pick");
+  let chosen = matches[0];
+
+  if (matches.length > 1) {
+    if (pick != null) {
+      chosen = matches[pick - 1];
+      if (!chosen) {
+        log.error(`There is no match number ${pick} — there are ${matches.length}.`);
+        process.exitCode = 1;
+        return;
+      }
+    } else {
+      // Never guess. Marking the wrong role "applied" silently loses a real
+      // application, so an ambiguous phrase lists the options instead.
+      log.warn(`"${query}" matches ${matches.length} roles. Add a word, or pick a number:`);
+      for (const [i, m] of matches.slice(0, 10).entries()) {
+        log.plain(
+          `  ${String(i + 1).padStart(2)}. ${m.job.title.slice(0, 48).padEnd(50)}` +
+            `${String(m.job.school_name ?? "").slice(0, 30)}`,
+        );
+      }
+      if (matches.length > 10) log.plain(`      … and ${matches.length - 10} more`);
+      log.plain(`\n  npm run track -- ${verb} "${query}" --pick 1`);
+      process.exitCode = 1;
+      return;
+    }
+  }
+
+  const job = chosen!.job;
+  setStatus(job.id, verb, str(args, "note"));
+  log.ok(`${STATUS_LABEL[verb]}: ${job.title} — ${job.school_name ?? "unknown school"}`);
+}
+
 const HELP = `
 International school PE job scraper
 
@@ -196,6 +309,7 @@ USAGE
   npm run directory                  top schools per country, recruiting or not
   npm run watch -- --every 24h       keep running on an interval
   npm run schedule -- --daily 07:00  install an OS scheduled task
+  npm run track                      your pipeline + what closes soon
   npm run alerts                     list roles worth acting on now
   npm run site                       build the publishable site/ folder
   npm run report                     open the latest HTML report
@@ -441,6 +555,11 @@ async function main(): Promise<void> {
         log.error("say when: --daily 07:00, --weekly MON --at 07:00, or --remove");
         process.exitCode = 1;
       }
+      break;
+    }
+
+    case "track": {
+      trackCommand(args);
       break;
     }
 

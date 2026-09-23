@@ -52,6 +52,8 @@ export function findAlerts(opts: FindOptions = {}): Alert[] {
       `SELECT * FROM jobs
         WHERE is_pe = 1 AND status = 'open'
         ${opts.includeAlerted ? "" : "AND alerted_at IS NULL"}
+        -- Never nag about a role you have already applied to or dismissed.
+        AND (my_status IS NULL OR my_status = 'interested')
         ORDER BY pe_score DESC`,
     )
     .all() as unknown as JobRow[];

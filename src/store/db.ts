@@ -56,6 +56,9 @@ CREATE TABLE IF NOT EXISTS jobs (
   closed_at       TEXT,
   last_checked_at TEXT,
   alerted_at      TEXT,
+  my_status       TEXT,
+  my_status_at    TEXT,
+  my_note         TEXT,
   app_form        TEXT,
   app_form_url    TEXT,
   raw_json        TEXT
@@ -129,6 +132,10 @@ const MIGRATIONS: { table: string; column: string; ddl: string }[] = [
   { table: "schools", column: "principal", ddl: "ALTER TABLE schools ADD COLUMN principal TEXT" },
   { table: "schools", column: "school_hook", ddl: "ALTER TABLE schools ADD COLUMN school_hook TEXT" },
   { table: "schools", column: "pe_hook", ddl: "ALTER TABLE schools ADD COLUMN pe_hook TEXT" },
+  // Your own pipeline state. Written only by you, never by a scrape.
+  { table: "jobs", column: "my_status", ddl: "ALTER TABLE jobs ADD COLUMN my_status TEXT" },
+  { table: "jobs", column: "my_status_at", ddl: "ALTER TABLE jobs ADD COLUMN my_status_at TEXT" },
+  { table: "jobs", column: "my_note", ddl: "ALTER TABLE jobs ADD COLUMN my_note TEXT" },
 ];
 
 function migrate(d: DatabaseSync): void {
@@ -365,6 +372,9 @@ export interface JobRow {
   first_seen_at: string;
   last_seen_at: string;
   alerted_at: string | null;
+  my_status: string | null;
+  my_status_at: string | null;
+  my_note: string | null;
   app_form: string | null;
   app_form_url: string | null;
 }
