@@ -1,0 +1,129 @@
+name: Scrape top schools
+
+# The standing school directory: who is out there, whether or not they are
+# hiring, built for package and salary research rather than live vacancies.
+#
+# Quotas live in config/directory.json. Collecting the list is cheap — one
+# request per country — but profiling each school means visiting its website,
+# so that is done in batches: each run enriches the next slice and the picture
+# fills in over a few days. Schools change slowly, so this runs weekly.
+
+on:
+  workflow_dispatch:
+    inputs:
+      countries:
+        description: "Countries, comma separated (blank = use config/directory.json)"
+        required: false
+        default: ""
+      top:
+        description: "Override the per-country quota (blank = use the config)"
+        required: false
+        default: ""
+      batch:
+        description: "How many schools to profile this run"
+        required: false
+        default: "120"
+      list_only:
+        description: "Collect and rank without visiting any school website"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    # Sunday 03:00 UTC, away from the daily job scrape.
+    - cron: "0 3 * * 0"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Shares a database with the job scrape, so the two must not overlap.
+concurrency:
+  group: scrapper-db
+  cancel-in-progress: false
+
+jobs:
+  directory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+
+    steps:
+      # The branch tip, not the triggering commit — see the job workflow.
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Restore HTTP cache
+        uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: scrapper-http-${{ github.run_id }}
+          restore-keys: scrapper-http-
+
+      - name: Collect and rank the schools
+        run: |
+          ARGS="--list-only"
+          if [ -n "${{ inputs.countries }}" ]; then ARGS="$ARGS --countries \"${{ inputs.countries }}\""; fi
+          if [ -n "${{ inputs.top }}" ]; then ARGS="$ARGS --top ${{ inputs.top }}"; fi
+          eval "node --experimental-strip-types --no-warnings src/cli.ts directory $ARGS"
+
+      # Profiling visits each school's site for the package, any published pay
+      # figure and the careers contact. A slice per run keeps the job inside a
+      # sane runtime; the next run picks up where this one stopped.
+      - name: Profile the next batch
+        if: ${{ inputs.list_only != true }}
+        run: |
+          node --experimental-strip-types --no-warnings src/cli.ts enrich \
+            --limit "${{ inputs.batch || '120' }}" \
+            --concurrency 6 --budget-ms 40000 --max-pages 8 --max-pdfs 2
+
+      - name: Build the site
+        run: node --experimental-strip-types --no-warnings src/cli.ts site
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      # Best-effort, as in the job workflow: the collected data matters more
+      # than a clean git history.
+      - name: Commit the database
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f data/jobs.db
+
+          if git diff --staged --quiet; then
+            echo "Directory unchanged — nothing to commit."
+            exit 0
+          fi
+
+          git commit -m "Directory $(date -u +%Y-%m-%d)"
+          for attempt in 1 2 3; do
+            if git pull --rebase --autostash origin main && git push origin HEAD:main; then
+              echo "Directory saved."
+              exit 0
+            fi
+            echo "Push attempt $attempt failed; retrying."
+            sleep 5
+          done
+          echo "::warning::Could not save the database; the site still published."
+          exit 1
+
+  publish:
+    needs: directory
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

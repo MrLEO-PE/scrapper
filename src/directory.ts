@@ -242,6 +242,11 @@ export interface FetchDirectoryOptions {
   top?: number;
   /** Restrict to these cities (loose match). */
   cities?: string[];
+  /**
+   * Override the URL slug. The directory does not always use the name we do:
+   * it files Türkiye under "turkey" and Micronesia under its full formal name.
+   */
+  slug?: string;
 }
 
 /**
@@ -252,7 +257,7 @@ export async function fetchCountryDirectory(
   countryName: string,
   opts: FetchDirectoryOptions = {},
 ): Promise<DirectorySchool[]> {
-  const slug = slugify(countryName);
+  const slug = opts.slug ?? slugify(countryName);
   const url = `${ORIGIN}/schools/country/${slug}`;
 
   const html = await fetchText(url, {

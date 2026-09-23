@@ -34,9 +34,10 @@ permissions:
   pages: write
   id-token: write
 
-# Never let two runs write the database at once.
+# Never let two runs write the database at once. The directory workflow shares
+# the same database file, so both use this group.
 concurrency:
-  group: scrape
+  group: scrapper-db
   cancel-in-progress: false
 
 jobs:

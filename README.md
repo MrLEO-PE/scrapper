@@ -379,6 +379,15 @@ So the published pages carry a green **▶ Run a new scrape** button that takes 
 workflow, and you press **Run workflow** there. Two clicks, no credentials exposed. The daily
 schedule means you rarely need it.
 
+### Two actions
+
+| Workflow | What it does | When |
+|---|---|---|
+| **Scrape PE jobs** | Live vacancies, enrichment, alerts | Daily, 06:00 UTC |
+| **Scrape top schools** | The standing school directory — package and salary research | Weekly, Sunday 03:00 UTC |
+
+They share one database, so a concurrency group stops them running at the same time.
+
 ### Using it
 
 - **Run it now:** the **Actions** tab → *Scrape PE jobs* → **Run workflow**. You can narrow it to
@@ -498,6 +507,54 @@ npm run export -- --cities Dubai,Doha
 ```
 
 ---
+
+## The standing school directory
+
+The second of the two actions. Where the job scrape answers "what is open today?", this one
+answers "which schools are worth a PE job at all?" — collected whether or not they are hiring,
+and profiled for package, salary and the careers contact.
+
+Quotas live in [`config/directory.json`](config/directory.json), one line per country:
+
+```json
+{ "name": "China",   "top": 200 },
+{ "name": "Türkiye", "top": 10, "cities": ["Istanbul"], "slug": "turkey" }
+```
+
+`top` is a **ceiling, not a promise** — whatever the directory lists is taken, up to that number.
+The current configuration asks for 775 schools across 59 countries and finds **495**, because
+availability varies enormously:
+
+| | asked | found |
+|---|---|---|
+| China | 200 | 200 |
+| Thailand | 40 | 35 |
+| Malaysia | 30 | 19 |
+| Laos | 5 | 1 |
+| Bhutan | 10 | 2 |
+| Most small island nations | 5 | 0 |
+
+That is not a failure. Laos genuinely has one international school in this directory, and Fiji,
+Samoa, Tonga and Vanuatu have none listed at all — which is itself worth knowing before you plan
+a move there.
+
+`slug` exists because the directory does not always spell a country the way we do: Türkiye is
+filed under `turkey`, Micronesia under its full formal name. Without those overrides both
+returned nothing.
+
+### Why it runs in batches
+
+Collecting the list is cheap — one request per country. **Profiling is not**: each school means
+visiting its website, so 495 schools would run for hours. Each run therefore profiles the next
+slice (120 by default) and the picture fills in over a few weeks. Schools behind a live vacancy
+are always profiled first; a role you could apply to today outranks a survey.
+
+```bash
+npm run directory -- --list-only          # collect and rank, visit nothing
+npm run directory -- --countries "Qatar,Oman" --top 20
+npm run enrich -- --limit 120             # profile the next batch
+npm run export -- --schools               # one row per school
+```
 
 ## Directory mode — schools regardless of vacancies
 

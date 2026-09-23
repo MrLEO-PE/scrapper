@@ -64,6 +64,19 @@ test("drops junk and non-contact addresses", () => {
   }
 });
 
+test("rejects a student careers adviser", () => {
+  // Real case from the school directory: a school's only "careers" address was
+  // career_counsellor@. That person advises pupils on universities — writing
+  // to them about a teaching post reaches entirely the wrong desk.
+  const found = extractEmails(
+    "career_counsellor.mtp@school.org careers.adviser@school.org " +
+      "university.guidance@school.org recruitment@school.org",
+    "page",
+    "html",
+  );
+  assert.deepEqual(found.map((e) => e.email), ["recruitment@school.org"]);
+});
+
 test("picks the recruitment address as the career email", () => {
   const found = extractEmails("info@school.ae admin@school.ae careers@school.ae", "page", "html");
   assert.equal(bestCareerEmail(found, "school.ae")?.email, "careers@school.ae");

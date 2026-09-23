@@ -16,6 +16,7 @@ import type { Job, Salary, SourceId } from "./core/types.ts";
 import { fetchCountryDirectory, phaseFromOrgType, type DirectorySchool } from "./directory.ts";
 import { enrichSchool, type EnrichOptions, type SchoolInput } from "./enrich/school.ts";
 import { selectedCountries } from "./locations.ts";
+import { loadDirectoryTargets, plannedTotal, type DirectoryTarget } from "./directoryconfig.ts";
 import { buildTable, writeCsv, writeHtml, writeJson, writeTsv, type SheetRow } from "./export/sheet.ts";
 import { resetHiring } from "./export/fields.ts";
 import { syncToSheet } from "./export/gsheets.ts";
@@ -244,33 +245,55 @@ export interface DirectorySummary {
  * schools are currently recruiting, and enrich each one into the sheet columns.
  */
 export async function runDirectory(opts: DirectoryOptions = {}): Promise<DirectorySummary> {
-  const picked = opts.countries?.length ? opts.countries : selectedCountries().map((c) => c.name);
+  // Three ways to say what to collect, most explicit first: countries passed
+  // on the command line, the directory's own quota list, or whatever is ticked
+  // in locations.json.
+  const configured = loadDirectoryTargets();
+  const targets: DirectoryTarget[] = opts.countries?.length
+    ? opts.countries.map((name) => ({ name, top: opts.top ?? 30, cities: opts.cities }))
+    : configured.length
+      ? configured.map((t) => ({ ...t, top: opts.top ?? t.top }))
+      : selectedCountries().map((c) => ({ name: c.name, top: opts.top ?? 30 }));
 
-  if (!picked.length) {
-    log.warn("no countries selected.");
-    log.plain("  Tick some first:  npm run locations -- --on AE,QA,SG");
-    log.plain("  Or pass them:     npm run directory -- --countries \"United Arab Emirates,Qatar\"");
+  if (!targets.length) {
+    log.warn("nothing to collect.");
+    log.plain("  Set quotas in config/directory.json, or tick countries:");
+    log.plain("    npm run locations -- --on AE,QA,SG");
+    log.plain("  Or pass them:  npm run directory -- --countries \"Qatar,Oman\" --top 20");
     return { countries: 0, found: 0, enriched: 0, withCareerEmail: 0, skipped: [] };
   }
 
-  const top = opts.top ?? 30;
-  log.step(`Directory — top ${top} schools in ${picked.length} countr${picked.length === 1 ? "y" : "ies"}`);
+  log.step(
+    `Directory — ${targets.length} countr${targets.length === 1 ? "y" : "ies"}, ` +
+      `up to ${plannedTotal(targets)} schools`,
+  );
 
   const runId = startRun("directory");
   const all: DirectorySchool[] = [];
   const skipped: string[] = [];
 
-  for (const country of picked) {
-    const schools = await fetchCountryDirectory(country, {
+  for (const target of targets) {
+    const schools = await fetchCountryDirectory(target.name, {
       fresh: opts.fresh,
-      top,
-      cities: opts.cities,
+      top: target.top,
+      cities: target.cities ?? opts.cities,
+      slug: target.slug,
     });
-    if (!schools.length) skipped.push(country);
+    // A country listing nothing is normal for the smaller places, not a fault.
+    if (!schools.length) skipped.push(target.name);
     all.push(...schools);
   }
 
+  const picked = targets.map((t) => t.name);
+
   log.ok(`${all.length} schools collected across ${picked.length - skipped.length} countries`);
+
+  // Rank within each country so the sheet can show "3rd in Qatar".
+  const rankByKey = new Map<string, number>();
+  for (const country of picked) {
+    const inCountry = all.filter((s) => s.country === country);
+    inCountry.forEach((s, i) => rankByKey.set(s.schoolKey, i + 1));
+  }
 
   if (opts.listOnly) {
     for (const s of all) {
@@ -281,22 +304,18 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
           country: { value: s.country, provenance: { confidence: 0.95, source: "teachaway directory" } },
           ...(s.city ? { city: { value: s.city, provenance: { confidence: 0.9, source: "teachaway directory" } } } : {}),
           ...(s.website ? { website: { value: s.website, provenance: { confidence: 0.95, source: "teachaway directory" } } } : {}),
-          enrichedAt: new Date().toISOString(),
           notes: s.why,
         },
         "directory",
-        all.filter((x) => x.country === s.country).indexOf(s) + 1,
+        rankByKey.get(s.schoolKey),
+        // Listing is not profiling. Leaving enriched_at unset is what lets a
+        // later run pick these up — marking them done here would strand every
+        // school with nothing but a name and a rank.
+        false,
       );
     }
     finishRun(runId, { countries: picked.length, found: all.length, listOnly: true });
     return { countries: picked.length, found: all.length, enriched: 0, withCareerEmail: 0, skipped };
-  }
-
-  // Rank within each country so the sheet can show "3rd in Qatar".
-  const rankByKey = new Map<string, number>();
-  for (const country of picked) {
-    const inCountry = all.filter((s) => s.country === country);
-    inCountry.forEach((s, i) => rankByKey.set(s.schoolKey, i + 1));
   }
 
   let withCareerEmail = 0;

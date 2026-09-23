@@ -31,6 +31,14 @@ const DEOBFUSCATE: [RegExp, string][] = [
 const JUNK =
   /^(?:no-?reply|do-?not-?reply|postmaster|abuse|webmaster|hostmaster|mailer-daemon|privacy|unsubscribe|support@(?:wix|squarespace|wordpress|godaddy))/i;
 
+/**
+ * "Careers" at a school means two opposite things. A careers counsellor,
+ * adviser or guidance lead helps pupils choose universities; writing to them
+ * about a teaching post reaches the wrong person entirely.
+ */
+const STUDENT_CAREERS_ADDRESS =
+  /(?:career|careers)[._-]?(?:counsell?or|counsel|advis[eo]r|advice|guidance|service|centre|center|office|dept|department|lead|coordinator|co-?ordinator)|(?:university|uni|college|higher[._-]?ed)[._-]?(?:guidance|advis|counsell?)/i;
+
 const JUNK_DOMAIN =
   /(?:\.png|\.jpg|\.jpeg|\.gif|\.webp|\.svg|\.css|\.js|sentry\.io|example\.(?:com|org)|domain\.com|yourschool|wixpress\.com|squarespace\.com|schooljotter|sentry-next)/i;
 
@@ -97,6 +105,8 @@ export function extractEmails(text: string, foundAt: string, via: string): Disco
     const domain = email.split("@")[1] ?? "";
 
     if (JUNK.test(local) || JUNK_DOMAIN.test(email) || JUNK_DOMAIN.test(domain)) continue;
+    // A student careers adviser is the wrong person for a teaching application.
+    if (STUDENT_CAREERS_ADDRESS.test(local)) continue;
     // Filenames like `logo@2x.png` and version strings slip through otherwise.
     if (/^\d+x$/i.test(local) || domain.split(".").some((p) => !p)) continue;
     if (email.length > 120) continue;

@@ -428,22 +428,60 @@ export function queryJobs(opts: QueryOptions = {}): JobRow[] {
 }
 
 /** Schools referenced by stored vacancies, newest activity first. */
+/**
+ * Schools due a profile.
+ *
+ * Two kinds qualify, and both matter: schools behind a live PE vacancy, and
+ * schools collected by the standing directory, which have no vacancy at all.
+ * The second is the whole point of directory mode — researching a school
+ * before it advertises — so a query over the jobs table alone would never
+ * reach them.
+ *
+ * Vacancy-backed schools come first: a live role is more urgent than a survey.
+ */
 export function schoolsNeedingEnrichment(maxAgeDays = 30, limit = 0): { school_key: string; name: string; country: string | null; city: string | null; website: string | null }[] {
   const cutoff = new Date(Date.now() - maxAgeDays * 86400_000).toISOString();
   const sql = `
-    SELECT j.school_key, MAX(j.school_name) AS name, MAX(j.country) AS country,
-           MAX(j.city) AS city, MAX(j.school_website) AS website
-    FROM jobs j
-    LEFT JOIN schools s ON s.school_key = j.school_key
-    WHERE j.school_key IS NOT NULL AND j.is_pe = 1
-      AND (s.enriched_at IS NULL OR s.enriched_at < ?)
-    GROUP BY j.school_key
-    ORDER BY MAX(j.pe_score) DESC
+    SELECT school_key, name, country, city, website, priority FROM (
+      SELECT j.school_key            AS school_key,
+             MAX(j.school_name)      AS name,
+             MAX(j.country)          AS country,
+             MAX(j.city)             AS city,
+             MAX(j.school_website)   AS website,
+             0                       AS priority,
+             MAX(j.pe_score)         AS rank_score
+        FROM jobs j
+        LEFT JOIN schools s ON s.school_key = j.school_key
+       WHERE j.school_key IS NOT NULL AND j.is_pe = 1
+         AND (s.enriched_at IS NULL OR s.enriched_at < ?)
+       GROUP BY j.school_key
+
+      UNION ALL
+
+      -- Directory schools, best-ranked in their country first.
+      SELECT s.school_key, s.name, s.country, s.city, s.website,
+             1 AS priority,
+             -COALESCE(s.country_rank, 9999) AS rank_score
+        FROM schools s
+       WHERE s.origin = 'directory'
+         AND (s.enriched_at IS NULL OR s.enriched_at < ?)
+         AND s.school_key NOT IN (
+               SELECT DISTINCT school_key FROM jobs
+                WHERE school_key IS NOT NULL AND is_pe = 1
+             )
+    )
+    ORDER BY priority ASC, rank_score DESC
     ${limit ? `LIMIT ${Number(limit)}` : ""}`;
-  return getDb().prepare(sql).all(cutoff) as any;
+  return getDb().prepare(sql).all(cutoff, cutoff) as any;
 }
 
-export function upsertSchool(p: SchoolProfile, origin: "job" | "directory" = "job", countryRank?: number): void {
+export function upsertSchool(
+  p: SchoolProfile,
+  origin: "job" | "directory" = "job",
+  countryRank?: number,
+  /** False when only listing a school, so a later run still profiles it. */
+  markEnriched = true,
+): void {
   const now = new Date().toISOString();
   const provenance: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(p)) {
@@ -490,7 +528,7 @@ export function upsertSchool(p: SchoolProfile, origin: "job" | "directory" = "jo
         provenance_json = excluded.provenance_json,
         notes_json = excluded.notes_json,
         country_rank = COALESCE(excluded.country_rank, schools.country_rank),
-        enriched_at = excluded.enriched_at`,
+        enriched_at = COALESCE(excluded.enriched_at, schools.enriched_at)`,
     )
     .run(
       p.schoolKey, p.schoolName, p.country?.value ?? null, p.city?.value ?? null,
@@ -501,7 +539,7 @@ export function upsertSchool(p: SchoolProfile, origin: "job" | "directory" = "jo
       p.principal?.value ?? null, p.schoolHook?.value ?? null, p.peHook?.value ?? null,
       p.salaryBasis ?? null,
       j(p.allEmails), j(provenance), j(p.notes),
-      origin, countryRank ?? null, p.enrichedAt ?? now, now,
+      origin, countryRank ?? null, markEnriched ? (p.enrichedAt ?? now) : null, now,
     );
 }
 
