@@ -80,6 +80,9 @@ CREATE TABLE IF NOT EXISTS schools (
   school_email    TEXT,
   career_email    TEXT,
   careers_url     TEXT,
+  principal       TEXT,
+  school_hook     TEXT,
+  pe_hook         TEXT,
   emails_json     TEXT,
   provenance_json TEXT,
   notes_json      TEXT,
@@ -122,6 +125,10 @@ const MIGRATIONS: { table: string; column: string; ddl: string }[] = [
   // Whether the school makes you complete an application form, and where it is.
   { table: "jobs", column: "app_form", ddl: "ALTER TABLE jobs ADD COLUMN app_form TEXT" },
   { table: "jobs", column: "app_form_url", ddl: "ALTER TABLE jobs ADD COLUMN app_form_url TEXT" },
+  // Details the prepared application email needs.
+  { table: "schools", column: "principal", ddl: "ALTER TABLE schools ADD COLUMN principal TEXT" },
+  { table: "schools", column: "school_hook", ddl: "ALTER TABLE schools ADD COLUMN school_hook TEXT" },
+  { table: "schools", column: "pe_hook", ddl: "ALTER TABLE schools ADD COLUMN pe_hook TEXT" },
 ];
 
 function migrate(d: DatabaseSync): void {
@@ -438,9 +445,10 @@ export function upsertSchool(p: SchoolProfile, origin: "job" | "directory" = "jo
       `INSERT INTO schools (
         school_key, name, country, city, website, curriculum_json, pe_team_size,
         student_count, school_type, salary_json, package_json, school_email,
-        career_email, careers_url, emails_json, provenance_json, notes_json,
+        career_email, careers_url, principal, school_hook, pe_hook,
+        emails_json, provenance_json, notes_json,
         origin, country_rank, enriched_at, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(school_key) DO UPDATE SET
         name = excluded.name,
         country = COALESCE(excluded.country, schools.country),
@@ -462,6 +470,9 @@ export function upsertSchool(p: SchoolProfile, origin: "job" | "directory" = "jo
                             THEN excluded.career_email
                             ELSE COALESCE(excluded.career_email, schools.career_email) END,
         careers_url = COALESCE(excluded.careers_url, schools.careers_url),
+        principal = COALESCE(excluded.principal, schools.principal),
+        school_hook = COALESCE(excluded.school_hook, schools.school_hook),
+        pe_hook = COALESCE(excluded.pe_hook, schools.pe_hook),
         emails_json = COALESCE(excluded.emails_json, schools.emails_json),
         provenance_json = excluded.provenance_json,
         notes_json = excluded.notes_json,
@@ -473,7 +484,9 @@ export function upsertSchool(p: SchoolProfile, origin: "job" | "directory" = "jo
       p.website?.value ?? null, j(p.curriculum?.value), p.peTeamSize?.value ?? null,
       p.studentCount?.value ?? null, p.schoolType?.value ?? null, j(p.salaryEstimate?.value),
       j(p.packageNotes?.value), p.schoolEmail?.value ?? null, p.careerEmail?.value ?? null,
-      p.careersPageUrl?.value ?? null, j(p.allEmails), j(provenance), j(p.notes),
+      p.careersPageUrl?.value ?? null,
+      p.principal?.value ?? null, p.schoolHook?.value ?? null, p.peHook?.value ?? null,
+      j(p.allEmails), j(provenance), j(p.notes),
       origin, countryRank ?? null, p.enrichedAt ?? now, now,
     );
 }
@@ -493,6 +506,9 @@ export interface SchoolRow {
   school_email: string | null;
   career_email: string | null;
   careers_url: string | null;
+  principal: string | null;
+  school_hook: string | null;
+  pe_hook: string | null;
   emails_json: string | null;
   origin: string;
   country_rank: number | null;

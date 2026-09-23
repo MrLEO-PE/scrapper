@@ -1,0 +1,31 @@
+{
+  "//": "Your details and your own words. The generator never invents anything about you either — it only uses what is written here.",
+  "//strengths": "One is chosen per email by matching `when` against what the school's PE page says. The last entry (no `when`) is the fallback.",
+
+  "name": "Leo SEVIN",
+  "website": "https://mrleo-pe.github.io/CV/",
+  "websiteLabel": "my website",
+  "signOff": "Kind regards",
+
+  "openingLine": "I am writing to express my strong interest in the {role} position at {school}.",
+
+  "strengths": [
+    {
+      "when": "swim|pool|aquatic|water polo",
+      "text": "I have taught PE since 2019, I teach IGCSE PE within the Cambridge programme, and I build my own digital tools to track progress — including a swim and fitness tracker where students log their personal bests. They make progress visible and keep students engaged."
+    },
+    {
+      "when": "athletic|track|field|cross country|fitness|gym|conditioning",
+      "text": "I have taught PE since 2019, I teach IGCSE PE within the Cambridge programme, and I build my own digital tools to track progress, from a gym tracker where students log their personal bests to a bleep test tracker. They make progress visible and keep students engaged."
+    },
+    {
+      "when": "team|league|tournament|competition|fixture|inter-?school|basketball|football|rugby|netball|cricket|volleyball",
+      "text": "I have taught PE since 2019, I teach IGCSE PE within the Cambridge programme, and I build my own digital tools to track progress, so students can see their personal bests improve across a season rather than only on match day. They make progress visible and keep students engaged."
+    },
+    {
+      "text": "I have taught PE since 2019, I teach IGCSE PE within the Cambridge programme, and I build my own digital tools to track progress, from a gym tracker where students log their personal bests to a bleep test tracker. They make progress visible and keep students engaged."
+    }
+  ],
+
+  "closing": "Thank you for your time. I would welcome the chance to discuss how I could contribute to {shortSchool}."
+}

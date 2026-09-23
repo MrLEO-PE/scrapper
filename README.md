@@ -175,6 +175,43 @@ sheet. Ticked by default:
 | Days Left | Days until the deadline — sort by it to see what is urgent |
 | Form to Fill? / Form Link | Whether applying needs an application form, and where it is |
 
+### "Prepared Email" — a draft you can actually send
+
+A personalised application email, about 180 words, following the structure in
+[`config/profile.json`](config/profile.json) — which holds your own words, your site and the
+paragraph about what you bring. Edit that file and every future email changes.
+
+**Nothing in it is invented.** Three details have to come from the school's own website:
+
+| Detail | Example |
+|---|---|
+| Principal | `Mr Ian Thurston` |
+| A real fact about the school | `is accredited by the Council of International Schools` |
+| A real fact about their PE/sport | `the swimming pool` |
+
+If any of the three is missing, the cell says so instead of writing around it:
+
+```
+NEEDS: principal name, PE/sport fact — check the school's website and fill in by hand
+```
+
+That is deliberate. A confidently wrong Principal's name, or praise for a pool the school does
+not have, ends an application — so a blank is the safer answer. The **Principal** column shows
+the name on its own, so you can fill the rest in yourself.
+
+The paragraph about what you bring is matched to what their PE page mentions: a pool selects the
+swimming variant, a fitness suite the bleep-test one. Add or edit variants in `profile.json`.
+
+**Expect roughly one complete email in ten.** Most school sites do not name their Head on a page
+the crawler can reach, and a "hook" has to be specific enough to be worth saying. On a sample of
+20 schools it found 8 principals, 5 school facts and 5 PE facts — with all three lining up once.
+The rest tell you which single detail to look up, which is a couple of minutes rather than a
+blank page.
+
+Getting this strict took several passes against real sites. Early versions confidently returned
+`Hillview International School`, `Principal's Perspective`, `Deepa Hitange Coordinators` and
+`Holly Gibbs It` as people's names. Each is now a test case.
+
 ### "PE Roles Seen" and "Turnover" — does anyone stay?
 
 A school that keeps re-advertising the same PE post is telling you something. Because every run

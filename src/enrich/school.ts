@@ -191,6 +191,7 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
         maxPdfs: opts.maxPdfs,
         fresh: opts.fresh,
         budgetMs: opts.budgetMs,
+        schoolName: input.schoolName,
       });
       if (!found) {
         notes.push(`could not read ${site}`);
@@ -200,6 +201,10 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
         );
         emails = mergeEmails(emails, found.emails);
         notes.push(...found.notes);
+
+        if (found.principal) profile.principal = sourced(found.principal.text, found.principal.source, 0.8);
+        if (found.schoolHook) profile.schoolHook = sourced(found.schoolHook.text, found.schoolHook.source, 0.8);
+        if (found.peHook) profile.peHook = sourced(found.peHook.text, found.peHook.source, 0.8);
 
         if (found.careersPageUrl) {
           profile.careersPageUrl = sourced(found.careersPageUrl, site, 0.9);

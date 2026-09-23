@@ -172,6 +172,10 @@ export interface SchoolProfile {
   /** Every email found, classified; careerEmail is the best of these. */
   allEmails?: DiscoveredEmail[];
   careersPageUrl?: Sourced<string>;
+  /** Details the prepared application email needs, from the school's site. */
+  principal?: Sourced<string>;
+  schoolHook?: Sourced<string>;
+  peHook?: Sourced<string>;
   enrichedAt?: string;
   /** Non-fatal problems hit while enriching, surfaced in the report. */
   notes?: string[];

@@ -18,6 +18,7 @@ import {
 import { countryName, truncate } from "../core/text.ts";
 import type { ApplicationForm, DiscoveredEmail, Salary } from "../core/types.ts";
 import { formLabel } from "../match/appform.ts";
+import { draftEmail, emailCell, resetProfile } from "./email.ts";
 
 export interface FieldContext {
   job?: JobRow;
@@ -216,6 +217,27 @@ export const FIELDS: FieldDef[] = [
       const h = hiringFor(c.school?.school_key ?? c.job?.school_key);
       return h ? String(h.postings) : "";
     },
+  },
+  {
+    key: "draft_email", label: "Prepared Email", group: "contact", scope: "job",
+    help: "A personalised application email, built only from details found on the school's own website. When a detail is missing it says which one, rather than inventing it.",
+    get: (c) => {
+      if (!c.job) return "";
+      return emailCell(
+        draftEmail({
+          role: c.job.title,
+          school: c.school?.name ?? c.job.school_name ?? "",
+          principal: c.school?.principal,
+          schoolHook: c.school?.school_hook,
+          peHook: c.school?.pe_hook,
+        }),
+      );
+    },
+  },
+  {
+    key: "principal", label: "Principal", group: "contact", scope: "both",
+    help: "Head of School, read from the school's own site. Blank when it could not be established with confidence.",
+    get: (c) => c.school?.principal ?? "",
   },
   {
     key: "turnover", label: "Turnover", group: "school", scope: "both",

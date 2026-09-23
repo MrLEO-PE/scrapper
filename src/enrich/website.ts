@@ -26,6 +26,7 @@ import {
   type Extracted,
 } from "./facts.ts";
 import { pdfToText } from "./pdf.ts";
+import { findPeHook, findPrincipal, findSchoolHook, type Hook } from "./hooks.ts";
 
 /** Link scoring: higher = crawl sooner. */
 const LINK_PRIORITIES: { re: RegExp; score: number; tag: string }[] = [
@@ -56,6 +57,10 @@ export interface SiteFindings {
   pagesVisited: number;
   pdfsRead: number;
   notes: string[];
+  /** Details an application email needs, taken from the school's own pages. */
+  principal?: Hook;
+  schoolHook?: Hook;
+  peHook?: Hook;
 }
 
 interface Candidate {
@@ -114,12 +119,15 @@ export interface CrawlOptions {
    * bad host can stall the whole run.
    */
   budgetMs?: number;
+  /** Used to stop the school's own name being read as a person. */
+  schoolName?: string;
 }
 
 export async function crawlSchoolSite(
   siteUrl: string,
   opts: CrawlOptions = {},
 ): Promise<SiteFindings | null> {
+  const schoolName = opts.schoolName ?? "";
   const maxPages = opts.maxPages ?? 8;
   const maxPdfs = opts.maxPdfs ?? 3;
   const deadline = Date.now() + (opts.budgetMs ?? 90_000);
@@ -161,6 +169,15 @@ export async function crawlSchoolSite(
     } else if (next.tag === "staff") {
       staffText += "\n" + text;
     }
+
+    // Details for the application email. Taken per page so each one records
+    // the page it actually came from, and first confident hit wins.
+    findings.principal ??= findPrincipal(html, next.url, schoolName) ?? undefined;
+    findings.schoolHook ??= findSchoolHook(html, next.url) ?? undefined;
+    // Sport facilities are as often on the homepage or "about" page as on a
+    // dedicated PE page, and the hook must name something concrete anyway, so
+    // every page is worth checking.
+    findings.peHook ??= findPeHook(html, next.url) ?? undefined;
 
     // Emails from the page body and from any mailto: links.
     const pageEmails = extractEmails(text, next.url, "html");
