@@ -81,6 +81,12 @@ jobs:
             --limit "${{ inputs.batch || '120' }}" \
             --concurrency 6 --budget-ms 40000 --max-pages 8 --max-pdfs 2
 
+      # The write path already refuses to create a duplicate. This is the
+      # backstop for rows written before it did, and for a school that only
+      # becomes recognisable once profiling finds its website.
+      - name: Fold any duplicate schools
+        run: node --experimental-strip-types --no-warnings src/cli.ts dedupe
+
       # Profiling is what reveals a package, so the country lists are out of
       # date until this runs. Cheap: one UPDATE per school, no network.
       - name: Re-rank each country by package and salary
