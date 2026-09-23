@@ -87,7 +87,7 @@ export function writeJson(path: string, rows: SheetRow[], fieldKeys: string[], s
 
 export interface HtmlOptions {
   /** Links shown across the top, for a multi-page published site. */
-  nav?: { label: string; href: string; current?: boolean }[];
+  nav?: { label: string; href: string; current?: boolean; cta?: boolean }[];
   /** Extra line under the heading. */
   note?: string;
 }
@@ -166,12 +166,14 @@ export function writeHtml(
   nav a { padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; font-size: 13px; }
   nav a.current { background: var(--fg); color: var(--bg); border-color: var(--fg); }
   nav a:hover { border-color: var(--fg); }
+  nav a.cta { margin-left: auto; background: #1f883d; color: #fff; border-color: #1f883d; font-weight: 600; }
+  nav a.cta:hover { background: #1a7f37; }
   @media (max-width: 640px) { body { padding: 16px; } th, td { max-width: 220px; } }
 </style></head><body>
 ${
   opts.nav?.length
     ? `<nav>${opts.nav
-        .map((n) => `<a href="${esc(n.href)}"${n.current ? ' class="current"' : ""}>${esc(n.label)}</a>`)
+        .map((n) => `<a href="${esc(n.href)}"${n.cta ? ' class="cta" target="_blank" rel="noopener"' : n.current ? ' class="current"' : ""}>${esc(n.label)}</a>`)
         .join("")}</nav>`
     : ""
 }

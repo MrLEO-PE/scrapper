@@ -13,21 +13,64 @@
  * Filenames are stable (no date stamp) so the published URLs never change.
  */
 
+import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { log } from "../core/logger.ts";
 import { getSchools, queryJobs, stats as dbStats } from "../store/db.ts";
 import { writeCsv, writeHtml, type SheetRow } from "./sheet.ts";
 
-const NAV = [
-  { label: "Open roles", href: "index.html" },
-  { label: "Schools", href: "schools.html" },
-  { label: "Closed", href: "closed.html" },
-  { label: "Download CSV", href: "pe-jobs.csv" },
-];
+/**
+ * Work out `owner/repo` so the pages can link back to the Actions tab.
+ *
+ * GitHub sets GITHUB_REPOSITORY inside a workflow; locally we read the git
+ * remote instead, so the button is correct either way.
+ */
+function repoSlug(): string | null {
+  const fromEnv = process.env.GITHUB_REPOSITORY;
+  if (fromEnv?.includes("/")) return fromEnv;
+  try {
+    const remote = execFileSync("git", ["remote", "get-url", "origin"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    const m = /github\.com[/:]([^/]+\/[^/.]+)(?:\.git)?$/.exec(remote);
+    return m?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+interface NavItem {
+  label: string;
+  href: string;
+  current?: boolean;
+  cta?: boolean;
+}
+
+function buildNav(): NavItem[] {
+  const nav: NavItem[] = [
+    { label: "Open roles", href: "index.html" },
+    { label: "Schools", href: "schools.html" },
+    { label: "Closed", href: "closed.html" },
+    { label: "Download CSV", href: "pe-jobs.csv" },
+  ];
+
+  // A published page is static and cannot scrape anything itself, so the
+  // button sends you to the workflow, where "Run workflow" starts a run.
+  const slug = repoSlug();
+  if (slug) {
+    nav.push({
+      label: "▶ Run a new scrape",
+      href: `https://github.com/${slug}/actions/workflows/scrape.yml`,
+      cta: true,
+    });
+  }
+  return nav;
+}
 
 const navFor = (current: string) =>
-  NAV.map((n) => ({ ...n, current: n.href === current }));
+  buildNav().map((n) => ({ ...n, current: n.href === current }));
 
 export interface SiteOptions {
   outDir?: string;

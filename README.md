@@ -212,10 +212,28 @@ bookmark, and running a fresh scrape is one button.
 ### One-time setup
 
 1. Push this repository to GitHub.
-2. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
-3. **Settings → Actions → General → Workflow permissions: Read and write permissions.**
+2. **Settings → Pages → Build and deployment → Source: `GitHub Actions`.**
+   This step is the one that matters. If it is left on *Deploy from a branch*, GitHub renders
+   `README.md` as the site — so you end up looking at this page instead of your vacancies.
+3. **Settings → Actions → General → Workflow permissions: `Read and write permissions`.**
+   Without this the run cannot commit the database back, and the history is lost each time.
+4. **Actions → Scrape PE jobs → Run workflow.** Nothing is published until a run has finished;
+   the workflow builds the site, so there is no site before the first run.
 
 That is all. The workflow needs no secrets to work.
+
+> **Seeing this README at your Pages URL?** Pages is still set to *Deploy from a branch*. Change
+> it to *GitHub Actions* (step 2) and run the workflow once.
+
+### Can I start a scrape from the website itself?
+
+Not directly, and it is worth knowing why: GitHub Pages serves static files only — there is no
+server behind it to run anything. Triggering a run from the page itself would mean putting a
+GitHub token in the page, where anyone could read it.
+
+So the published pages carry a green **▶ Run a new scrape** button that takes you to the
+workflow, and you press **Run workflow** there. Two clicks, no credentials exposed. The daily
+schedule means you rarely need it.
 
 ### Using it
 
