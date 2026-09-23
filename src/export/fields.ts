@@ -100,6 +100,14 @@ function list(v: unknown): string {
     .join("; ");
 }
 
+/** Whole days from now until an ISO date; negative once it has passed. */
+export function daysUntil(v: string | null | undefined): number | null {
+  if (!v) return null;
+  const t = new Date(v).getTime();
+  if (Number.isNaN(t)) return null;
+  return Math.ceil((t - Date.now()) / 86_400_000);
+}
+
 function date(v: string | null | undefined): string {
   if (!v) return "";
   const d = new Date(v);
@@ -235,6 +243,14 @@ export const FIELDS: FieldDef[] = [
     key: "deadline", label: "Deadline", group: "job", scope: "job",
     help: "Application closing date.",
     get: (c) => date(c.job?.deadline_at),
+  },
+  {
+    key: "days_left", label: "Days Left", group: "job", scope: "job",
+    help: "Days until the deadline — sort by this to see what is urgent. Blank when no closing date is published.",
+    get: (c) => {
+      const d = daysUntil(c.job?.deadline_at);
+      return d === null ? "" : d < 0 ? "closed" : String(d);
+    },
   },
   {
     key: "apply_url", label: "Apply Link", group: "job", scope: "job",

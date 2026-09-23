@@ -9,7 +9,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { log } from "../core/logger.ts";
 import type { JobRow, SchoolRow } from "../store/db.ts";
-import { resolveFields, type FieldContext, type FieldDef } from "./fields.ts";
+import { daysUntil, resolveFields, type FieldContext, type FieldDef } from "./fields.ts";
 
 export interface SheetRow {
   job?: JobRow;
@@ -122,7 +122,21 @@ export function writeHtml(
   /** Leadership roles are the point of the search, so they are marked. */
   const LEADERSHIP = new Set(["Director of Sport", "Head of Department", "2nd in Department"]);
 
-  const rowClass = (r: string[]) => {
+  // Urgency is read from the row data rather than the rendered cells, so it
+  // stays correct no matter which columns are ticked.
+  const isFresh = (row: SheetRow): boolean => {
+    const seen = row.job?.first_seen_at ? Date.parse(row.job.first_seen_at) : NaN;
+    return !Number.isNaN(seen) && Date.now() - seen < 2 * 86_400_000;
+  };
+
+  /**
+   * On a newly built database every row is "new", and a badge on every row
+   * conveys nothing. Show it only while it still discriminates.
+   */
+  const freshCount = rows.filter(isFresh).length;
+  const markFresh = rows.length > 0 && freshCount / rows.length < 0.4;
+
+  const rowClass = (r: string[], row: SheetRow) => {
     const classes: string[] = [];
     if (statusIndex >= 0) {
       const s = r[statusIndex];
@@ -130,6 +144,12 @@ export function writeHtml(
       else if (s === "Possibly filled") classes.push("stale");
     }
     if (seniorityIndex >= 0 && LEADERSHIP.has(r[seniorityIndex] ?? "")) classes.push("lead");
+
+    const left = daysUntil(row.job?.deadline_at);
+    if (left !== null && left >= 0 && left <= 7) classes.push("urgent");
+
+    if (markFresh && isFresh(row)) classes.push("fresh");
+
     return classes.length ? ` class="${classes.join(" ")}"` : "";
   };
 
@@ -160,6 +180,9 @@ export function writeHtml(
   tr.lead { background: color-mix(in srgb, dodgerblue 10%, transparent); }
   tr.lead td:first-child { box-shadow: inset 3px 0 0 dodgerblue; }
   tr.lead.stale { background: color-mix(in srgb, orange 12%, transparent); }
+  tr.urgent td:nth-child(2) { position: relative; }
+  tr.urgent td:first-child::after { content: "soon"; margin-left: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #d1242f; color: #fff; vertical-align: middle; }
+  tr.fresh td:first-child::before { content: "new"; margin-right: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #1f883d; color: #fff; vertical-align: middle; }
   label.only { margin-left: 14px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
   a { color: inherit; }
   nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
@@ -184,7 +207,7 @@ ${leadershipCount ? '<label class="only"><input type="checkbox" id="leadOnly"> l
 <div class="wrap"><table>
 <thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
 <tbody>
-${body.map((r) => `<tr${rowClass(r)}>${r.map((v, i) => `<td>${cell(v, fields[i]!)}</td>`).join("")}</tr>`).join("\n")}
+${body.map((r, i) => `<tr${rowClass(r, rows[i]!)}>${r.map((v, i) => `<td>${cell(v, fields[i]!)}</td>`).join("")}</tr>`).join("\n")}
 </tbody></table></div>
 <script>
 const rows = [...document.querySelectorAll("tbody tr")];

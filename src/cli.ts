@@ -11,7 +11,7 @@
  */
 
 import { execFile } from "node:child_process";
-import { readdirSync, statSync } from "node:fs";
+import { readdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { OUT_DIR, loadFields, loadTargets, writeFieldsConfig } from "./config.ts";
 import { stats as httpStats } from "./core/http.ts";
@@ -30,6 +30,7 @@ import {
   removeSchedule,
   watch,
 } from "./schedule.ts";
+import { findAlerts, formatAlerts, markAlerted, summariseAlerts } from "./alerts.ts";
 import { closeDb } from "./store/db.ts";
 import {
   ALL_SOURCES,
@@ -195,6 +196,7 @@ USAGE
   npm run directory                  top schools per country, recruiting or not
   npm run watch -- --every 24h       keep running on an interval
   npm run schedule -- --daily 07:00  install an OS scheduled task
+  npm run alerts                     list roles worth acting on now
   npm run site                       build the publishable site/ folder
   npm run report                     open the latest HTML report
   npm run stats                      what's in the database
@@ -252,6 +254,12 @@ EXPORT
   --sheet-tab "PE Jobs"              tab name to write
   --key-file key.json                service-account key (or set
                                      GOOGLE_APPLICATION_CREDENTIALS)
+
+ALERTS
+  --all                              include roles already alerted about
+  --mark                             mark them as alerted (stops repeats)
+  --site-url <url>                   add a link back to the published site
+  --out alert.md                     write the body to a file, print a summary
 
 GLOBAL
   --verbose / --quiet                logging level
@@ -433,6 +441,27 @@ async function main(): Promise<void> {
         log.error("say when: --daily 07:00, --weekly MON --at 07:00, or --remove");
         process.exitCode = 1;
       }
+      break;
+    }
+
+    case "alerts": {
+      const alerts = findAlerts({ includeAlerted: bool(args, "all") });
+      const body = formatAlerts(alerts, str(args, "site-url"));
+      const outFile = str(args, "out");
+
+      if (outFile) {
+        // Body to the file, one-line summary to stdout, so a workflow can use
+        // the summary as a title and the file as the body in one invocation —
+        // important because --mark means a second call would find nothing.
+        writeFileSync(outFile, body, "utf8");
+        process.stdout.write(summariseAlerts(alerts) + "\n");
+      } else {
+        process.stdout.write(body + "\n");
+      }
+
+      if (alerts.length && bool(args, "mark")) markAlerted(alerts.map((a) => a.job.id));
+      // Exit 1 when there is nothing to report, so a workflow can skip quietly.
+      if (!alerts.length) process.exitCode = 1;
       break;
     }
 

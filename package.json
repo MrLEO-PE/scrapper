@@ -21,7 +21,8 @@
     "schedule": "node --experimental-strip-types --no-warnings src/cli.ts schedule",
     "test": "node --experimental-strip-types --no-warnings --test test/*.test.ts",
     "report": "node --experimental-strip-types --no-warnings src/cli.ts report",
-    "site": "node --experimental-strip-types --no-warnings src/cli.ts site"
+    "site": "node --experimental-strip-types --no-warnings src/cli.ts site",
+    "alerts": "node --experimental-strip-types --no-warnings src/cli.ts alerts"
   },
   "devDependencies": {
     "typescript": "^5.6.0",

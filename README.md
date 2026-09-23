@@ -253,6 +253,31 @@ schedule means you rarely need it.
 
 It works on a phone, which is the point — the report is one self-contained file per page.
 
+### Getting told, instead of remembering to look
+
+A published page only helps if you open it, and a Head of Sport can appear and close inside a
+week. So each run opens a GitHub issue listing anything worth acting on:
+
+- **every leadership role** — Director of Sport, Head of Department, 2nd in Department;
+- **anything closing within 7 days**;
+- strong PE matches that are neither.
+
+GitHub emails you when an issue is opened, so that is the notification — no mail server, no
+secrets, and it reaches your phone. Close the issue once you have read it.
+
+Each vacancy is stamped once alerted, so tomorrow's run reports what is genuinely new rather than
+the same roles every morning. To see the current picture on demand:
+
+```bash
+npm run alerts                      # what deserves attention right now
+npm run alerts -- --all             # including ones already alerted
+```
+
+On the site itself, rows carry a red **soon** badge when the deadline is within a week and a
+green **new** badge when first seen in the last two days — though the **new** badge hides itself
+when nearly everything is new, since a badge on every row says nothing. Sort by **Days Left** to
+put the urgent ones on top.
+
 ### How history survives
 
 Each run commits `data/jobs.db` back to the repository. That is what lets the **Still Available?**

@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS jobs (
   last_seen_at    TEXT NOT NULL,
   closed_at       TEXT,
   last_checked_at TEXT,
+  alerted_at      TEXT,
   raw_json        TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_jobs_dedupe  ON jobs(dedupe_key);
@@ -113,6 +114,9 @@ let db: DatabaseSync | null = null;
  */
 const MIGRATIONS: { table: string; column: string; ddl: string }[] = [
   { table: "jobs", column: "attachments_json", ddl: "ALTER TABLE jobs ADD COLUMN attachments_json TEXT" },
+  // When this vacancy was last included in an alert, so a daily run does not
+  // report the same role every morning.
+  { table: "jobs", column: "alerted_at", ddl: "ALTER TABLE jobs ADD COLUMN alerted_at TEXT" },
 ];
 
 function migrate(d: DatabaseSync): void {
@@ -343,6 +347,7 @@ export interface JobRow {
   status: JobStatus;
   first_seen_at: string;
   last_seen_at: string;
+  alerted_at: string | null;
 }
 
 export interface QueryOptions {

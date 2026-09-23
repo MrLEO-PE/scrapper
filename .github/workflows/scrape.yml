@@ -82,6 +82,23 @@ jobs:
       - name: Build the site
         run: node --experimental-strip-types --no-warnings src/cli.ts site
 
+      # Opens an issue listing leadership roles and anything closing within a
+      # week. GitHub emails you when an issue is opened, which makes this the
+      # notification — no mail server, no secrets. Each role is marked as
+      # alerted so tomorrow's run does not repeat it.
+      - name: Alert on roles worth acting on
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SITE_URL: ${{ format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
+        run: |
+          if TITLE=$(node --experimental-strip-types --no-warnings src/cli.ts alerts \
+                --site-url "$SITE_URL" --mark --out "$RUNNER_TEMP/alert.md"); then
+            echo "$TITLE"
+            gh issue create --title "$TITLE" --body-file "$RUNNER_TEMP/alert.md"
+          else
+            echo "Nothing new worth alerting about."
+          fi
+
       # Optional. Skipped entirely unless both secrets are set, so the
       # workflow works out of the box with no configuration.
       - name: Sync to Google Sheets

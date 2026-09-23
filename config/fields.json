@@ -1,7 +1,6 @@
 {
   "//": "Tick the columns you want in the sheet. true = included, false = left out.",
   "//order": "Columns appear in the order listed here. Run `npm run fields` to see every option.",
-
   "country": true,
   "city": true,
   "school_name": true,
@@ -13,14 +12,13 @@
   "package": true,
   "school_email": true,
   "career_email": true,
-
   "job_title": true,
   "seniority": true,
   "status": true,
   "job_url": true,
   "deadline": true,
+  "days_left": true,
   "source": true,
-
   "careers_page": false,
   "all_emails": false,
   "website": false,
