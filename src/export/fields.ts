@@ -18,7 +18,8 @@ import {
 import { countryName, truncate } from "../core/text.ts";
 import type { ApplicationForm, DiscoveredEmail, Salary } from "../core/types.ts";
 import { formLabel } from "../match/appform.ts";
-import { draftEmail, emailCell, resetProfile } from "./email.ts";
+import { draftEmail, emailCell, loadProfile, resetProfile } from "./email.ts";
+import { assessFit, fitSummary } from "../match/fit.ts";
 import { STATUS_LABEL as MY_STATUS_LABEL } from "../track.ts";
 
 export interface FieldContext {
@@ -231,8 +232,37 @@ export const FIELDS: FieldDef[] = [
           principal: c.school?.principal,
           schoolHook: c.school?.school_hook,
           peHook: c.school?.pe_hook,
+          advertText: c.job.description,
         }),
       );
+    },
+  },
+  {
+    key: "fit", label: "Fit", group: "job", scope: "job",
+    help: "What this advert asks for that you can evidence, from config/profile.json. Only requirements the advert actually states are counted.",
+    get: (c) => {
+      const p = loadProfile();
+      if (!c.job?.description || !p?.qualifications?.length) return "";
+      return fitSummary(assessFit(c.job.description, p.qualifications));
+    },
+  },
+  {
+    key: "fit_score", label: "Fit %", group: "job", scope: "job",
+    help: "Share of the advert's stated requirements you can evidence. Sort by it to find the roles you are strongest for.",
+    get: (c) => {
+      const p = loadProfile();
+      if (!c.job?.description || !p?.qualifications?.length) return "";
+      const f = assessFit(c.job.description, p.qualifications);
+      return f.signals.length + f.gaps.length === 0 ? "" : String(f.score);
+    },
+  },
+  {
+    key: "fit_gaps", label: "They Also Want", group: "job", scope: "job",
+    help: "Requirements the advert states that your profile does not claim — worth knowing before you apply.",
+    get: (c) => {
+      const p = loadProfile();
+      if (!c.job?.description || !p?.qualifications?.length) return "";
+      return assessFit(c.job.description, p.qualifications).gaps.join(" · ");
     },
   },
   {

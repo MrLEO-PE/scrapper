@@ -53,7 +53,16 @@ const ROLE_SHAPED =
  * "University and Careers" section is guidance for pupils, not recruitment.
  */
 const NOT_A_VACANCY =
-  /(?:curriculum|academics?|about-us|our-school|admissions?|parent|student-life|news|blog|event|calendar|alumni|contact|privacy|policy|university-and-careers|universities-and-careers|careers?-(?:programme|program|uni|university|guidance|advice|support|education|fair)|uni-?guidance|facebook|twitter|linkedin|instagram|youtube)/i;
+  /(?:curriculum|academics?|about-us|our-school|admissions?|parent|student-life|news|blog|event|calendar|alumni|contact|privacy|policy|careers?-(?:programme|program|uni|university|guidance|advice|support|education|fair)|uni-?guidance|facebook|twitter|linkedin|instagram|youtube)/i;
+
+/**
+ * Student-facing careers guidance, which reads as a careers page but is about
+ * pupils' futures, not recruitment. The word order varies —
+ * "university-and-careers", "higher-education-and-careers", "careers-and-he" —
+ * so both sides are matched.
+ */
+const STUDENT_CAREERS =
+  /(?:universit\w*|higher[\s-]?education|he|college|futures?|guidance|advice)[\s-]*(?:and|&|\+)?[\s-]*careers?|careers?[\s-]*(?:and|&|\+)?[\s-]*(?:universit\w*|higher[\s-]?education|he\b|college|futures?|guidance|advice)/i;
 
 /**
  * Links on a careers page that lead to the actual list of roles. Schools
@@ -157,7 +166,7 @@ async function discoverCareersPage(site: string, fresh?: boolean): Promise<strin
     const hay = `${a.url} ${a.text}`;
     if (!CAREERS_LINK.test(hay)) continue;
     // "University and Careers" is student guidance, not recruitment.
-    if (NOT_A_VACANCY.test(a.url)) continue;
+    if (NOT_A_VACANCY.test(a.url) || STUDENT_CAREERS.test(a.url)) continue;
     return a.url;
   }
   return null;
@@ -209,7 +218,7 @@ function scanPage(
     const text = a.text;
     if (!text || text.length < 6 || text.length > 140) continue;
     if (DUTY_LINE.test(text)) continue;
-    if (NOT_A_VACANCY.test(a.url)) continue;
+    if (NOT_A_VACANCY.test(a.url) || STUDENT_CAREERS.test(a.url)) continue;
     if (!ROLE_SHAPED.test(text)) continue;
     if (!classify(text).isPe) continue;
     remember(text, a.url);
@@ -262,7 +271,7 @@ async function collectSchool(
 
   const categories = anchors(html, careers)
     .filter((a) => a.url.startsWith(origin) && a.url !== careers)
-    .filter((a) => !NOT_A_VACANCY.test(a.url))
+    .filter((a) => !NOT_A_VACANCY.test(a.url) && !STUDENT_CAREERS.test(a.url))
     .filter((a) => VACANCY_CATEGORY.test(`${a.text} ${a.url}`))
     .filter((a) => !/\.(?:pdf|docx?|jpe?g|png)$/i.test(a.url));
 

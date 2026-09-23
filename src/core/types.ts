@@ -93,6 +93,15 @@ export interface ApplicationForm {
   evidence?: string;
 }
 
+/** Something you can evidence, matched against what an advert asks for. */
+export interface Qualification {
+  /** Matches a key in src/match/fit.ts. */
+  key: string;
+  label: string;
+  /** How it is phrased in the email. */
+  phrase: string;
+}
+
 /** What a source hands back before normalisation. */
 export interface RawJob {
   source: SourceId;

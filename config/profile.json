@@ -1,6 +1,7 @@
 {
   "//": "Your details and your own words. The generator never invents anything about you either — it only uses what is written here.",
   "//strengths": "One is chosen per email by matching `when` against what the school's PE page says. The last entry (no `when`) is the fallback.",
+  "//qualifications": "What you can evidence. `key` must be one from src/match/fit.ts. A requirement is only mentioned when the advert asks for it AND you list it here — remove anything you cannot back up.",
 
   "name": "Leo SEVIN",
   "website": "https://mrleo-pe.github.io/CV/",
@@ -8,6 +9,18 @@
   "signOff": "Kind regards",
 
   "openingLine": "I am writing to express my strong interest in the {role} position at {school}.",
+
+  "qualifications": [
+    { "key": "igcse", "label": "IGCSE PE", "phrase": "I teach IGCSE PE within the Cambridge programme" },
+    { "key": "cambridge", "label": "Cambridge curriculum", "phrase": "I work within the Cambridge programme" },
+    { "key": "gcse", "label": "GCSE PE", "phrase": "I teach PE to GCSE level" },
+    { "key": "coordination", "label": "coordination", "phrase": "I have coordinated PE provision and led on curriculum planning" },
+    { "key": "coaching", "label": "coaching", "phrase": "I coach and run fixtures alongside my teaching" },
+    { "key": "ccas", "label": "co-curricular", "phrase": "I run co-curricular sport beyond the timetable" },
+    { "key": "secondary", "label": "secondary PE", "phrase": "I teach across the secondary age range" },
+    { "key": "primary", "label": "primary PE", "phrase": "I teach primary PE as well as secondary" },
+    { "key": "data", "label": "tracking progress", "phrase": "I build my own digital tools to track progress, so students can see their personal bests improve" }
+  ],
 
   "strengths": [
     {

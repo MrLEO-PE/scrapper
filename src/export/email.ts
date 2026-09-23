@@ -14,6 +14,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { log } from "../core/logger.ts";
+import type { Qualification } from "../core/types.ts";
+import { assessFit, fitSentence } from "../match/fit.ts";
 
 export interface Profile {
   name: string;
@@ -21,6 +23,7 @@ export interface Profile {
   websiteLabel: string;
   signOff: string;
   openingLine: string;
+  qualifications?: Qualification[];
   strengths: { when?: string; text: string }[];
   closing: string;
 }
@@ -32,6 +35,8 @@ export interface EmailInputs {
   principal?: string | null;
   schoolHook?: string | null;
   peHook?: string | null;
+  /** The advert text, used to name the requirements you actually meet. */
+  advertText?: string | null;
 }
 
 export interface DraftEmail {
@@ -107,6 +112,13 @@ export function draftEmail(inputs: EmailInputs): DraftEmail {
     shortSchool: shortName(inputs.school),
   };
 
+  // What the advert asks for that you can evidence, in their order of asking.
+  const fit = assessFit(inputs.advertText ?? "", profile.qualifications ?? []);
+  const sentence = fitSentence(fit);
+  const fitLine = sentence
+    ? `You ask for ${fit.signals.slice(0, 3).map((s) => s.requirement).join(", ")}: ${sentence}.`
+    : "";
+
   const body = [
     `Dear ${inputs.principal} and the HR Team,`,
     "",
@@ -120,6 +132,9 @@ export function draftEmail(inputs: EmailInputs): DraftEmail {
     "",
     `That is what I would bring to your PE department. ${chooseStrength(profile, inputs.peHook!)}`,
     "",
+    // Named only when the advert actually asks for it and the profile claims
+    // it. Listing a strength nobody asked for reads as padding.
+    ...(fitLine ? [fitLine, ""] : []),
     `You can find my CV and examples of my work on ${profile.websiteLabel}: ${profile.website}`,
     "",
     fill(profile.closing, values),
