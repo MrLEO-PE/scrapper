@@ -244,6 +244,40 @@ Getting this strict took several passes against real sites. Early versions confi
 `Hillview International School`, `Principal's Perspective`, `Deepa Hitange Coordinators` and
 `Holly Gibbs It` as people's names. Each is now a test case.
 
+### Salary — and why the column is mostly empty
+
+Start with the number that matters: **of 85 open PE roles, 6 publish a figure.** 23 say
+"competitive" or similar, and 56 say nothing about pay at all. That is the sector, not a gap in
+the scraper — international schools negotiate rather than advertise.
+
+Figures are looked for in four places, strongest evidence first: the board's own salary field,
+the advert text, any attached job pack or published pay scale, and the school's website. The
+**Salary Basis** column then says which of those a number came from, because "AED 15,000" is
+useless without knowing whether it is monthly or annual, one advert or an average:
+
+| Basis | Meaning |
+|---|---|
+| `this advert` | The vacancy's own published figure |
+| `stated in the advert` | A figure written in the advert text |
+| `from the job pack` | A figure in an attached pack or pay scale |
+| `from the school's site` | Published on the school's own pages |
+| `average of this school's adverts` | Averaged, with the count shown |
+| `benchmark for comparable roles` | What other schools in that country advertise |
+| `no figure published` | Words only — "competitive", "negotiable" |
+
+**A benchmark is only offered when it can carry weight.** It needs at least three *distinct
+schools* advertising in the same currency and period, and their figures must actually differ.
+That second rule exists because of a real case in this data: BASIS Shenzhen, Guangzhou and
+Bilingual all advertise exactly USD 55,000–65,000. Three schools, one group pay scale — that is
+one data point dressed as three, and averaging it would invent a market rate that nobody quoted.
+
+**What is not used.** Reddit and similar forums were considered and ruled out, not overlooked:
+Reddit's `robots.txt` is a blanket `Disallow: /`, its Public Content Policy restricts reuse, and
+the endpoint returns HTTP 403 to anonymous requests. Forum figures are also unattributable — a
+comment cannot be cited back to a school the way a published pay scale can. If you want that
+signal, International School Community's salary database is the honest route, and it is a
+paid human lookup rather than something to automate.
+
 ### "PE Roles Seen" and "Turnover" — does anyone stay?
 
 A school that keeps re-advertising the same PE post is telling you something. Because every run

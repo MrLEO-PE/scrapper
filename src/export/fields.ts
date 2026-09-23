@@ -20,6 +20,7 @@ import type { ApplicationForm, DiscoveredEmail, Salary } from "../core/types.ts"
 import { formLabel } from "../match/appform.ts";
 import { draftEmail, emailCell, loadProfile, resetProfile } from "./email.ts";
 import { assessFit, fitSummary } from "../match/fit.ts";
+import { BASIS_LABEL } from "../enrich/salary.ts";
 import { STATUS_LABEL as MY_STATUS_LABEL } from "../track.ts";
 
 export interface FieldContext {
@@ -283,6 +284,11 @@ export const FIELDS: FieldDef[] = [
     get: (c) =>
       formatSalary(parseJsonColumn<Salary | null>(c.school?.salary_json ?? null, null)) ||
       formatSalary(parseJsonColumn<Salary | null>(c.job?.salary_json ?? null, null)),
+  },
+  {
+    key: "salary_basis", label: "Salary Basis", group: "package", scope: "both",
+    help: "Exactly what the salary figure is — this advert, a figure from the job pack, an average of this school's adverts, or a benchmark. A number without a basis should not be trusted.",
+    get: (c) => BASIS_LABEL[(c.school?.salary_basis ?? "") as keyof typeof BASIS_LABEL] ?? "",
   },
   {
     key: "package", label: "Package & Career Growth", group: "package", scope: "both",

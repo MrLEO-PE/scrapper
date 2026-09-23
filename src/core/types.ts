@@ -175,6 +175,8 @@ export interface SchoolProfile {
   studentCount?: Sourced<number>;
   schoolType?: Sourced<SchoolPhase>;
   salaryEstimate?: Sourced<Salary>;
+  /** Exactly what the salary figure is: one advert, an average, a benchmark. */
+  salaryBasis?: string;
   packageNotes?: Sourced<string[]>;
   schoolEmail?: Sourced<string>;
   careerEmail?: Sourced<string>;

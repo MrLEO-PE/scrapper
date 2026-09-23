@@ -26,6 +26,7 @@ import {
   extractStudentCount,
 } from "./facts.ts";
 import { pdfToText } from "./pdf.ts";
+import { extractSalaryFromText, type SourcedSalary } from "./salary.ts";
 import { crawlSchoolSite } from "./website.ts";
 
 /** One school's worth of vacancy data, as gathered from the boards. */
@@ -142,6 +143,10 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
 
   const salary = estimateSalary(input.salaries);
   if (salary) profile.salaryEstimate = salary;
+  // Basis is recorded even for the board figure, so every number in the sheet
+  // can say what it is.
+  let salaryBasis: SourcedSalary["basis"] | undefined =
+    salary ? (input.salaries.some((x) => x.min != null || x.max != null) ? "advert" : "text-only") : undefined;
 
   if (input.benefits.length) {
     profile.packageNotes = sourced(input.benefits, `${input.sourceLabel} benefits`, 0.9);
@@ -179,6 +184,7 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
   if (packs.length && !packText) notes.push(`${packs.length} attachment(s) had no readable text`);
 
   // ---- from the school's own website -----------------------------------
+  let siteSalary: SourcedSalary | undefined;
   const site = profile.website?.value;
   if (!site) {
     notes.push("no website known for this school — crawl skipped");
@@ -202,6 +208,7 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
         emails = mergeEmails(emails, found.emails);
         notes.push(...found.notes);
 
+        siteSalary ??= found.salary;
         if (found.principal) profile.principal = sourced(found.principal.text, found.principal.source, 0.8);
         if (found.schoolHook) profile.schoolHook = sourced(found.schoolHook.text, found.schoolHook.source, 0.8);
         if (found.peHook) profile.peHook = sourced(found.peHook.text, found.peHook.source, 0.8);
@@ -270,6 +277,24 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
     const pt = extractPeTeamSize(advertText);
     if (pt) profile.peTeamSize = sourced(pt.value, "job advert", pt.confidence, pt.evidence);
   }
+
+  // ---- salary: find a real figure, and say what it is ------------------
+  // Most schools advertise "competitive" and no number, so the few real
+  // figures are usually written in the advert body, a job pack or a published
+  // pay scale rather than in the board's salary field.
+  const hasFigure =
+    profile.salaryEstimate?.value?.min != null || profile.salaryEstimate?.value?.max != null;
+  if (!hasFigure) {
+    const found =
+      extractSalaryFromText(jobCorpus, "advert-text") ??
+      extractSalaryFromText(packText, "job-pack") ??
+      siteSalary;
+    if (found) {
+      profile.salaryEstimate = sourced(found, found.basis, 0.7, found.evidence);
+      salaryBasis = found.basis;
+    }
+  }
+  if (salaryBasis) profile.salaryBasis = salaryBasis;
 
   // ---- pick the two email columns --------------------------------------
   const domain = domainOf(site);

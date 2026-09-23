@@ -27,6 +27,7 @@ import {
 } from "./facts.ts";
 import { pdfToText } from "./pdf.ts";
 import { findPeHook, findPrincipal, findSchoolHook, type Hook } from "./hooks.ts";
+import { extractSalaryFromText, type SourcedSalary } from "./salary.ts";
 
 /** Link scoring: higher = crawl sooner. */
 const LINK_PRIORITIES: { re: RegExp; score: number; tag: string }[] = [
@@ -61,6 +62,8 @@ export interface SiteFindings {
   principal?: Hook;
   schoolHook?: Hook;
   peHook?: Hook;
+  /** A pay figure published on the school site or in a job pack. */
+  salary?: SourcedSalary;
 }
 
 interface Candidate {
@@ -172,6 +175,7 @@ export async function crawlSchoolSite(
 
     // Details for the application email. Taken per page so each one records
     // the page it actually came from, and first confident hit wins.
+    findings.salary ??= extractSalaryFromText(text, "school-site") ?? undefined;
     findings.principal ??= findPrincipal(html, next.url, schoolName) ?? undefined;
     findings.schoolHook ??= findSchoolHook(html, next.url) ?? undefined;
     // Sport facilities are as often on the homepage or "about" page as on a
@@ -234,6 +238,8 @@ export async function crawlSchoolSite(
     corpus += "\n" + text;
     careersText += "\n" + text;
     findings.emails = mergeEmails(findings.emails, extractEmails(text, pdf.url, "pdf"));
+    // Pay scales are often published only inside a job pack.
+    findings.salary ??= extractSalaryFromText(text, "job-pack") ?? undefined;
     log.debug(`pdf ${pdf.url}: ${text.length} chars, ${findings.emails.length} emails so far`);
   }
 

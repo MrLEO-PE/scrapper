@@ -11,6 +11,7 @@
   "pe_roles_seen": true,
   "turnover": true,
   "salary_estimate": true,
+  "salary_basis": true,
   "package": true,
   "school_email": true,
   "career_email": true,

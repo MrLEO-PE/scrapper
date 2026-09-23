@@ -136,6 +136,8 @@ const MIGRATIONS: { table: string; column: string; ddl: string }[] = [
   { table: "jobs", column: "my_status", ddl: "ALTER TABLE jobs ADD COLUMN my_status TEXT" },
   { table: "jobs", column: "my_status_at", ddl: "ALTER TABLE jobs ADD COLUMN my_status_at TEXT" },
   { table: "jobs", column: "my_note", ddl: "ALTER TABLE jobs ADD COLUMN my_note TEXT" },
+  // Exactly what a salary figure is: one advert, an average, or a benchmark.
+  { table: "schools", column: "salary_basis", ddl: "ALTER TABLE schools ADD COLUMN salary_basis TEXT" },
 ];
 
 function migrate(d: DatabaseSync): void {
@@ -455,10 +457,10 @@ export function upsertSchool(p: SchoolProfile, origin: "job" | "directory" = "jo
       `INSERT INTO schools (
         school_key, name, country, city, website, curriculum_json, pe_team_size,
         student_count, school_type, salary_json, package_json, school_email,
-        career_email, careers_url, principal, school_hook, pe_hook,
+        career_email, careers_url, principal, school_hook, pe_hook, salary_basis,
         emails_json, provenance_json, notes_json,
         origin, country_rank, enriched_at, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(school_key) DO UPDATE SET
         name = excluded.name,
         country = COALESCE(excluded.country, schools.country),
@@ -483,6 +485,7 @@ export function upsertSchool(p: SchoolProfile, origin: "job" | "directory" = "jo
         principal = COALESCE(excluded.principal, schools.principal),
         school_hook = COALESCE(excluded.school_hook, schools.school_hook),
         pe_hook = COALESCE(excluded.pe_hook, schools.pe_hook),
+        salary_basis = COALESCE(excluded.salary_basis, schools.salary_basis),
         emails_json = COALESCE(excluded.emails_json, schools.emails_json),
         provenance_json = excluded.provenance_json,
         notes_json = excluded.notes_json,
@@ -496,6 +499,7 @@ export function upsertSchool(p: SchoolProfile, origin: "job" | "directory" = "jo
       j(p.packageNotes?.value), p.schoolEmail?.value ?? null, p.careerEmail?.value ?? null,
       p.careersPageUrl?.value ?? null,
       p.principal?.value ?? null, p.schoolHook?.value ?? null, p.peHook?.value ?? null,
+      p.salaryBasis ?? null,
       j(p.allEmails), j(provenance), j(p.notes),
       origin, countryRank ?? null, p.enrichedAt ?? now, now,
     );
@@ -512,6 +516,7 @@ export interface SchoolRow {
   student_count: number | null;
   school_type: string | null;
   salary_json: string | null;
+  salary_basis: string | null;
   package_json: string | null;
   school_email: string | null;
   career_email: string | null;
