@@ -41,7 +41,7 @@ import {
   pipeline,
   setStatus,
 } from "./track.ts";
-import { closeDb, rerankCountries } from "./store/db.ts";
+import { closeDb, dedupeSchools, rerankCountries } from "./store/db.ts";
 import {
   ALL_SOURCES,
   printStats,
@@ -308,6 +308,7 @@ USAGE
   npm run locations                  show / tick countries and cities
   npm run directory                  top schools per country, recruiting or not
   npm run rank                       re-rank each country by package and salary
+  npm run dedupe -- --dry-run        find schools stored twice
   npm run watch -- --every 24h       keep running on an interval
   npm run schedule -- --daily 07:00  install an OS scheduled task
   npm run track                      your pipeline + what closes soon
@@ -507,6 +508,30 @@ async function main(): Promise<void> {
       log.plain(`  enriched             ${r.enriched}`);
       log.plain(`  with a careers email ${r.withCareerEmail}`);
       if (r.skipped.length) log.warn(`no directory page for: ${r.skipped.join(", ")}`);
+      break;
+    }
+
+    case "dedupe": {
+      const dry = bool(args, "dry-run");
+      const r = dedupeSchools(dry);
+      log.step(dry ? "Duplicate schools (dry run — nothing written)" : "Merging duplicate schools");
+      if (!r.merged.length) {
+        log.ok(`no duplicates among ${r.scanned} schools`);
+        break;
+      }
+      for (const m of r.merged) {
+        log.plain(`  ${m.name}`);
+        log.plain(`      keep ${m.kept}`);
+        log.plain(`      fold ${m.removed}   (${m.reason})`);
+      }
+      log.ok(
+        `${r.merged.length} duplicate${r.merged.length === 1 ? "" : "s"} of ${r.scanned} schools` +
+          (dry ? " — re-run without --dry-run to merge" : " merged"),
+      );
+      if (!dry) {
+        const ranked = rerankCountries();
+        log.info(`re-ranked ${ranked.schools} schools after merging`);
+      }
       break;
     }
 

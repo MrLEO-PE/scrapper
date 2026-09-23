@@ -178,6 +178,36 @@ sheet. Ticked by default:
 | Days Left | Days until the deadline — sort by it to see what is urgent |
 | Form to Fill? / Form Link | Whether applying needs an application form, and where it is |
 
+### One school, one row
+
+A school arrives from two directions — a vacancy on a board and a country listing in the directory
+— and the two rarely agree on the name or even the country. Writing both would split the evidence:
+the vacancy row holds the salary, the directory row holds the accreditation, and neither can be
+ranked on what is actually known about the school. So a write that matches an existing school
+**updates it** instead of adding a second row.
+
+Two records are the same school when they share a name (once generic words like *School*,
+*International* and *Academy* are dropped) and either agree on the country or leave it blank, or
+when their websites settle a disagreement. One school written two ways on its own domain —
+*United World College of South East Asia* and *UWC South East Asia* — also merges.
+
+Matching is deliberately conservative, because a missed merge is visible and fixable while a wrong
+merge silently fuses two real schools:
+
+- *Lincoln School* in Nepal and *Lincoln School* in Costa Rica stay apart — same name, different
+  countries, no shared website.
+- Thirteen BASIS schools publishing on one applicant-tracking domain stay apart: a domain serving
+  a crowd identifies nothing.
+- Records naming different cities stay apart, so campuses are never fused.
+
+```bash
+npm run dedupe -- --dry-run     # show what would merge, write nothing
+npm run dedupe                  # merge, then re-rank
+```
+
+Merging only ever fills gaps — a value is taken from the row being removed only where the row
+being kept has none — so it combines evidence and cannot lose it.
+
 ## Tracking what you have applied to
 
 The sheet tells you what exists. This tells you where **you** stand with it — which turns a list

@@ -79,12 +79,33 @@ const SCHOOL_STOPWORDS = new Set([
  * words so "The British School of Beijing" and "British School Beijing" agree.
  */
 export function schoolKey(name: string, country?: string): string {
+  const base = schoolCore(name);
+  return country ? `${base}|${slugify(country)}` : base;
+}
+
+/**
+ * The identity part of a school key, without the country. Two records sharing
+ * a core are the same school *name*; whether they are the same school also
+ * depends on country and website — see `sameSchool`.
+ */
+export function schoolCore(name: string): string {
   const core = slugify(name)
     .split("-")
     .filter((w) => w && !SCHOOL_STOPWORDS.has(w))
     .join("-");
-  const base = core || slugify(name);
-  return country ? `${base}|${slugify(country)}` : base;
+  return core || slugify(name);
+}
+
+/** Hostname of a school website, for deciding whether two records are one. */
+export function hostOf(url?: string | null): string | undefined {
+  if (!url) return undefined;
+  try {
+    return new URL(url.startsWith("http") ? url : "https://" + url).hostname
+      .replace(/^www\./, "")
+      .toLowerCase();
+  } catch {
+    return undefined;
+  }
 }
 
 const REGION_NAMES = new Intl.DisplayNames(["en"], { type: "region" });

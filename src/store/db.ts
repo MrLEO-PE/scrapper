@@ -14,6 +14,8 @@ import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { log } from "../core/logger.ts";
+import { hostOf, schoolCore } from "../core/text.ts";
+import { findMatch, preferred, sameSchool, type SchoolIdentity } from "./identity.ts";
 import { rankByValue } from "../match/packagevalue.ts";
 import type { Job, Salary, SchoolProfile, SourceId } from "../core/types.ts";
 
@@ -498,6 +500,85 @@ export function schoolsNeedingEnrichment(maxAgeDays = 30, limit = 0): { school_k
   return getDb().prepare(sql).all(cutoff, cutoff) as any;
 }
 
+/*
+ * Aliased to the field names SchoolIdentity uses. Selecting the raw snake_case
+ * columns and casting silently gives every row an undefined `schoolKey`, which
+ * makes each one look identical to every other and defeats matching entirely.
+ */
+const IDENTITY_COLUMNS = "school_key AS schoolKey, name, country, city, website, origin";
+
+/**
+ * Rows that could be the same school as this one: anything sharing the name
+ * core, plus anything on the same website.
+ */
+function identityCandidates(core: string, host?: string): { rows: SchoolIdentity[]; peersOnHost: number } {
+  const d = getDb();
+  const byName = d
+    .prepare(`SELECT ${IDENTITY_COLUMNS} FROM schools WHERE school_key = ? OR school_key LIKE ?`)
+    .all(core, `${core}|%`) as unknown as SchoolIdentity[];
+
+  if (!host) return { rows: byName, peersOnHost: 1 };
+
+  // LIKE is a coarse filter; hostOf decides, so a path containing the host
+  // cannot masquerade as the host.
+  const byHost = (
+    d.prepare(`SELECT ${IDENTITY_COLUMNS} FROM schools WHERE website LIKE ?`).all(`%${host}%`) as unknown as SchoolIdentity[]
+  ).filter((r) => hostOf(r.website) === host);
+
+  const seen = new Set(byName.map((r) => r.schoolKey));
+  return {
+    rows: [...byName, ...byHost.filter((r) => !seen.has(r.schoolKey))],
+    peersOnHost: new Set(byHost.map((r) => schoolCore(r.name))).size || 1,
+  };
+}
+
+/**
+ * Where this profile should actually be written.
+ *
+ * Returns the existing row's key when the school is already stored under a
+ * different one, so a second record is never created. `keepExistingPlace`
+ * says the stored country and city are the better ones and must not be
+ * overwritten — a directory listing knows which country page it came from,
+ * whereas a vacancy's location is free text.
+ */
+function resolveSchoolKey(
+  p: SchoolProfile,
+  origin: string,
+): { key: string; name: string; keepExistingPlace: boolean } {
+  const d = getDb();
+  const exists = d.prepare("SELECT 1 FROM schools WHERE school_key = ?").get(p.schoolKey);
+  if (exists) return { key: p.schoolKey, name: p.schoolName, keepExistingPlace: false };
+
+  const candidate: SchoolIdentity = {
+    schoolKey: p.schoolKey,
+    name: p.schoolName,
+    country: p.country?.value ?? null,
+    city: p.city?.value ?? null,
+    website: p.website?.value ?? null,
+    origin,
+  };
+  const host = hostOf(candidate.website);
+  const { rows, peersOnHost } = identityCandidates(schoolCore(p.schoolName), host);
+
+  const hit = findMatch(candidate, rows, peersOnHost);
+  if (!hit) return { key: p.schoolKey, name: p.schoolName, keepExistingPlace: false };
+
+  log.debug(`school: "${p.schoolName}" is ${hit.existing.schoolKey} (${hit.reason}) — updating, not duplicating`);
+
+  // Any vacancies already filed under the key we are abandoning have to follow
+  // the school, or the sheet loses their school columns.
+  d.prepare("UPDATE jobs SET school_key = ? WHERE school_key = ?").run(hit.existing.schoolKey, p.schoolKey);
+
+  const keepExisting = preferred(hit.existing, candidate) === hit.existing;
+  return {
+    key: hit.existing.schoolKey,
+    // Keeping the stored name too, so a school does not flip between its two
+    // spellings depending on which source ran last.
+    name: keepExisting ? hit.existing.name : p.schoolName,
+    keepExistingPlace: keepExisting,
+  };
+}
+
 export function upsertSchool(
   p: SchoolProfile,
   origin: "job" | "directory" = "job",
@@ -505,6 +586,7 @@ export function upsertSchool(
   /** False when only listing a school, so a later run still profiles it. */
   markEnriched = true,
 ): void {
+  const { key: schoolKeyToUse, name: nameToUse, keepExistingPlace } = resolveSchoolKey(p, origin);
   const now = new Date().toISOString();
   const provenance: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(p)) {
@@ -556,7 +638,9 @@ export function upsertSchool(
         enriched_at = COALESCE(excluded.enriched_at, schools.enriched_at)`,
     )
     .run(
-      p.schoolKey, p.schoolName, p.country?.value ?? null, p.city?.value ?? null,
+      schoolKeyToUse, nameToUse,
+      keepExistingPlace ? null : (p.country?.value ?? null),
+      keepExistingPlace ? null : (p.city?.value ?? null),
       p.website?.value ?? null, j(p.curriculum?.value), p.peTeamSize?.value ?? null,
       p.studentCount?.value ?? null, p.schoolType?.value ?? null, j(p.salaryEstimate?.value),
       j(p.packageNotes?.value), p.schoolEmail?.value ?? null, p.careerEmail?.value ?? null,
@@ -669,6 +753,76 @@ export function hiringHistory(): Map<string, HiringHistory> {
 
 export function parseJsonColumn<T>(value: string | null, fallback: T): T {
   return unj(value, fallback);
+}
+
+export interface DedupeResult {
+  merged: { kept: string; removed: string; name: string; reason: string }[];
+  scanned: number;
+}
+
+/**
+ * Fold duplicates that were stored before the write path learned to recognise
+ * them.
+ *
+ * Column by column, a value is only taken from the row being removed where the
+ * row being kept has nothing — so this cannot lose evidence, only combine it.
+ * That is the point: the vacancy row typically holds the salary while the
+ * directory row holds the accreditation.
+ */
+export function dedupeSchools(dryRun = false): DedupeResult {
+  const d = getDb();
+  const all = d
+    .prepare(`SELECT ${IDENTITY_COLUMNS} FROM schools`)
+    .all() as unknown as SchoolIdentity[];
+
+  const peers = new Map<string, Set<string>>();
+  for (const r of all) {
+    const h = hostOf(r.website);
+    if (!h) continue;
+    if (!peers.has(h)) peers.set(h, new Set());
+    peers.get(h)!.add(schoolCore(r.name));
+  }
+
+  const merged: DedupeResult["merged"] = [];
+  const gone = new Set<string>();
+
+  for (let i = 0; i < all.length; i++) {
+    const a = all[i]!;
+    if (gone.has(a.schoolKey)) continue;
+    for (let j = i + 1; j < all.length; j++) {
+      const b = all[j]!;
+      if (gone.has(b.schoolKey)) continue;
+
+      const host = hostOf(a.website);
+      const reason = sameSchool(a, b, host ? (peers.get(host)?.size ?? 1) : 1);
+      if (!reason) continue;
+
+      const keep = preferred(a, b);
+      const drop = keep === a ? b : a;
+      merged.push({ kept: keep.schoolKey, removed: drop.schoolKey, name: keep.name, reason });
+      gone.add(drop.schoolKey);
+      if (!dryRun) foldSchool(drop.schoolKey, keep.schoolKey);
+    }
+  }
+
+  return { merged, scanned: all.length };
+}
+
+/** Columns worth carrying over from a duplicate, where the survivor is empty. */
+const FOLDABLE = [
+  "city", "website", "curriculum_json", "pe_team_size", "student_count", "school_type",
+  "salary_json", "salary_basis", "package_json", "school_email", "career_email",
+  "careers_url", "principal", "school_hook", "pe_hook", "emails_json", "accreditation",
+  "prominence", "enriched_at",
+];
+
+function foldSchool(fromKey: string, intoKey: string): void {
+  const d = getDb();
+  const sets = FOLDABLE.map((c) => `${c} = COALESCE(${c}, (SELECT ${c} FROM schools WHERE school_key = ?))`).join(", ");
+  d.prepare(`UPDATE schools SET ${sets} WHERE school_key = ?`).run(...FOLDABLE.map(() => fromKey), intoKey);
+  // Vacancies follow the school, or the sheet loses their school columns.
+  d.prepare("UPDATE jobs SET school_key = ? WHERE school_key = ?").run(intoKey, fromKey);
+  d.prepare("DELETE FROM schools WHERE school_key = ?").run(fromKey);
 }
 
 export interface RerankResult {

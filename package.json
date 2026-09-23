@@ -18,6 +18,7 @@
     "locations": "node --experimental-strip-types --no-warnings src/cli.ts locations",
     "directory": "node --experimental-strip-types --no-warnings src/cli.ts directory",
     "rank": "node --experimental-strip-types --no-warnings src/cli.ts rank",
+    "dedupe": "node --experimental-strip-types --no-warnings src/cli.ts dedupe",
     "watch": "node --experimental-strip-types --no-warnings src/cli.ts watch",
     "schedule": "node --experimental-strip-types --no-warnings src/cli.ts schedule",
     "test": "node --experimental-strip-types --no-warnings --test test/*.test.ts",
