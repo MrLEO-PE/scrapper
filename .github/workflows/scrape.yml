@@ -1,0 +1,125 @@
+name: Scrape PE jobs
+
+# Two ways to run:
+#   - the "Run workflow" button on the Actions tab
+#   - automatically every morning
+#
+# A run scrapes the boards, enriches the schools, commits the updated database
+# back to the repo so the "still available?" history survives, and publishes
+# the report to GitHub Pages.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sources:
+        description: "Sources, comma separated (blank = all)"
+        required: false
+        default: ""
+      enrich_limit:
+        description: "Max schools to enrich (blank = all pending)"
+        required: false
+        default: ""
+      shallow:
+        description: "Skip vacancy detail pages (faster, much less data)"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    # 06:00 UTC daily. GitHub queues scheduled runs, so it may start late.
+    - cron: "0 6 * * *"
+
+# Needed to commit the database back and to publish Pages.
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Never let two runs write the database at once.
+concurrency:
+  group: scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    # Secrets are not readable from a step-level `if`, so they are lifted into
+    # env here and the Sheets step tests the env value instead.
+    env:
+      GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Not committed, but reusing it between runs keeps us polite to the
+      # sites and makes a rerun much faster.
+      - name: Restore HTTP cache
+        uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: scrapper-http-${{ github.run_id }}
+          restore-keys: scrapper-http-
+
+      - name: Scrape
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.sources }}" ]; then ARGS="$ARGS --sources ${{ inputs.sources }}"; fi
+          if [ "${{ inputs.shallow }}" = "true" ]; then ARGS="$ARGS --shallow"; fi
+          node --experimental-strip-types --no-warnings src/cli.ts scrape $ARGS
+
+      - name: Enrich schools
+        run: |
+          ARGS="--concurrency 6 --budget-ms 45000 --max-pages 8 --max-pdfs 2"
+          if [ -n "${{ inputs.enrich_limit }}" ]; then ARGS="$ARGS --limit ${{ inputs.enrich_limit }}"; fi
+          node --experimental-strip-types --no-warnings src/cli.ts enrich $ARGS
+
+      - name: Build the site
+        run: node --experimental-strip-types --no-warnings src/cli.ts site
+
+      # Optional. Skipped entirely unless both secrets are set, so the
+      # workflow works out of the box with no configuration.
+      - name: Sync to Google Sheets
+        if: env.GOOGLE_SHEET_ID != '' && env.GOOGLE_SERVICE_ACCOUNT_JSON != ''
+        run: |
+          printf '%s' "$GOOGLE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/sa.json"
+          node --experimental-strip-types --no-warnings src/cli.ts export \
+            --format csv --sheet-id "$GOOGLE_SHEET_ID" --key-file "$RUNNER_TEMP/sa.json"
+          rm -f "$RUNNER_TEMP/sa.json"
+
+      - name: Commit the database
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f data/jobs.db
+          if git diff --staged --quiet; then
+            echo "Nothing changed."
+          else
+            git commit -m "Scrape $(date -u +%Y-%m-%d)"
+            # Someone may have pushed while this run was working.
+            git pull --rebase --autostash
+            git push
+          fi
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  publish:
+    needs: scrape
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

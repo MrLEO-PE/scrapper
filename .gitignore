@@ -1,4 +1,6 @@
-data/
+data/*
+!data/jobs.db
+site/
 node_modules/
 *.log
 .env

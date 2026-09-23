@@ -18,6 +18,7 @@ import { enrichSchool, type EnrichOptions, type SchoolInput } from "./enrich/sch
 import { selectedCountries } from "./locations.ts";
 import { buildTable, writeCsv, writeHtml, writeJson, writeTsv, type SheetRow } from "./export/sheet.ts";
 import { syncToSheet } from "./export/gsheets.ts";
+import { buildSite } from "./export/site.ts";
 import { tesSource } from "./sources/tes.ts";
 import { teachawaySource } from "./sources/teachaway.ts";
 import { teacherHorizonsSource } from "./sources/teacherhorizons.ts";
@@ -415,6 +416,10 @@ export async function runExport(opts: ExportOptions = {}): Promise<{ rows: numbe
   }
 
   return { rows: rows.length, files };
+}
+
+export function runSite(outDir?: string, fields?: string[]): { dir: string; jobs: number; schools: number } {
+  return buildSite({ outDir, fields: loadFields(fields) });
 }
 
 export function printStats(): void {

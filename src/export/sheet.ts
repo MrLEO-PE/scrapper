@@ -85,8 +85,22 @@ export function writeJson(path: string, rows: SheetRow[], fieldKeys: string[], s
   return objects.length;
 }
 
+export interface HtmlOptions {
+  /** Links shown across the top, for a multi-page published site. */
+  nav?: { label: string; href: string; current?: boolean }[];
+  /** Extra line under the heading. */
+  note?: string;
+}
+
 /** Standalone HTML report — sortable, with the links clickable. */
-export function writeHtml(path: string, rows: SheetRow[], fieldKeys: string[], scope: "job" | "school", title: string): number {
+export function writeHtml(
+  path: string,
+  rows: SheetRow[],
+  fieldKeys: string[],
+  scope: "job" | "school",
+  title: string,
+  opts: HtmlOptions = {},
+): number {
   const { headers, body, fields } = buildTable(rows, fieldKeys, scope);
   const esc = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -148,9 +162,21 @@ export function writeHtml(path: string, rows: SheetRow[], fieldKeys: string[], s
   tr.lead.stale { background: color-mix(in srgb, orange 12%, transparent); }
   label.only { margin-left: 14px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
   a { color: inherit; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+  nav a { padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; font-size: 13px; }
+  nav a.current { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  nav a:hover { border-color: var(--fg); }
+  @media (max-width: 640px) { body { padding: 16px; } th, td { max-width: 220px; } }
 </style></head><body>
+${
+  opts.nav?.length
+    ? `<nav>${opts.nav
+        .map((n) => `<a href="${esc(n.href)}"${n.current ? ' class="current"' : ""}>${esc(n.label)}</a>`)
+        .join("")}</nav>`
+    : ""
+}
 <h1>${esc(title)}</h1>
-<p class="meta">${body.length} rows${leadershipCount ? ` · ${leadershipCount} leadership` : ""} · generated ${new Date().toISOString().slice(0, 16).replace("T", " ")} · click a header to sort</p>
+<p class="meta">${body.length} rows${leadershipCount ? ` · ${leadershipCount} leadership` : ""} · updated ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC · click a header to sort${opts.note ? ` · ${esc(opts.note)}` : ""}</p>
 <input id="q" placeholder="Filter rows…" autocomplete="off">
 ${leadershipCount ? '<label class="only"><input type="checkbox" id="leadOnly"> leadership roles only</label>' : ""}
 <div class="wrap"><table>

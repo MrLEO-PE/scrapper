@@ -36,6 +36,7 @@ import {
   printStats,
   runEnrich,
   runDirectory,
+  runSite,
   runExport,
   runScrape,
   type ScrapeSummary,
@@ -194,6 +195,7 @@ USAGE
   npm run directory                  top schools per country, recruiting or not
   npm run watch -- --every 24h       keep running on an interval
   npm run schedule -- --daily 07:00  install an OS scheduled task
+  npm run site                       build the publishable site/ folder
   npm run report                     open the latest HTML report
   npm run stats                      what's in the database
 
@@ -431,6 +433,12 @@ async function main(): Promise<void> {
         log.error("say when: --daily 07:00, --weekly MON --at 07:00, or --remove");
         process.exitCode = 1;
       }
+      break;
+    }
+
+    case "site": {
+      const r = runSite(str(args, "out"), csv(args, "fields"));
+      log.plain(`  open ${join(r.dir, "index.html")}`);
       break;
     }
 

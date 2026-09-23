@@ -203,6 +203,70 @@ verify before relying on it.
 
 ---
 
+## Running it from GitHub (no terminal)
+
+The repository ships a GitHub Actions workflow that runs the whole pipeline in the cloud and
+publishes the results as a small website. Once set up, checking for new PE roles is opening a
+bookmark, and running a fresh scrape is one button.
+
+### One-time setup
+
+1. Push this repository to GitHub.
+2. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
+3. **Settings → Actions → General → Workflow permissions: Read and write permissions.**
+
+That is all. The workflow needs no secrets to work.
+
+### Using it
+
+- **Run it now:** the **Actions** tab → *Scrape PE jobs* → **Run workflow**. You can narrow it to
+  certain sources, cap how many schools get enriched, or tick *shallow* for a quick pass.
+- **Automatically:** it already runs every morning at 06:00 UTC. Change or remove the `cron` line
+  in [`.github/workflows/scrape.yml`](.github/workflows/scrape.yml).
+- **Read the results:** your Pages URL, `https://<your-username>.github.io/<repo>/`, with three
+  views and the CSVs:
+
+  | Page | What it is |
+  |---|---|
+  | `index.html` | Open PE vacancies, leadership highlighted, sortable and filterable |
+  | `schools.html` | One row per school with curriculum, size, package and the careers email |
+  | `closed.html` | Roles no longer listed, kept for reference |
+  | `pe-jobs.csv` / `schools.csv` | The same tables, ready for Google Sheets |
+
+It works on a phone, which is the point — the report is one self-contained file per page.
+
+### How history survives
+
+Each run commits `data/jobs.db` back to the repository. That is what lets the **Still Available?**
+column mean anything, and what lets thin sources like Teacher Horizons accumulate coverage over
+time. Everything else (the HTTP cache, generated exports) stays out of git.
+
+### Optional: write straight to a Google Sheet
+
+Add two repository secrets and each run updates your sheet as well:
+
+| Secret | Value |
+|---|---|
+| `GOOGLE_SHEET_ID` | The id from the sheet's URL |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | The whole service-account key file, pasted in |
+
+The step is skipped when they are absent, so nothing breaks if you never set them.
+
+### Worth knowing
+
+- GitHub disables scheduled workflows in a repository with no activity for 60 days. A single
+  manual run re-enables them.
+- Scheduled runs are queued, so 06:00 UTC is a "not before", not a promise.
+- Pages on a **private** repository needs a paid GitHub plan. On a public repository it is free —
+  but then your shortlist and the schools' contact emails are public too. A private repo, or
+  keeping the site local with `npm run site`, avoids that.
+
+To build the same folder locally:
+
+```bash
+npm run site        # writes site/ — open site/index.html
+```
+
 ## Keeping it up to date
 
 Every run re-checks which vacancies are still listed and updates the **Still Available?**
