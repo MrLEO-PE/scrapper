@@ -51,7 +51,12 @@ jobs:
       GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
 
     steps:
+      # Check out the branch itself, not the commit that triggered the run.
+      # Re-running an older run otherwise leaves a detached HEAD, which cannot
+      # be pushed, and would also scrape with stale code.
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-node@v4
         with:
@@ -86,7 +91,9 @@ jobs:
       # week. GitHub emails you when an issue is opened, which makes this the
       # notification — no mail server, no secrets. Each role is marked as
       # alerted so tomorrow's run does not repeat it.
+      # Never fatal: a notification problem must not discard a good scrape.
       - name: Alert on roles worth acting on
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           SITE_URL: ${{ format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
@@ -94,7 +101,8 @@ jobs:
           if TITLE=$(node --experimental-strip-types --no-warnings src/cli.ts alerts \
                 --site-url "$SITE_URL" --mark --out "$RUNNER_TEMP/alert.md"); then
             echo "$TITLE"
-            gh issue create --title "$TITLE" --body-file "$RUNNER_TEMP/alert.md"
+            gh issue create --title "$TITLE" --body-file "$RUNNER_TEMP/alert.md" \
+              || echo "::warning::Could not open the alert issue. Are Issues enabled on this repository?"
           else
             echo "Nothing new worth alerting about."
           fi
@@ -109,24 +117,44 @@ jobs:
             --format csv --sheet-id "$GOOGLE_SHEET_ID" --key-file "$RUNNER_TEMP/sa.json"
           rm -f "$RUNNER_TEMP/sa.json"
 
-      - name: Commit the database
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f data/jobs.db
-          if git diff --staged --quiet; then
-            echo "Nothing changed."
-          else
-            git commit -m "Scrape $(date -u +%Y-%m-%d)"
-            # Someone may have pushed while this run was working.
-            git pull --rebase --autostash
-            git push
-          fi
-
+      # Uploaded before the commit step so a git problem can never stop the
+      # results being published — the scraping is the expensive part and its
+      # output should always reach the site.
       - name: Upload the site
         uses: actions/upload-pages-artifact@v3
         with:
           path: site
+
+      # Saving the database is best-effort. Losing a day of history is a
+      # nuisance; failing the whole run over it, after a successful scrape,
+      # is worse. A real problem is still printed loudly in the log.
+      - name: Commit the database
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f data/jobs.db
+
+          if git diff --staged --quiet; then
+            echo "Database unchanged — nothing to commit."
+            exit 0
+          fi
+
+          git commit -m "Scrape $(date -u +%Y-%m-%d)"
+
+          # Another run, or you, may have pushed while this one was working.
+          for attempt in 1 2 3; do
+            if git pull --rebase --autostash origin main && git push origin HEAD:main; then
+              echo "Database saved."
+              exit 0
+            fi
+            echo "Push attempt $attempt failed; retrying."
+            sleep 5
+          done
+
+          echo "::warning::Could not save data/jobs.db. The site still published;"
+          echo "::warning::history for this run is lost but the next run recovers."
+          exit 1
 
   publish:
     needs: scrape
