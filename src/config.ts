@@ -82,7 +82,16 @@ export const DEFAULT_TARGETS: Targets = {
   countries: [],
   cities: [],
   seniority: [],
-  sources: ["tes", "teachaway", "teacherhorizons", "nordanglia", "inspired"],
+  sources: [
+    "tes",
+    "teachaway",
+    "teacherhorizons",
+    "nordanglia",
+    "inspired",
+    "schoolsite",
+    "europeanchamber",
+    "mailalert",
+  ],
 };
 
 export function loadTargets(): Targets {

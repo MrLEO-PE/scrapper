@@ -47,6 +47,9 @@ const SOURCE_LABELS: Record<string, string> = {
   teacherhorizons: "Teacher Horizons",
   nordanglia: "Nord Anglia",
   inspired: "Inspired Education",
+  schoolsite: "School website",
+  mailalert: "Email alert",
+  europeanchamber: "European Chamber",
 };
 
 const PHASE_LABELS: Record<string, string> = {

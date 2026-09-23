@@ -220,7 +220,9 @@ WATCH / SCHEDULE
   --list                             show the installed task
 
 SCRAPE
-  --sources tes,teachaway            limit to certain boards
+  --sources tes,teachaway            limit to certain sources. Available:
+                                     tes, teachaway, teacherhorizons, nordanglia,
+                                     inspired, schoolsite, europeanchamber, mailalert
   --fresh                            ignore the cache
   --shallow                          skip vacancy detail pages (faster, much less data)
   --max-jobs 50                      stop early (useful for a quick test)

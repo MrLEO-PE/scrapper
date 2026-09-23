@@ -22,6 +22,9 @@ import { tesSource } from "./sources/tes.ts";
 import { teachawaySource } from "./sources/teachaway.ts";
 import { teacherHorizonsSource } from "./sources/teacherhorizons.ts";
 import { successFactorsSources } from "./sources/successfactors.ts";
+import { schoolSitesSource } from "./sources/schoolsites.ts";
+import { mailboxSource } from "./sources/mailbox.ts";
+import { europeanChamberSource } from "./sources/europeanchamber.ts";
 import type { Source } from "./sources/base.ts";
 import {
   expirePastDeadline,
@@ -45,6 +48,9 @@ export const ALL_SOURCES: Source[] = [
   teachawaySource,
   teacherHorizonsSource,
   ...successFactorsSources,
+  schoolSitesSource,
+  europeanChamberSource,
+  mailboxSource,
 ];
 
 /**
@@ -52,7 +58,10 @@ export const ALL_SOURCES: Source[] = [
  * infer that a missing vacancy has been taken down — Teacher Horizons shows a
  * rolling window, so absence there means nothing.
  */
-const ENUMERATED: SourceId[] = ["tes", "teachaway", "nordanglia", "inspired"];
+// Sources that list their full inventory each run, so a vacancy going missing
+// is meaningful. Email alerts and school pages are not: an alert is a one-off
+// message, and a school page shows only what is open today.
+const ENUMERATED: SourceId[] = ["tes", "teachaway", "nordanglia", "inspired", "europeanchamber"];
 
 export interface ScrapeOptions {
   sources?: string[];

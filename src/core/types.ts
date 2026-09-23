@@ -12,7 +12,12 @@ export type SourceId =
   | "teacherhorizons"
   // School groups running their own SuccessFactors career site.
   | "nordanglia"
-  | "inspired";
+  | "inspired"
+  // A school's own careers page, from config/schools.json.
+  | "schoolsite"
+  // Job alerts received by email (the paid services' sanctioned feed).
+  | "mailalert"
+  | "europeanchamber";
 
 /** How sure we are about a single enriched value, and where it came from. */
 export interface Provenance {

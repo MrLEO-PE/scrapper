@@ -66,6 +66,9 @@ npm run run-all
 | **Teacher Horizons** | Public "latest vacancies" feed | Limited by design — see [below](#a-note-on-teacher-horizons) |
 | **Nord Anglia Education** | Group careers site (SAP SuccessFactors) | ~195 vacancies across 80+ schools |
 | **Inspired Education** | Group careers site (SAP SuccessFactors) | ~270 vacancies across Europe, LatAm, Africa, Asia |
+| **School careers pages** | Target schools checked directly | They often post before the boards — see [below](#your-target-schools) |
+| **Email alerts** | `.eml` files you drop in `data/inbox/` | How the paid services reach the sheet — see [below](#paid-services-via-email-alerts) |
+| **European Chamber China** | Single server-rendered board | Mostly commercial, but China international schools post occasionally |
 
 The last two are *employers* rather than boards, which matters: roles appear on a group's own
 careers site that never reach an aggregator, and the school is named directly. Both run on
@@ -84,6 +87,48 @@ Seven search passes run against TES: the Physical Education subject filter, plus
 for *head of sport*, *director of sport*, *head of physical education*, *sports coordinator*,
 *athletic director* and *games teacher*. Sport leadership roles are often filed under Senior
 Leadership rather than PE, and the keyword passes are what catch them.
+
+#### Your target schools
+
+Schools often advertise on their own site before a board picks the role up, so a shortlist is
+checked directly. They live in [`config/schools.json`](config/schools.json) — only the website is
+required, because the careers page is found automatically:
+
+```json
+{ "name": "Bangkok Patana School", "website": "https://www.patana.ac.th",
+  "country": "Thailand", "city": "Bangkok", "on": true }
+```
+
+Set `careers` explicitly only when auto-discovery picks the wrong page; some schools bury it
+(SSIS uses `/community/teaching-in-ssis/join-us/`). Set `"on": false` to skip a school without
+deleting it.
+
+This is best-effort by design. Careers pages vary enormously: some list roles inline, some link
+a PDF job description, and some embed an applicant-tracking widget that renders in the browser
+and is therefore invisible here. Where the landing page only shows category headings — "Teaching
+Vacancies", "Faculty Vacancies" — up to three of those are followed. Schools already inside Nord
+Anglia or Inspired are covered by the group sources, so listing them again is redundant.
+
+#### Paid services, via email alerts
+
+Search Associates, ISS EDUrecruit, TIE Online and Schrole keep their listings behind a login, and
+scraping a members' area you pay for is both fragile and against their terms. What they all do is
+**email you matching vacancies** — that is the sanctioned feed, so the scraper reads the email
+instead.
+
+Drop the alert messages into `data/inbox/` as `.eml` files and they are parsed, classified and
+merged with everything else. Any mail client can save a message as `.eml` (in Gmail: open the
+message → ⋮ → *Download message*). To automate it, set a Gmail filter on the alert senders that
+applies a label, then have any IMAP-capable client sync that label into `data/inbox/`.
+
+The parser handles what real mail generators produce — multipart bodies, quoted-printable,
+base64, encoded-word subjects — and recognises the sender so each row says which service it came
+from. Unsubscribe and tracking links are ignored.
+
+Two notes on that list. **Schrole is now owned by Tes**, and its vacancies largely appear on TES,
+which is already scraped — so it mostly duplicates what you have. **International School
+Community**'s value is its salary data for ~1,850 schools, which is a cross-check for offers
+rather than a job feed; there is no automated import for it.
 
 ### 2. `enrich` — profile the school
 
@@ -260,6 +305,26 @@ GOOGLE_APPLICATION_CREDENTIALS=C:\keys\sheets-key.json
 It is git-ignored, so credentials stay local.
 
 ---
+
+## Sources assessed and not added
+
+Each of these was probed rather than assumed, and left out for a stated reason. Worth recording
+so they are not re-attempted.
+
+| Source | Why not |
+|---|---|
+| **Randstad / Teachanywhere** | Its international teaching section returns *no results at all*; the PE jobs it does list are UK domestic. Teachanywhere.com redirects to Randstad — one source, not two |
+| **TopTutorJob** | Behind Cloudflare bot protection (HTTP 403, "Just a moment…"). That is an access control, and working around it is not something this tool does |
+| **FOBISIA on Eteach** | The fair page states "The event has now ended" and lists nothing. Eteach's own job search is a 2.7 KB JavaScript shell, so it needs a real browser |
+| **Cognita** | Cornerstone ATS, rendered client-side — would need Apify or Playwright |
+| **Dulwich College International** | No job links in `/careers`, and `/careers/search` is disallowed by robots.txt |
+| **Workable** | A hosting platform rather than a board; only useful per named employer |
+| **Monster Thailand, spill.org** | Aggregators — the underlying posting is better read at its source |
+| **APLi / Search Associates vacancy pages** | Behind membership; use the email alerts instead |
+| **LinkedIn, Indeed** | Both actively block automated access and forbid it in their terms. Email alerts only |
+
+Adding a JavaScript-rendered source would mean a headless browser, which is the one dependency
+this project avoids. If you want Cognita or Eteach badly enough, that is the trade to make.
 
 ## A note on Teacher Horizons
 

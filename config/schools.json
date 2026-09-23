@@ -1,0 +1,104 @@
+{
+  "//": "Schools whose own careers page is checked directly. They often post before the boards do.",
+  "//website": "Required. The careers page is found automatically from here.",
+  "//careers": "Optional. Set it only if auto-discovery picks the wrong page — several schools bury it (SSIS uses /community/teaching-in-ssis/join-us/).",
+  "//note": "Schools inside Nord Anglia, Inspired or Cognita are already covered by the group sources; listing them here as well is harmless but usually redundant.",
+  "//on": "Set false to skip a school without deleting it.",
+
+  "schools": [
+    {
+      "name": "Shanghai Singapore International School",
+      "website": "https://www.ssis.asia",
+      "careers": "https://www.ssis.asia/community/teaching-in-ssis/join-us/",
+      "country": "China",
+      "city": "Shanghai",
+      "on": true
+    },
+    {
+      "name": "International School Ho Chi Minh City",
+      "website": "https://www.ishcmc.com",
+      "careers": "https://www.ishcmc.com/about-us/careers-at-ishcmc",
+      "country": "Vietnam",
+      "city": "Ho Chi Minh City",
+      "on": true
+    },
+    {
+      "name": "Bangkok Patana School",
+      "website": "https://www.patana.ac.th",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true
+    },
+    {
+      "name": "Shrewsbury International School Bangkok",
+      "website": "https://www.shrewsbury.ac.th",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true
+    },
+    {
+      "name": "NIST International School",
+      "website": "https://www.nist.ac.th",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true
+    },
+    {
+      "name": "Harrow International School Bangkok",
+      "website": "https://www.harrowschool.ac.th",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true
+    },
+    {
+      "name": "Shanghai American School",
+      "website": "https://www.saschina.org",
+      "country": "China",
+      "city": "Shanghai",
+      "on": true
+    },
+    {
+      "name": "Western Academy of Beijing",
+      "website": "https://www.wab.edu",
+      "country": "China",
+      "city": "Beijing",
+      "on": true
+    },
+    {
+      "name": "International School of Beijing",
+      "website": "https://www.isb.bj.edu.cn",
+      "country": "China",
+      "city": "Beijing",
+      "on": true
+    },
+    {
+      "name": "United World College of South East Asia",
+      "website": "https://www.uwcsea.edu.sg",
+      "country": "Singapore",
+      "city": "Singapore",
+      "on": true
+    },
+    {
+      "name": "Tanglin Trust School",
+      "website": "https://www.tts.edu.sg",
+      "country": "Singapore",
+      "city": "Singapore",
+      "on": true
+    },
+    {
+      "name": "Singapore American School",
+      "website": "https://www.sas.edu.sg",
+      "country": "Singapore",
+      "city": "Singapore",
+      "on": true
+    },
+    {
+      "name": "British International School Ho Chi Minh City",
+      "website": "https://www.bisvietnam.com",
+      "country": "Vietnam",
+      "city": "Ho Chi Minh City",
+      "on": false,
+      "//skip": "Nord Anglia group — already covered by the nordanglia source."
+    }
+  ]
+}
