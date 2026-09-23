@@ -41,6 +41,8 @@ import {
   stats as dbStats,
   sweepMissing,
   upsertJobs,
+  byCountryRank,
+  rerankCountries,
   upsertSchool,
   type JobRow,
   type QueryOptions,
@@ -216,6 +218,15 @@ export async function runEnrich(opts: EnrichRunOptions = {}): Promise<{ enriched
     }
   });
 
+  // Enrichment is what turns an unranked school into a ranked one, so the
+  // country lists are stale the moment it finishes. Re-ranking here means
+  // nobody has to remember to do it.
+  const reranked = rerankCountries();
+  log.info(
+    `re-ranked ${reranked.schools} schools — ${reranked.onSalary + reranked.onPackage} on ` +
+      `package, ${reranked.onProxy} still awaiting a profile`,
+  );
+
   return { enriched: done, withCareerEmail };
 }
 
@@ -304,6 +315,8 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
           country: { value: s.country, provenance: { confidence: 0.95, source: "teachaway directory" } },
           ...(s.city ? { city: { value: s.city, provenance: { confidence: 0.9, source: "teachaway directory" } } } : {}),
           ...(s.website ? { website: { value: s.website, provenance: { confidence: 0.95, source: "teachaway directory" } } } : {}),
+          ...(s.accredBodies.length ? { accreditation: s.accredBodies.join(", ") } : {}),
+          prominence: s.prominence,
           notes: s.why,
         },
         "directory",
@@ -314,6 +327,11 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
         false,
       );
     }
+    // Listing refreshes each school's proxy score, so the order has to be
+    // recomputed — schools already profiled keep their package-based place.
+    const listRank = rerankCountries();
+    log.ok(`ranked ${listRank.schools} schools across ${listRank.countries} countries`);
+
     finishRun(runId, { countries: picked.length, found: all.length, listOnly: true });
     return { countries: picked.length, found: all.length, enriched: 0, withCareerEmail: 0, skipped };
   }
@@ -350,6 +368,9 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
         }
       }
       profile.notes = [...(profile.notes ?? []), ...s.why];
+      // Directory facts the crawl cannot establish, kept for the re-rank.
+      if (s.accredBodies.length) profile.accreditation = s.accredBodies.join(", ");
+      profile.prominence = s.prominence;
 
       upsertSchool(profile, "directory", rankByKey.get(s.schoolKey));
       if (profile.careerEmail) withCareerEmail++;
@@ -363,6 +384,15 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
       log.warn(`${s.name}: ${(err as Error).message}`);
     }
   });
+
+  // Now that packages are known, re-rank each country on what a teacher would
+  // actually get. Until this point the order is only the directory's proxy.
+  const reranked = rerankCountries();
+  log.ok(
+    `ranked ${reranked.schools} schools across ${reranked.countries} countries — ` +
+      `${reranked.onSalary} on package + salary, ${reranked.onPackage} on package, ` +
+      `${reranked.onProxy} on accreditation only`,
+  );
 
   finishRun(runId, { countries: picked.length, found: all.length, enriched: done });
   return { countries: picked.length, found: all.length, enriched: done, withCareerEmail, skipped };
@@ -399,9 +429,7 @@ export async function runExport(opts: ExportOptions = {}): Promise<{ rows: numbe
   if (opts.schoolsOnly) {
     scope = "school";
     title = "International schools — PE profile";
-    rows = [...getSchools().values()]
-      .sort((a, b) => (a.country ?? "").localeCompare(b.country ?? "") || a.name.localeCompare(b.name))
-      .map((school) => ({ school }));
+    rows = [...getSchools().values()].sort(byCountryRank).map((school) => ({ school }));
   } else {
     scope = "job";
     title = "International school PE vacancies";

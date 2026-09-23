@@ -17,7 +17,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { log } from "../core/logger.ts";
-import { getSchools, queryJobs, stats as dbStats } from "../store/db.ts";
+import { byCountryRank, getSchools, queryJobs, stats as dbStats } from "../store/db.ts";
 import { writeCsv, writeHtml, type SheetRow } from "./sheet.ts";
 
 /**
@@ -91,7 +91,7 @@ export function buildSite(opts: SiteOptions): { dir: string; jobs: number; schoo
   const open = toRows("open");
   const closed = toRows("closed");
   const schoolRows: SheetRow[] = [...schools.values()]
-    .sort((a, b) => (a.country ?? "").localeCompare(b.country ?? "") || a.name.localeCompare(b.name))
+    .sort(byCountryRank)
     .map((school) => ({ school }));
 
   const s = dbStats();

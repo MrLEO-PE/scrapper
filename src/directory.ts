@@ -45,17 +45,23 @@ export interface DirectorySchool {
   directoryUrl: string;
 }
 
-/** Accreditation bodies that carry real weight in international schooling. */
+/**
+ * Accreditation bodies that carry real weight in international schooling.
+ *
+ * These dominate the score because they are the closest thing to an objective
+ * signal of a school worth teaching at: independent inspection, and standards
+ * the school has to keep meeting.
+ */
 const STRONG_BODIES: { re: RegExp; label: string; points: number }[] = [
-  { re: /\bCIS\b|Council of International Schools/i, label: "CIS", points: 14 },
-  { re: /\bIBO?\b|International Baccalaureate/i, label: "IB", points: 14 },
-  { re: /\bNEASC\b|New England Association/i, label: "NEASC", points: 12 },
-  { re: /\bWASC\b|Western Association/i, label: "WASC", points: 12 },
-  { re: /\bMSA\b|Middle States/i, label: "MSA", points: 11 },
-  { re: /\bCOBIS\b/i, label: "COBIS", points: 11 },
-  { re: /\bBSO\b|British Schools Overseas/i, label: "BSO", points: 10 },
-  { re: /\bAdvancED\b|\bCognia\b/i, label: "Cognia", points: 9 },
-  { re: /\bNABSS\b|\bECIS\b|\bAISA\b|\bEARCOS\b|\bNESA\b/i, label: "regional association", points: 7 },
+  { re: /\bCIS\b|Council of International Schools/i, label: "CIS", points: 16 },
+  { re: /\bIBO?\b|International Baccalaureate/i, label: "IB", points: 16 },
+  { re: /\bNEASC\b|New England Association/i, label: "NEASC", points: 14 },
+  { re: /\bWASC\b|Western Association/i, label: "WASC", points: 14 },
+  { re: /\bMSA\b|Middle States/i, label: "MSA", points: 13 },
+  { re: /\bCOBIS\b/i, label: "COBIS", points: 13 },
+  { re: /\bBSO\b|British Schools Overseas/i, label: "BSO", points: 12 },
+  { re: /\bAdvancED\b|\bCognia\b/i, label: "Cognia", points: 10 },
+  { re: /\bNABSS\b|\bECIS\b|\bAISA\b|\bEARCOS\b|\bNESA\b/i, label: "regional association", points: 8 },
 ];
 
 function endOfValue(s: string, start: number): number {
@@ -176,7 +182,7 @@ function scoreSchool(s: RawSchool, profile: NonNullable<RawSchool["schoolProfile
 
   const accredText = `${profile.accredBodies ?? ""} ${profile.description ?? ""}`;
   if (/^accredited$/i.test(profile.intAccreditations ?? "")) {
-    score += 10;
+    score += 12;
     why.push("internationally accredited");
   }
   for (const body of STRONG_BODIES) {
@@ -188,41 +194,35 @@ function scoreSchool(s: RawSchool, profile: NonNullable<RawSchool["schoolProfile
   if (bodies.length) why.push(`accredited by ${bodies.join(", ")}`);
 
   if (profile.recognizedInstitution) {
-    score += 8;
+    score += 10;
     why.push("recognised institution");
   }
 
-  // Hiring activity is the best size/health proxy the directory exposes.
-  const jobs = s.jobs?.length ?? 0;
-  if (jobs > 0) {
-    const pts = Math.min(20, jobs * 2);
-    score += pts;
-    why.push(`${jobs} live vacanc${jobs === 1 ? "y" : "ies"}`);
-  }
+  /*
+   * Hiring activity is deliberately NOT scored.
+   *
+   * This list answers "which schools are worth teaching at", not "who is
+   * advertising today" — a school belongs in its country's top regardless of
+   * whether it has a vacancy this week. Scoring it also pointed the wrong way:
+   * a school posting thirteen roles at once may be a school people keep
+   * leaving. The count is still recorded, and the Turnover column reads it
+   * over time, where repetition actually means something.
+   */
 
-  if (profile.website) {
-    score += 5;
-    why.push("has a website");
-  }
-
-  const descLength = (profile.description ?? "").length;
-  if (descLength > 1200) {
-    score += 6;
-    why.push("detailed profile");
-  } else if (descLength > 300) {
-    score += 3;
-  }
-
-  const media = (profile.slideshow?.length ?? 0) + (profile.videos?.length ?? 0) + (profile.brochures?.length ?? 0);
-  if (media > 0) {
-    score += Math.min(5, media);
-    why.push("photos/brochures published");
-  }
-
+  // An all-through school gives a PE teacher the widest scope.
   if (/K12|K_12/i.test(profile.orgType ?? "")) {
-    score += 4;
+    score += 6;
     why.push("all-through school");
   }
+
+  // Transparency, not marketing: these are weak signals and weighted as such.
+  if (profile.website) score += 3;
+
+  const descLength = (profile.description ?? "").length;
+  if (descLength > 1200) score += 2;
+
+  const media = (profile.slideshow?.length ?? 0) + (profile.videos?.length ?? 0) + (profile.brochures?.length ?? 0);
+  if (media > 0) score += Math.min(2, media);
 
   return { score, why, bodies };
 }

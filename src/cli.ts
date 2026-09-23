@@ -41,7 +41,7 @@ import {
   pipeline,
   setStatus,
 } from "./track.ts";
-import { closeDb } from "./store/db.ts";
+import { closeDb, rerankCountries } from "./store/db.ts";
 import {
   ALL_SOURCES,
   printStats,
@@ -307,6 +307,7 @@ USAGE
   npm run fields                     show which columns are ticked
   npm run locations                  show / tick countries and cities
   npm run directory                  top schools per country, recruiting or not
+  npm run rank                       re-rank each country by package and salary
   npm run watch -- --every 24h       keep running on an interval
   npm run schedule -- --daily 07:00  install an OS scheduled task
   npm run track                      your pipeline + what closes soon
@@ -506,6 +507,19 @@ async function main(): Promise<void> {
       log.plain(`  enriched             ${r.enriched}`);
       log.plain(`  with a careers email ${r.withCareerEmail}`);
       if (r.skipped.length) log.warn(`no directory page for: ${r.skipped.join(", ")}`);
+      break;
+    }
+
+    case "rank": {
+      // Useful on its own after an enrich run, which fills in packages for
+      // schools the directory had only listed.
+      const r = rerankCountries();
+      log.step("Ranking by package and salary");
+      log.plain(`  countries              ${r.countries}`);
+      log.plain(`  schools ranked         ${r.schools}`);
+      log.plain(`  on package + salary    ${r.onSalary}`);
+      log.plain(`  on package             ${r.onPackage}`);
+      log.plain(`  on accreditation only  ${r.onProxy}   (not profiled yet)`);
       break;
     }
 

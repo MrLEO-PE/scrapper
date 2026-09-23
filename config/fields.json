@@ -10,9 +10,12 @@
   "school_type": true,
   "pe_roles_seen": true,
   "turnover": true,
+  "accreditation": true,
   "salary_estimate": true,
   "salary_basis": true,
   "package": true,
+  "package_score": true,
+  "rank_basis": true,
   "school_email": true,
   "career_email": true,
   "principal": true,
@@ -42,6 +45,6 @@
   "last_seen": false,
   "posted": false,
   "enriched_at": false,
-  "country_rank": false,
+  "country_rank": true,
   "my_note": false
 }

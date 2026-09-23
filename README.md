@@ -169,6 +169,9 @@ sheet. Ticked by default:
 | School Type | Grade levels, else the website (Primary / Secondary / Primary + Secondary / University) |
 | Approx. Salary (PE expat) | Averaged across that school's adverts, grouped by currency |
 | Package & Career Growth | Board benefits + housing/flights/insurance/CPD/progression terms found in text |
+| Package Score | 0–100, weighted by what each benefit is worth to an expat — see [the ranking](#how-the-ranking-works). Blank means not yet known, not poor |
+| Accreditation | CIS, IB, NEASC, WASC, MSA, COBIS, BSO… |
+| Rank in Country / Rank Basis | Position in its country's top schools, and what that position actually rests on |
 | School Email | Best general inbox |
 | Career Email | Best recruitment/HR address, including ones found inside PDFs |
 | Job Title, Role Level, Still Available?, Job Link, Deadline, Source | The vacancy |
@@ -566,15 +569,41 @@ npm run locations -- --on AE,QA          # pick your countries
 npm run directory -- --top 30            # top 30 per country
 npm run directory -- --cities Dubai      # or narrow to one city
 npm run directory -- --list-only         # rank without crawling each site
-npm run export -- --schools              # one row per school
+npm run rank                             # re-rank after an enrich run
+npm run export -- --schools              # one row per school, best first
 ```
 
-**On "top 30":** there is no official global ranking of international schools, so this does not
-pretend to be one. Schools are ordered by a transparent *prominence score* built from directory
-metadata — accreditation body (CIS, IB, NEASC, WASC, MSA, COBIS, BSO…), recognised-institution
-status, current hiring activity, whether the school publishes a website and how complete its
-profile is. The reasons behind each score are stored with the school. Treat it as a shortlist
-heuristic, not a league table, and re-order by the columns that matter to you.
+### How the ranking works
+
+There is no official global ranking of international schools, so this does not pretend to be one.
+It ranks on the thing you actually care about: **what you would be paid and given.**
+
+Each school's package is scored 0–100 by what each benefit is worth to an expat teacher, not by
+how many are listed — housing (30) and dependant school places (25) count for far more than a
+transport allowance (3), so a school offering "bonus + transport" never outranks one offering
+accommodation and free places for your children. Where a country has two or more schools quoting
+salary in the same currency and period, the figure refines the order but does not decide it: a
+headline salary with no housing attached is usually the worse offer. Salaries are never compared
+across currencies, because converting without a rate would be inventing data.
+
+The **Rank Basis** column says what each position actually rests on:
+
+| Basis | Meaning |
+| --- | --- |
+| `package + salary` | Both established from the school's own material. |
+| `package` | Package established; no comparable salary figure in that country. |
+| `accreditation only` | **Not profiled yet.** Position is a proxy from accreditation (CIS, IB, NEASC, WASC, MSA, COBIS, BSO…), recognised-institution status, whether it is all-through, and how complete its profile is. It says nothing about pay. |
+
+Two deliberate choices are worth knowing. A package score below 25 is treated as unknown rather
+than poor — finding the word "bonus" is not evidence of a good package, and letting it outrank an
+accredited school we simply have not read yet would reward being easy to crawl. And hiring
+activity is not scored at all: a school posting thirteen roles at once may be a school people keep
+leaving. The count is still recorded, and the **Turnover** column reads it over time, where
+repetition actually means something.
+
+Ranking runs *after* enrichment, because a school's package is not known until its site has been
+read. Until then its rank is provisional and the basis column says so. Run `npm run enrich` to
+convert `accreditation only` rows into real ones.
 
 Coverage comes from the Teach Away school directory, which lists schools by country.
 

@@ -14,7 +14,8 @@ import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { log } from "../core/logger.ts";
-import type { Job, SchoolProfile, SourceId } from "../core/types.ts";
+import { rankByValue } from "../match/packagevalue.ts";
+import type { Job, Salary, SchoolProfile, SourceId } from "../core/types.ts";
 
 export type JobStatus = "open" | "stale" | "closed";
 
@@ -91,6 +92,10 @@ CREATE TABLE IF NOT EXISTS schools (
   notes_json      TEXT,
   origin          TEXT NOT NULL DEFAULT 'job',
   country_rank    INTEGER,
+  accreditation   TEXT,
+  prominence      INTEGER,
+  package_score   INTEGER,
+  rank_basis      TEXT,
   enriched_at     TEXT,
   created_at      TEXT NOT NULL
 );
@@ -138,6 +143,24 @@ const MIGRATIONS: { table: string; column: string; ddl: string }[] = [
   { table: "jobs", column: "my_note", ddl: "ALTER TABLE jobs ADD COLUMN my_note TEXT" },
   // Exactly what a salary figure is: one advert, an average, or a benchmark.
   { table: "schools", column: "salary_basis", ddl: "ALTER TABLE schools ADD COLUMN salary_basis TEXT" },
+  // Which bodies accredit the school — the main signal behind its rank.
+  { table: "schools", column: "accreditation", ddl: "ALTER TABLE schools ADD COLUMN accreditation TEXT" },
+  // The directory's proxy score, kept so a rank can fall back to it when the
+  // school has no package evidence yet.
+  /*
+   * Deliberately left empty for existing rows, to be filled by the next
+   * directory listing.
+   *
+   * The obvious shortcut — recovering a score by inverting the stored
+   * country_rank — puts two incompatible scales in one column: a real score
+   * tops out near 70, while inverting a rank in a 200-school country yields
+   * 137. The invented number then outranks genuinely accredited schools. A
+   * null is honest and costs one listing run to fix.
+   */
+  { table: "schools", column: "prominence", ddl: "ALTER TABLE schools ADD COLUMN prominence INTEGER" },
+  // What a country rank was decided on, and the package score behind it.
+  { table: "schools", column: "package_score", ddl: "ALTER TABLE schools ADD COLUMN package_score INTEGER" },
+  { table: "schools", column: "rank_basis", ddl: "ALTER TABLE schools ADD COLUMN rank_basis TEXT" },
 ];
 
 function migrate(d: DatabaseSync): void {
@@ -497,8 +520,8 @@ export function upsertSchool(
         student_count, school_type, salary_json, package_json, school_email,
         career_email, careers_url, principal, school_hook, pe_hook, salary_basis,
         emails_json, provenance_json, notes_json,
-        origin, country_rank, enriched_at, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        origin, country_rank, accreditation, prominence, enriched_at, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(school_key) DO UPDATE SET
         name = excluded.name,
         country = COALESCE(excluded.country, schools.country),
@@ -528,6 +551,8 @@ export function upsertSchool(
         provenance_json = excluded.provenance_json,
         notes_json = excluded.notes_json,
         country_rank = COALESCE(excluded.country_rank, schools.country_rank),
+        accreditation = COALESCE(excluded.accreditation, schools.accreditation),
+        prominence = COALESCE(excluded.prominence, schools.prominence),
         enriched_at = COALESCE(excluded.enriched_at, schools.enriched_at)`,
     )
     .run(
@@ -539,7 +564,8 @@ export function upsertSchool(
       p.principal?.value ?? null, p.schoolHook?.value ?? null, p.peHook?.value ?? null,
       p.salaryBasis ?? null,
       j(p.allEmails), j(provenance), j(p.notes),
-      origin, countryRank ?? null, markEnriched ? (p.enrichedAt ?? now) : null, now,
+      origin, countryRank ?? null, p.accreditation ?? null, p.prominence ?? null,
+      markEnriched ? (p.enrichedAt ?? now) : null, now,
     );
 }
 
@@ -565,7 +591,25 @@ export interface SchoolRow {
   emails_json: string | null;
   origin: string;
   country_rank: number | null;
+  accreditation: string | null;
+  prominence: number | null;
+  package_score: number | null;
+  rank_basis: string | null;
   enriched_at: string | null;
+}
+
+/**
+ * Reading order for any school list: country, then its rank within that
+ * country. The list is meant to be read top-down as "the schools to be at
+ * here", so alphabetical order would waste it. Unranked schools sort last, and
+ * ties resolve by name so the order never changes between runs.
+ */
+export function byCountryRank(a: SchoolRow, b: SchoolRow): number {
+  return (
+    (a.country ?? "").localeCompare(b.country ?? "") ||
+    (a.country_rank ?? Number.MAX_SAFE_INTEGER) - (b.country_rank ?? Number.MAX_SAFE_INTEGER) ||
+    a.name.localeCompare(b.name)
+  );
 }
 
 export function getSchools(keys?: string[]): Map<string, SchoolRow> {
@@ -625,6 +669,81 @@ export function hiringHistory(): Map<string, HiringHistory> {
 
 export function parseJsonColumn<T>(value: string | null, fallback: T): T {
   return unj(value, fallback);
+}
+
+export interface RerankResult {
+  countries: number;
+  schools: number;
+  /** How many ranks rest on real package evidence rather than a proxy. */
+  onPackage: number;
+  onSalary: number;
+  onProxy: number;
+}
+
+/**
+ * Recompute every country's ranking from what a teacher would actually be paid
+ * and given.
+ *
+ * This has to run *after* enrichment, not during it: a school's package is not
+ * known until its site has been read, so the rank a directory listing gets is
+ * only ever provisional. Re-ranking as a separate pass is what lets the final
+ * order reflect the package rather than the order the directory happened to
+ * return schools in.
+ */
+export function rerankCountries(): RerankResult {
+  const d = getDb();
+  const rows = d
+    .prepare(
+      `SELECT school_key, name, country, package_json, salary_json, prominence
+         FROM schools
+        WHERE country IS NOT NULL AND country <> ''`,
+    )
+    .all() as Pick<
+    SchoolRow,
+    "school_key" | "name" | "country" | "package_json" | "salary_json" | "prominence"
+  >[];
+
+  const byCountry = new Map<string, typeof rows>();
+  for (const r of rows) {
+    const key = r.country!;
+    byCountry.set(key, [...(byCountry.get(key) ?? []), r]);
+  }
+
+  const write = d.prepare(
+    `UPDATE schools SET country_rank = ?, package_score = ?, rank_basis = ? WHERE school_key = ?`,
+  );
+  const result: RerankResult = { countries: 0, schools: 0, onPackage: 0, onSalary: 0, onProxy: 0 };
+
+  for (const [, group] of byCountry) {
+    const ranked = rankByValue(
+      group.map((r) => {
+        const salary = unj<Salary | null>(r.salary_json, null);
+        return {
+          schoolKey: r.school_key,
+          name: r.name,
+          packageTerms: unj<string[]>(r.package_json, []),
+          salaryMin: salary?.min ?? null,
+          salaryMax: salary?.max ?? null,
+          salaryCurrency: salary?.currency ?? null,
+          salaryPeriod: salary?.period ?? null,
+          // A school listed but never profiled keeps the directory's proxy
+          // score, and its rank says so rather than implying a poor package.
+          accreditationScore: r.prominence ?? 0,
+        };
+      }),
+    );
+
+    for (const s of ranked) {
+      write.run(s.rank, s.packageScore, s.basis, s.schoolKey);
+      if (s.basis === "package") result.onPackage++;
+      else if (s.basis === "package+salary") result.onSalary++;
+      else result.onProxy++;
+    }
+    result.countries++;
+    result.schools += ranked.length;
+  }
+
+  return result;
 }
 
 export function stats(): Record<string, number> {

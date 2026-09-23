@@ -81,6 +81,11 @@ jobs:
             --limit "${{ inputs.batch || '120' }}" \
             --concurrency 6 --budget-ms 40000 --max-pages 8 --max-pdfs 2
 
+      # Profiling is what reveals a package, so the country lists are out of
+      # date until this runs. Cheap: one UPDATE per school, no network.
+      - name: Re-rank each country by package and salary
+        run: node --experimental-strip-types --no-warnings src/cli.ts rank
+
       - name: Build the site
         run: node --experimental-strip-types --no-warnings src/cli.ts site
 

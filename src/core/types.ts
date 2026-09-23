@@ -177,6 +177,13 @@ export interface SchoolProfile {
   salaryEstimate?: Sourced<Salary>;
   /** Exactly what the salary figure is: one advert, an average, a benchmark. */
   salaryBasis?: string;
+  /** Accrediting bodies, e.g. "CIS, IB" — the main signal behind a rank. */
+  accreditation?: string;
+  /**
+   * The directory's proxy score. Only used to rank a school whose package is
+   * not known yet; once it is, the package decides.
+   */
+  prominence?: number;
   packageNotes?: Sourced<string[]>;
   schoolEmail?: Sourced<string>;
   careerEmail?: Sourced<string>;

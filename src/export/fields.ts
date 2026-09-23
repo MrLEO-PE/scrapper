@@ -21,6 +21,7 @@ import { formLabel } from "../match/appform.ts";
 import { draftEmail, emailCell, loadProfile, resetProfile } from "./email.ts";
 import { assessFit, fitSummary } from "../match/fit.ts";
 import { BASIS_LABEL } from "../enrich/salary.ts";
+import { RANK_BASIS_LABEL } from "../match/packagevalue.ts";
 import { STATUS_LABEL as MY_STATUS_LABEL } from "../track.ts";
 
 export interface FieldContext {
@@ -432,8 +433,24 @@ export const FIELDS: FieldDef[] = [
   },
   {
     key: "country_rank", label: "Rank in Country", group: "tracking", scope: "school",
-    help: "Position in the top-schools list for its country (directory mode).",
+    help: "Position in the top-schools list for its country (directory mode), ranked on package and salary.",
     get: (c) => (c.school?.country_rank != null ? String(c.school.country_rank) : ""),
+  },
+  {
+    key: "package_score", label: "Package Score", group: "package", scope: "school",
+    help: "0-100, weighted by what each benefit is actually worth to an expat: housing and dependant school places count far more than a transport allowance. 0 means the package is not known yet, not that it is poor.",
+    get: (c) => (c.school?.package_score ? String(c.school.package_score) : ""),
+  },
+  {
+    key: "rank_basis", label: "Rank Basis", group: "package", scope: "school",
+    help: "What the country rank was decided on. 'accreditation only' means the school has not been profiled yet, so its position is a proxy rather than evidence about pay.",
+    get: (c) =>
+      RANK_BASIS_LABEL[(c.school?.rank_basis ?? "") as keyof typeof RANK_BASIS_LABEL] ?? "",
+  },
+  {
+    key: "accreditation", label: "Accreditation", group: "school", scope: "both",
+    help: "Bodies accrediting the school (CIS, IB, NEASC, COBIS...). The closest thing to an objective quality signal in international schooling.",
+    get: (c) => c.school?.accreditation ?? "",
   },
 ];
 
