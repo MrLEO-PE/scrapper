@@ -110,10 +110,24 @@ function splitLocation(value?: string): { city?: string; country?: string } {
   return { city: parts[0] };
 }
 
+/**
+ * Some postings put a region in `facility` instead of a school — a Nord Anglia
+ * PE role listed its facility as "Europe". That became a school record named
+ * "Europe" with no country, which then sat in the school list forever. A region
+ * is not a school, so fall back to the group.
+ */
+const REGION_NOT_A_SCHOOL =
+  /^(?:europe|asia|africa|americas?|oceania|middle east|far east|south[\s-]?east asia|apac|emea|latam|north america|south america|central america|worldwide|global|international|various|multiple locations)$/i;
+
+/** `facility` is the school; without a usable one, the group is the employer. */
+export function schoolNameFor(facility: string | undefined, groupLabel: string): string {
+  const name = facility?.trim();
+  return name && !REGION_NOT_A_SCHOOL.test(name) ? name : groupLabel;
+}
+
 function toRawJob(site: SuccessFactorsSite, row: Row): RawJob {
   const { city, country } = splitLocation(row.fields.location);
-  // `facility` is the school; without it the group itself is the employer.
-  const school = row.fields.facility || site.label;
+  const school = schoolNameFor(row.fields.facility, site.label);
 
   return {
     source: site.id,
