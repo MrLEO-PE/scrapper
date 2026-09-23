@@ -175,6 +175,25 @@ sheet. Ticked by default:
 | Days Left | Days until the deadline — sort by it to see what is urgent |
 | Form to Fill? / Form Link | Whether applying needs an application form, and where it is |
 
+### "PE Roles Seen" and "Turnover" — does anyone stay?
+
+A school that keeps re-advertising the same PE post is telling you something. Because every run
+commits the database, the scraper accumulates that history by itself:
+
+| Column | What it is |
+|---|---|
+| **PE Roles Seen** | How many separate PE vacancies this school has advertised since the scraper started watching |
+| **Turnover** | Low / Moderate / High, from how often it advertises |
+
+Postings are counted per vacancy, not per advert, so the same role appearing on TES and Teach
+Away counts once.
+
+**Turnover stays blank for the first six months, deliberately.** On a database a fortnight old,
+three postings looks alarming and means nothing — a school may simply have opened a new campus.
+The rating is based on postings per year once there is enough history: roughly 3+ a year reads as
+High, 1.5–3 as Moderate, below that as Low. It is a prompt to look closer at a school, not a
+measurement — a large all-through school legitimately hires more PE staff than a small primary.
+
 ### "Form to Fill?" — what the values mean
 
 Schools ask for applications in different ways, and the difference is worth knowing before you

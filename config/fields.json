@@ -8,6 +8,8 @@
   "pe_team_size": true,
   "student_count": true,
   "school_type": true,
+  "pe_roles_seen": true,
+  "turnover": true,
   "salary_estimate": true,
   "package": true,
   "school_email": true,

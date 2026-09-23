@@ -17,6 +17,7 @@ import { fetchCountryDirectory, phaseFromOrgType, type DirectorySchool } from ".
 import { enrichSchool, type EnrichOptions, type SchoolInput } from "./enrich/school.ts";
 import { selectedCountries } from "./locations.ts";
 import { buildTable, writeCsv, writeHtml, writeJson, writeTsv, type SheetRow } from "./export/sheet.ts";
+import { resetHiring } from "./export/fields.ts";
 import { syncToSheet } from "./export/gsheets.ts";
 import { buildSite } from "./export/site.ts";
 import { tesSource } from "./sources/tes.ts";
@@ -365,6 +366,8 @@ export interface ExportOptions {
 }
 
 export async function runExport(opts: ExportOptions = {}): Promise<{ rows: number; files: string[] }> {
+  // The watch loop stays up across cycles; re-read the hiring counts.
+  resetHiring();
   const fields = loadFields(opts.fields);
   const outDir = opts.outDir ?? OUT_DIR;
   const formats = opts.formats?.length ? opts.formats : ["csv", "html"];
@@ -425,6 +428,7 @@ export async function runExport(opts: ExportOptions = {}): Promise<{ rows: numbe
 }
 
 export function runSite(outDir?: string, fields?: string[]): { dir: string; jobs: number; schools: number } {
+  resetHiring();
   return buildSite({ outDir, fields: loadFields(fields) });
 }
 

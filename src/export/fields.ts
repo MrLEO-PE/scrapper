@@ -8,7 +8,13 @@
  * Adding a column means adding one entry here; nothing else changes.
  */
 
-import { parseJsonColumn, type JobRow, type SchoolRow } from "../store/db.ts";
+import {
+  hiringHistory,
+  parseJsonColumn,
+  type HiringHistory,
+  type JobRow,
+  type SchoolRow,
+} from "../store/db.ts";
 import { countryName, truncate } from "../core/text.ts";
 import type { ApplicationForm, DiscoveredEmail, Salary } from "../core/types.ts";
 import { formLabel } from "../match/appform.ts";
@@ -116,6 +122,43 @@ function date(v: string | null | undefined): string {
   return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
 }
 
+/**
+ * Hiring history, loaded once per process.
+ *
+ * The CLI is short-lived, so a single read is always current. `resetHiring`
+ * exists for the watch loop, which stays up across runs.
+ */
+let hiringCache: Map<string, HiringHistory> | null = null;
+const hiringFor = (key?: string | null): HiringHistory | undefined => {
+  hiringCache ??= hiringHistory();
+  return key ? hiringCache.get(key) : undefined;
+};
+export const resetHiring = (): void => {
+  hiringCache = null;
+};
+
+/**
+ * Before this much observation, how often a school advertises says nothing —
+ * one posting in a fortnight is not a pattern. The column stays blank until
+ * the database has watched long enough to be worth reading.
+ */
+const MIN_MONTHS_TO_JUDGE = 6;
+
+/**
+ * Turn postings-per-year into a plain word.
+ *
+ * Deliberately coarse: this is a hint to look closer at a school, not a
+ * measurement. A single PE department rarely needs more than one new teacher a
+ * year unless people are leaving.
+ */
+export function turnoverLabel(h: HiringHistory | undefined): string {
+  if (!h || h.monthsObserved < MIN_MONTHS_TO_JUDGE) return "";
+  const perYear = h.postings / (h.monthsObserved / 12);
+  if (perYear >= 3) return "High";
+  if (perYear >= 1.5) return "Moderate";
+  return "Low";
+}
+
 /** School columns fall back to the job row when a school has not been enriched. */
 const schoolCountry = (c: FieldContext): string =>
   countryName(c.school?.country ?? c.job?.country ?? undefined) ?? "";
@@ -165,6 +208,19 @@ export const FIELDS: FieldDef[] = [
     key: "website", label: "Website", group: "school", scope: "both",
     help: "School website.",
     get: (c) => c.school?.website ?? c.job?.school_website ?? "",
+  },
+  {
+    key: "pe_roles_seen", label: "PE Roles Seen", group: "school", scope: "both",
+    help: "How many separate PE vacancies this school has advertised since the scraper started watching. Repeated adverts hint at people not staying.",
+    get: (c) => {
+      const h = hiringFor(c.school?.school_key ?? c.job?.school_key);
+      return h ? String(h.postings) : "";
+    },
+  },
+  {
+    key: "turnover", label: "Turnover", group: "school", scope: "both",
+    help: "Low / Moderate / High, from how often the school advertises PE roles. Blank until the database has watched for six months — before that it would be guesswork.",
+    get: (c) => turnoverLabel(hiringFor(c.school?.school_key ?? c.job?.school_key)),
   },
 
   // ---- package --------------------------------------------------------

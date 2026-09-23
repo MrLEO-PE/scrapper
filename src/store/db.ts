@@ -509,6 +509,51 @@ export function getSchools(keys?: string[]): Map<string, SchoolRow> {
   return new Map(rows.map((r) => [r.school_key, r]));
 }
 
+export interface HiringHistory {
+  /** Distinct PE vacancies ever recorded for this school. */
+  postings: number;
+  /** ISO date this school was first observed. */
+  firstSeen: string;
+  /** Months between the first sighting and now. */
+  monthsObserved: number;
+}
+
+/**
+ * How often each school has advertised a PE role.
+ *
+ * A school that keeps re-advertising the same post is telling you something
+ * about how long people stay. This is only meaningful once the database has
+ * been running for a while — see `turnoverLabel`, which refuses to judge
+ * before then.
+ *
+ * Counted by `dedupe_key` rather than `id` so the same vacancy appearing on
+ * two boards is one posting, not two.
+ */
+export function hiringHistory(): Map<string, HiringHistory> {
+  const rows = getDb()
+    .prepare(
+      `SELECT school_key,
+              COUNT(DISTINCT dedupe_key) AS postings,
+              MIN(first_seen_at)         AS first_seen
+         FROM jobs
+        WHERE is_pe = 1 AND school_key IS NOT NULL
+        GROUP BY school_key`,
+    )
+    .all() as unknown as { school_key: string; postings: number; first_seen: string }[];
+
+  const out = new Map<string, HiringHistory>();
+  for (const r of rows) {
+    const start = Date.parse(r.first_seen);
+    const months = Number.isNaN(start) ? 0 : (Date.now() - start) / (30.44 * 86_400_000);
+    out.set(r.school_key, {
+      postings: Number(r.postings),
+      firstSeen: r.first_seen,
+      monthsObserved: months,
+    });
+  }
+  return out;
+}
+
 export function parseJsonColumn<T>(value: string | null, fallback: T): T {
   return unj(value, fallback);
 }
