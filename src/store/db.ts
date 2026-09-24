@@ -755,6 +755,45 @@ export function parseJsonColumn<T>(value: string | null, fallback: T): T {
   return unj(value, fallback);
 }
 
+export interface OpenRoles {
+  count: number;
+  /** Titles of the roles open right now, best-known first. */
+  titles: string[];
+  /** Link to one of them, so the sheet cell can be acted on. */
+  url: string;
+  /** Soonest deadline among them, ISO, when any is known. */
+  deadline?: string;
+}
+
+/**
+ * Which schools have a PE vacancy open right now.
+ *
+ * The top-schools list is deliberately not about who is advertising — a school
+ * belongs there whether or not it has a vacancy this week. But when it does
+ * have one, that is the moment to act on it, so the list says so in a column
+ * rather than making you cross-reference two tabs.
+ */
+export function openRolesBySchool(): Map<string, OpenRoles> {
+  const rows = getDb()
+    .prepare(
+      `SELECT school_key, title, url, deadline_at
+         FROM jobs
+        WHERE is_pe = 1 AND status = 'open' AND school_key IS NOT NULL
+        ORDER BY COALESCE(deadline_at, '9999') ASC`,
+    )
+    .all() as { school_key: string; title: string; url: string; deadline_at: string | null }[];
+
+  const out = new Map<string, OpenRoles>();
+  for (const r of rows) {
+    const found = out.get(r.school_key) ?? { count: 0, titles: [], url: r.url };
+    found.count++;
+    found.titles.push(r.title);
+    found.deadline ??= r.deadline_at ?? undefined;
+    out.set(r.school_key, found);
+  }
+  return out;
+}
+
 export interface DedupeResult {
   merged: { kept: string; removed: string; name: string; reason: string }[];
   scanned: number;

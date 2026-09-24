@@ -168,6 +168,7 @@ sheet. Ticked by default:
 | Students in School | School website / job pack |
 | School Type | Grade levels, else the website (Primary / Secondary / Primary + Secondary / University) |
 | Approx. Salary (PE expat) | Averaged across that school's adverts, grouped by currency |
+| Open PE Role? / Open Role Link / Deadline | Whether the school is advertising right now, and the vacancy behind it. A school earns its place in the list on its own merits — this column is *when to act*, not *why it is listed* |
 | Package & Career Growth | Board benefits + housing/flights/insurance/CPD/progression terms found in text |
 | Package Score | 0–100, weighted by what each benefit is worth to an expat — see [the ranking](#how-the-ranking-works). Blank means not yet known, not poor |
 | Accreditation | CIS, IB, NEASC, WASC, MSA, COBIS, BSO… |
@@ -177,6 +178,19 @@ sheet. Ticked by default:
 | Job Title, Role Level, Still Available?, Job Link, Deadline, Source | The vacancy |
 | Days Left | Days until the deadline — sort by it to see what is urgent |
 | Form to Fill? / Form Link | Whether applying needs an application form, and where it is |
+
+### Which countries you see
+
+`config/directory.json` is the single list of countries you care about, and **every view holds to
+it** — the schools list and the live vacancies alike.
+
+Scraping still covers every board in full, so narrowing the list hides nothing permanently: add a
+country and the next build shows its roles, with no re-scrape. Widen a single export with
+`--all-countries`.
+
+A vacancy whose country the board did not state is kept rather than hidden. A school with no
+country can wait for the next directory run; a vacancy has a deadline, and hiding it to tidy a list
+is the one outcome here that actually costs something.
 
 ### One school, one row
 

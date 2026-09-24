@@ -10,8 +10,10 @@
 
 import {
   hiringHistory,
+  openRolesBySchool,
   parseJsonColumn,
   type HiringHistory,
+  type OpenRoles,
   type JobRow,
   type SchoolRow,
 } from "../store/db.ts";
@@ -138,8 +140,16 @@ const hiringFor = (key?: string | null): HiringHistory | undefined => {
   hiringCache ??= hiringHistory();
   return key ? hiringCache.get(key) : undefined;
 };
+/** Vacancies open right now, cached on the same terms as the hiring history. */
+let openRolesCache: Map<string, OpenRoles> | null = null;
+const openRolesFor = (key?: string | null): OpenRoles | undefined => {
+  openRolesCache ??= openRolesBySchool();
+  return key ? openRolesCache.get(key) : undefined;
+};
+
 export const resetHiring = (): void => {
   hiringCache = null;
+  openRolesCache = null;
 };
 
 /**
@@ -221,6 +231,25 @@ export const FIELDS: FieldDef[] = [
       const h = hiringFor(c.school?.school_key ?? c.job?.school_key);
       return h ? String(h.postings) : "";
     },
+  },
+  {
+    key: "hiring_now", label: "Open PE Role?", group: "school", scope: "school",
+    help: "Whether this school has a PE vacancy open right now. A school earns its place in the list on its own merits, not on whether it happens to be advertising — this column is when to act, not why it is listed.",
+    get: (c) => {
+      const o = openRolesFor(c.school?.school_key);
+      if (!o) return "No";
+      return o.count === 1 ? `Yes — ${o.titles[0]}` : `Yes — ${o.count} roles`;
+    },
+  },
+  {
+    key: "hiring_now_link", label: "Open Role Link", group: "school", scope: "school",
+    help: "The vacancy behind the Open PE Role? column. Blank when the school is not advertising.",
+    get: (c) => openRolesFor(c.school?.school_key)?.url ?? "",
+  },
+  {
+    key: "hiring_now_deadline", label: "Open Role Deadline", group: "school", scope: "school",
+    help: "Soonest closing date among this school's open PE roles, so an urgent one is visible from the schools list.",
+    get: (c) => date(openRolesFor(c.school?.school_key)?.deadline),
   },
   {
     key: "draft_email", label: "Prepared Email", group: "contact", scope: "job",

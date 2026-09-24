@@ -21,6 +21,7 @@ import {
   loadDirectoryTargets,
   plannedTotal,
   targetCountries,
+  vacancyInScope,
   type DirectoryTarget,
 } from "./directoryconfig.ts";
 import { buildTable, writeCsv, writeHtml, writeJson, writeTsv, type SheetRow } from "./export/sheet.ts";
@@ -454,7 +455,10 @@ export async function runExport(opts: ExportOptions = {}): Promise<{ rows: numbe
   } else {
     scope = "job";
     title = "International school PE vacancies";
-    const jobRows = queryJobs({ peOnly: true, status: "open", ...opts.query });
+    const targets = targetCountries();
+    const jobRows = queryJobs({ peOnly: true, status: "open", ...opts.query }).filter(
+      (job) => opts.allCountries || vacancyInScope(job.country, targets),
+    );
     const schools = getSchools();
     rows = jobRows.map((job) => ({
       job,

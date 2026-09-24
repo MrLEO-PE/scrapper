@@ -41,16 +41,35 @@ export function buildTable(rows: SheetRow[], fieldKeys: string[], scope: "job" |
 } {
   const fields = resolveFields(fieldKeys, scope);
   const headers = fields.map((f) => f.label);
+
+  /*
+   * A failing getter must not take the whole export down — but it must not
+   * pass for "no data" either. Swallowing it silently once produced a column
+   * that read empty for all 521 schools because of a mistyped column name,
+   * and an empty cell is exactly what a genuinely unknown value looks like.
+   * So: keep going, then say what broke and how often.
+   */
+  const failures = new Map<string, { count: number; message: string }>();
   const body = rows.map((row) => {
     const ctx: FieldContext = { job: row.job, school: row.school };
     return fields.map((f) => {
       try {
         return f.get(ctx) ?? "";
-      } catch {
+      } catch (err) {
+        const prev = failures.get(f.key);
+        failures.set(f.key, {
+          count: (prev?.count ?? 0) + 1,
+          message: prev?.message ?? (err as Error).message,
+        });
         return "";
       }
     });
   });
+
+  for (const [key, { count, message }] of failures) {
+    log.warn(`column "${key}" failed on ${count} of ${rows.length} rows and is blank there: ${message}`);
+  }
+
   return { headers, body, fields };
 }
 

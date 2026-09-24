@@ -18,7 +18,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { log } from "../core/logger.ts";
 import { byCountryRank, getSchools, queryJobs, stats as dbStats } from "../store/db.ts";
-import { isTargetCountry, targetCountries } from "../directoryconfig.ts";
+import { isTargetCountry, targetCountries, vacancyInScope } from "../directoryconfig.ts";
 import { writeCsv, writeHtml, type SheetRow } from "./sheet.ts";
 
 /**
@@ -83,18 +83,21 @@ export function buildSite(opts: SiteOptions): { dir: string; jobs: number; schoo
   mkdirSync(dir, { recursive: true });
 
   const schools = getSchools();
+  // Every view holds to the countries in config/directory.json. Scraping still
+  // covers the world, so widening the config brings roles back at the next
+  // build — nothing has to be re-scraped.
+  const targets = targetCountries();
+
   const toRows = (status: "open" | "closed"): SheetRow[] =>
-    queryJobs({ peOnly: true, status }).map((job) => ({
-      job,
-      school: job.school_key ? schools.get(job.school_key) : undefined,
-    }));
+    queryJobs({ peOnly: true, status })
+      .filter((job) => vacancyInScope(job.country, targets))
+      .map((job) => ({
+        job,
+        school: job.school_key ? schools.get(job.school_key) : undefined,
+      }));
 
   const open = toRows("open");
   const closed = toRows("closed");
-  // Same scoping as the schools export: the top-schools list holds to the
-  // countries in config/directory.json, while Open roles still shows vacancies
-  // from everywhere.
-  const targets = targetCountries();
   const schoolRows: SheetRow[] = [...schools.values()]
     .filter((s) => isTargetCountry(s.country, targets))
     .sort(byCountryRank)

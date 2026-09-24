@@ -73,3 +73,14 @@ export function isTargetCountry(country: string | null | undefined, targets: Set
   const c = country.trim().toLowerCase();
   return targets.has(c) || targets.has(ALIASES.get(c) ?? "");
 }
+
+/**
+ * The same test for a vacancy, which is kept when its country is unknown.
+ *
+ * A school with no country is a gap in the directory and can wait. A vacancy
+ * with no country is a live role with a deadline, and hiding it to tidy a list
+ * is the one outcome that actually costs something.
+ */
+export function vacancyInScope(country: string | null | undefined, targets: Set<string>): boolean {
+  return !country?.trim() || isTargetCountry(country, targets);
+}
