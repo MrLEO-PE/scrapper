@@ -638,6 +638,32 @@ The **Rank Basis** column says what each position actually rests on:
 | `package` | Package established; no comparable salary figure in that country. |
 | `accreditation only` | **Not profiled yet.** Position is a proxy from accreditation (CIS, IB, NEASC, WASC, MSA, COBIS, BSO…), recognised-institution status, whether it is all-through, and how complete its profile is. It says nothing about pay. |
 
+### Why salary cannot rank schools, and what does
+
+Per-school salary is not public data for international schools. A sweep of job packs, school
+websites, salary aggregators and teacher forums produced figures for **9 of 521 schools**. The one
+systematic source, [internationalteachersalary.com](https://www.internationalteachersalary.com/countries),
+turns out to publish *country* aggregates from anonymous teacher submissions, not school records.
+
+So the sheet carries the country average, which is genuinely knowable, and labels it as such:
+
+| Column | What it is |
+| --- | --- |
+| Approx. Salary | The school's own figure where one exists, otherwise `~USD 60,000/year` — the country average |
+| Salary Basis | Which of the two it is, and for an average, how many teachers reported it |
+| Salary Range (country) | The low-to-high spread, because Thailand averaging $44k across $17k–$92k tells you the average says little about any one school |
+
+A figure standing on fewer than five reports is withheld rather than shown. Bangladesh sits at
+$88,000 on a single submission, which would have been the most eye-catching wrong number in the
+sheet.
+
+**The country average is identical for every school in that country, so it cannot rank them
+against each other.** That is arithmetic, not a limitation to be worked around: ranking is
+within-country, and a constant cancels out. Within a country the order therefore rests on what
+genuinely varies school by school — the package terms, and accreditation where no package is known
+yet. Salary refines the order only in the rare case where two schools in one country both publish a
+real figure in the same currency.
+
 Two deliberate choices are worth knowing. A package score below 25 is treated as unknown rather
 than poor — finding the word "bonus" is not evidence of a good package, and letting it outrank an
 accredited school we simply have not read yet would reward being easy to crawl. And hiring

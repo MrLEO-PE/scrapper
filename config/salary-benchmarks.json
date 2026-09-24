@@ -1,0 +1,47 @@
+{
+  "//": "What an international school teacher earns, by country. Used only when neither the school nor its adverts publish a figure.",
+  "//why": "Per-school salary is not public data. A sweep of job packs, school sites and salary aggregators found figures for 9 of 521 schools. Country averages are the honest alternative: they tell you what to expect in a place, and they say so rather than pretending to be about one school.",
+  "//limits": "A country average is identical for every school in that country, so it CANNOT rank schools against each other. Within-country ranking stays on package terms and accreditation. See README.",
+  "//source": "internationalteachersalary.com — anonymous self-reported submissions from teachers. Not audited. `reports` is how many teachers stand behind each figure.",
+  "//minReports": "Figures backed by fewer than 5 reports are kept for reference but not shown: one teacher's contract is not a country average. Bangladesh sat at $88K on a single report.",
+  "//currency": "USD per year, gross base salary, excluding housing, flights and dependant places. The Package columns carry those.",
+  "//retrieved": "2026-09-24",
+
+  "minReports": 5,
+  "source": "internationalteachersalary.com (self-reported)",
+  "sourceUrl": "https://www.internationalteachersalary.com/countries",
+  "retrieved": "2026-09-24",
+
+  "countries": {
+    "China":       { "avg": 60000, "low": 28000, "high": 107000, "reports": 127 },
+    "Thailand":    { "avg": 44000, "low": 17000, "high": 92000,  "reports": 54 },
+    "Vietnam":     { "avg": 40000, "low": 13000, "high": 62000,  "reports": 33 },
+    "Singapore":   { "avg": 90000, "low": 47000, "high": 188000, "reports": 27 },
+    "Malaysia":    { "avg": 44000, "low": 13000, "high": 76000,  "reports": 26 },
+    "Taiwan":      { "avg": 50000, "low": 24000, "high": 116000, "reports": 26 },
+    "Japan":       { "avg": 37000, "low": 18000, "high": 57000,  "reports": 20 },
+    "India":       { "avg": 38000, "low": 7000,  "high": 79000,  "reports": 15 },
+    "South Korea": { "avg": 55000, "low": 30000, "high": 79000,  "reports": 13 },
+    "Türkiye":     { "avg": 43000, "low": 32000, "high": 55000,  "reports": 10 },
+    "Indonesia":   { "avg": 39000, "low": 8000,  "high": 68000,  "reports": 9 },
+    "Myanmar":     { "avg": 27000, "low": 18000, "high": 36000,  "reports": 9 },
+    "Cambodia":    { "avg": 41000, "low": 22000, "high": 58000,  "reports": 9 },
+    "Philippines": { "avg": 52000, "low": 34000, "high": 79000,  "reports": 7 },
+    "Colombia":    { "avg": 29000, "low": 17000, "high": 36000,  "reports": 7 },
+    "Peru":        { "avg": 59000, "low": 53000, "high": 62000,  "reports": 6 },
+    "Uzbekistan":  { "avg": 46000, "low": 32000, "high": 50000,  "reports": 5 },
+
+    "//thin": "Below the threshold. Kept so the gap is visible and so a later run can top them up, but not shown in the sheet.",
+    "Pakistan":    { "avg": 61000, "low": 51000, "high": 70000,  "reports": 2 },
+    "Australia":   { "avg": 83000, "low": 80000, "high": 86000,  "reports": 2 },
+    "Laos":        { "avg": 49000, "low": 49000, "high": 49000,  "reports": 1 },
+    "Bangladesh":  { "avg": 88000, "low": 88000, "high": 88000,  "reports": 1 },
+    "Tanzania":    { "avg": 52000, "low": 52000, "high": 52000,  "reports": 1 },
+    "Guatemala":   { "avg": 12000, "low": 12000, "high": 12000,  "reports": 1 },
+    "Venezuela":   { "avg": 50000, "low": 50000, "high": 50000,  "reports": 1 },
+    "Ecuador":     { "avg": 31000, "low": 31000, "high": 31000,  "reports": 1 },
+    "Fiji":        { "avg": 42000, "low": 42000, "high": 42000,  "reports": 1 },
+
+    "//missing": "No data at source: Sri Lanka, Nepal, Bhutan, Kyrgyzstan, Costa Rica, Nicaragua, New Zealand, Papua New Guinea, Mozambique, Maldives and the smaller islands."
+  }
+}

@@ -23,6 +23,7 @@ import { formLabel } from "../match/appform.ts";
 import { draftEmail, emailCell, loadProfile, resetProfile } from "./email.ts";
 import { assessFit, fitSummary } from "../match/fit.ts";
 import { BASIS_LABEL } from "../enrich/salary.ts";
+import { benchmarkAverage, countryBenchmark } from "../enrich/benchmarks.ts";
 import { RANK_BASIS_LABEL } from "../match/packagevalue.ts";
 import { STATUS_LABEL as MY_STATUS_LABEL } from "../track.ts";
 
@@ -310,15 +311,42 @@ export const FIELDS: FieldDef[] = [
   // ---- package --------------------------------------------------------
   {
     key: "salary_estimate", label: "Approx. Salary (PE expat)", group: "package", scope: "both",
-    help: "Indicative salary for an expat PE teacher, averaged from this school's adverts.",
-    get: (c) =>
-      formatSalary(parseJsonColumn<Salary | null>(c.school?.salary_json ?? null, null)) ||
-      formatSalary(parseJsonColumn<Salary | null>(c.job?.salary_json ?? null, null)),
+    help: "What this school pays, when it or its adverts say so. Otherwise the country average — always read the Salary Basis column beside it.",
+    get: (c) => {
+      const own =
+        formatSalary(parseJsonColumn<Salary | null>(c.school?.salary_json ?? null, null)) ||
+        formatSalary(parseJsonColumn<Salary | null>(c.job?.salary_json ?? null, null));
+      if (own) return own;
+      // Nobody publishes this school's pay. The country average is what is
+      // actually knowable, and the basis column says that is what it is.
+      const avg = benchmarkAverage(c.school?.country ?? c.job?.country);
+      return avg ? `~USD ${avg.toLocaleString("en-GB")}/year` : "";
+    },
   },
   {
     key: "salary_basis", label: "Salary Basis", group: "package", scope: "both",
-    help: "Exactly what the salary figure is — this advert, a figure from the job pack, an average of this school's adverts, or a benchmark. A number without a basis should not be trusted.",
-    get: (c) => BASIS_LABEL[(c.school?.salary_basis ?? "") as keyof typeof BASIS_LABEL] ?? "",
+    help: "Exactly what the salary figure is — this advert, the job pack, an average of this school's adverts, or the country average. A number without a basis should not be trusted.",
+    get: (c) => {
+      const stored = BASIS_LABEL[(c.school?.salary_basis ?? "") as keyof typeof BASIS_LABEL];
+      const hasOwn =
+        !!parseJsonColumn<Salary | null>(c.school?.salary_json ?? null, null) ||
+        !!parseJsonColumn<Salary | null>(c.job?.salary_json ?? null, null);
+      if (hasOwn && stored) return stored;
+      const hit = countryBenchmark(c.school?.country ?? c.job?.country);
+      // The report count travels with the figure: five submissions and five
+      // hundred should not read the same.
+      return hit ? `${BASIS_LABEL["country-benchmark"]} (${hit.reports} reports)` : (stored ?? "");
+    },
+  },
+  {
+    key: "salary_range", label: "Salary Range (country)", group: "package", scope: "both",
+    help: "Low to high of what teachers report earning in this country, so the spread behind the average is visible. A wide range means the average says little about any one school.",
+    get: (c) => {
+      const hit = countryBenchmark(c.school?.country ?? c.job?.country);
+      if (!hit) return "";
+      const n = (v?: number) => (v ?? 0).toLocaleString("en-GB");
+      return `USD ${n(hit.salary.min)}–${n(hit.salary.max)}`;
+    },
   },
   {
     key: "package", label: "Package & Career Growth", group: "package", scope: "both",

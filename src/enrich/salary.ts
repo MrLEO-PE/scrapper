@@ -21,6 +21,7 @@ export type SalaryBasis =
   | "school-site"   // a figure on the school's own website
   | "school-avg"    // averaged across this school's adverts
   | "benchmark"     // what comparable roles in this country advertise
+  | "country-benchmark" // published average for the country, self-reported
   | "text-only";    // words such as "competitive", no figure at all
 
 export interface SourcedSalary extends Salary {
@@ -235,6 +236,8 @@ export const BASIS_LABEL: Record<SalaryBasis, string> = {
   "school-site": "from the school's site",
   "school-avg": "average of this school's adverts",
   benchmark: "benchmark for comparable roles",
+  // Names the country, not the school, because that is what it measures.
+  "country-benchmark": "country average, self-reported by teachers",
   "text-only": "no figure published",
 };
 
