@@ -77,6 +77,51 @@ test("rejects a student careers adviser", () => {
   assert.deepEqual(found.map((e) => e.email), ["recruitment@school.org"]);
 });
 
+test("recognises a recruitment address written in another language", () => {
+  // Real case: the American School of Quito publishes rrhh@fcaq.k12.ec —
+  // Recursos Humanos, the address to write to — and it was filed as "other"
+  // because the rules only spoke English. Eight configured countries are
+  // Spanish-speaking.
+  const cases: [string, string][] = [
+    ["rrhh@fcaq.k12.ec", "hr"],
+    ["recursoshumanos@colegio.edu.co", "hr"],
+    ["empleo@colegio.edu.pe", "careers"],
+    ["vacantes@colegio.edu.gt", "careers"],
+    ["trabajaconnosotros@colegio.cr", "careers"],
+    ["vagas@escola.co.mz", "careers"],
+    ["rh@escola.co.mz", "hr"],
+    ["karir@sekolah.sch.id", "careers"],
+    ["lowongan@sekolah.sch.id", "careers"],
+    ["kariyer@okul.k12.tr", "careers"],
+    ["recrutement@ecole.edu", "careers"],
+  ];
+  for (const [email, kind] of cases) {
+    const found = extractEmails(email, "page", "html")[0];
+    assert.equal(found?.kind, kind, `${email} should be ${kind}, was ${found?.kind}`);
+  }
+});
+
+test("a short HR abbreviation must stand alone, not sit inside a name", () => {
+  // "rh" and "ik" are real HR addresses in Portuguese and Turkish, but they
+  // are two letters — matching them loosely would capture half the staff.
+  assert.equal(extractEmails("rh@escola.mz", "p", "html")[0]?.kind, "hr");
+  assert.equal(extractEmails("rh.lisboa@escola.mz", "p", "html")[0]?.kind, "hr");
+  for (const notHr of ["rhodes@school.org", "rhiannon.jones@school.org", "ikeda@school.jp"]) {
+    assert.notEqual(extractEmails(notHr, "p", "html")[0]?.kind, "hr", `${notHr} is a person`);
+  }
+});
+
+test("rejects a Spanish student guidance counsellor", () => {
+  // The same trap as career_counsellor@, in another language: orientación
+  // vocacional advises pupils on universities.
+  const found = extractEmails(
+    "orientacion.vocacional@colegio.edu.co consejeria@colegio.edu.co rrhh@colegio.edu.co",
+    "page",
+    "html",
+  );
+  assert.deepEqual(found.map((e) => e.email), ["rrhh@colegio.edu.co"]);
+});
+
 test("picks the recruitment address as the career email", () => {
   const found = extractEmails("info@school.ae admin@school.ae careers@school.ae", "page", "html");
   assert.equal(bestCareerEmail(found, "school.ae")?.email, "careers@school.ae");

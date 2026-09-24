@@ -1,0 +1,38 @@
+{
+  "//": "Websites for schools whose directory listing carries none, so the crawl can run.",
+  "//why": "The crawl is what finds the careers email, the package and any published pay figure, and it cannot start without an address. Teach Away leaves this blank for most of its directory, and its per-school pages do not carry it either.",
+  "//via": "wikidata = matched in an open dataset; search = found and verified by hand; manual = entered directly.",
+  "//warning": "A wrong address is worse than none: it yields a confident careers email for the wrong school, and nothing downstream looks any less certain than the truth. Check the city and country against the row before adding. There are two Lincoln Schools in this database — Kathmandu and Santo Domingo — and they are not related.",
+  "//adding": "Key is the school_key exactly as stored. Find it with: npm run dedupe -- --dry-run, or query the schools table.",
+
+  "dhaka|bangladesh": {
+    "url": "https://www.aisdhaka.org",
+    "via": "search",
+    "found": "2026-09-24",
+    "note": "American International School Dhaka. CIS and NEASC, matching the stored accreditation."
+  },
+  "lincoln|costa-rica": {
+    "url": "https://www.lincoln.ed.cr",
+    "via": "search",
+    "found": "2026-09-24",
+    "note": "Santo Domingo de Heredia — NOT the Lincoln School in Kathmandu (lincoln|nepal)."
+  },
+  "country-day|costa-rica": {
+    "url": "https://www.nordangliaeducation.com/cds-costa-rica",
+    "via": "search",
+    "found": "2026-09-24",
+    "note": "San Rafael de Alajuela. Part of Nord Anglia, which is why it has no domain of its own."
+  },
+  "costa-rica|costa-rica": {
+    "url": "https://www.thebritishschoolofcostarica.com",
+    "via": "search",
+    "found": "2026-09-24",
+    "note": "The British School of Costa Rica, San Jose. NEASC and IB."
+  },
+  "quito|ecuador": {
+    "url": "https://www.fcaq.k12.ec",
+    "via": "search",
+    "found": "2026-09-24",
+    "note": "Colegio Americano de Quito. Stored city is the province, Pichincha."
+  }
+}

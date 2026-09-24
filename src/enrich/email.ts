@@ -37,7 +37,7 @@ const JUNK =
  * about a teaching post reaches the wrong person entirely.
  */
 const STUDENT_CAREERS_ADDRESS =
-  /(?:career|careers)[._-]?(?:counsell?or|counsel|advis[eo]r|advice|guidance|service|centre|center|office|dept|department|lead|coordinator|co-?ordinator)|(?:university|uni|college|higher[._-]?ed)[._-]?(?:guidance|advis|counsell?)/i;
+  /(?:career|careers)[._-]?(?:counsell?or|counsel|advis[eo]r|advice|guidance|service|centre|center|office|dept|department|lead|coordinator|co-?ordinator)|(?:university|uni|college|higher[._-]?ed)[._-]?(?:guidance|advis|counsell?)|(?:orientaci[oó]n|consejer[ií]a)[._-]?(?:vocacional|universitaria|estudiantil)?|orientador(?:a)?[._-]?vocacional/i;
 
 const JUNK_DOMAIN =
   /(?:\.png|\.jpg|\.jpeg|\.gif|\.webp|\.svg|\.css|\.js|sentry\.io|example\.(?:com|org)|domain\.com|yourschool|wixpress\.com|squarespace\.com|schooljotter|sentry-next)/i;
@@ -48,6 +48,25 @@ const JUNK_DOMAIN =
  */
 const KIND_RULES: { re: RegExp; kind: EmailKind; score: number }[] = [
   { re: /^(?:recruit|recruitment|recruiting|hiring|vacancy|vacancies|jobs?|career|careers|employment|apply|application|applications|joinus|join|work(?:withus|foru?s)?|teach(?:withus)?|staffing|talent)/i, kind: "careers", score: 0.97 },
+  /*
+   * The same thing in the languages these schools actually write in.
+   *
+   * Found the hard way: the American School of Quito publishes
+   * rrhh@fcaq.k12.ec — Recursos Humanos, exactly the address to write to — and
+   * it was filed as "other" because the rules only spoke English. Eight of the
+   * configured countries are Spanish-speaking, and the same gap covers
+   * Portuguese, Indonesian, Turkish and the rest.
+   */
+  { re: /^(?:empleos?|trabaj[ao]|trabajaconnosotros|vacantes?|convocatorias?|postulaci[oó]n|selecci[oó]n(?:depersonal)?|reclutamiento|talentohumano)/i, kind: "careers", score: 0.95 },
+  { re: /^(?:vagas?|trabalhec?o?n?o?s?c?o?|carreiras?|curriculos?|candidaturas?)/i, kind: "careers", score: 0.95 },
+  { re: /^(?:emplois?|recrutement|carri[eè]res?|candidatures?)/i, kind: "careers", score: 0.95 },
+  { re: /^(?:karie?r|rekrutmen|lowongan|kerjaya|jawatan|pekerjaan)/i, kind: "careers", score: 0.95 },
+  { re: /^(?:kariyer|basvuru|ba[sş]vuru|i[sş]ealim)/i, kind: "careers", score: 0.95 },
+  { re: /^(?:zhaopin|zhao-pin|saiyou?|jinji|chaeyong|insa)/i, kind: "careers", score: 0.9 },
+  // Human Resources, abbreviated. Short forms must be the whole local part or
+  // clearly delimited — a bare "rh" inside a surname is not an HR desk.
+  { re: /^(?:rrhh|recursoshumanos|recursos\.humanos|risorseumane|personalabteilung|insankaynaklari)(?:$|[._-])/i, kind: "hr", score: 0.94 },
+  { re: /^(?:rh|drh|ik)(?:$|[._-])/i, kind: "hr", score: 0.85 },
   { re: /^(?:hr|humanresources|human\.resources|people|peopleteam|personnel|hrdept|hr\.dept|hrteam)/i, kind: "hr", score: 0.92 },
   { re: /(?:recruit|vacanc|career|hiring|employment)/i, kind: "careers", score: 0.88 },
   { re: /^(?:hr|people|personnel)[._-]/i, kind: "hr", score: 0.85 },

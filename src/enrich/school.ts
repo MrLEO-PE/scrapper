@@ -28,6 +28,7 @@ import {
 import { pdfToText } from "./pdf.ts";
 import { extractSalaryFromText, type SourcedSalary } from "./salary.ts";
 import { crawlSchoolSite } from "./website.ts";
+import { knownWebsite } from "./websites.ts";
 
 /** One school's worth of vacancy data, as gathered from the boards. */
 export interface SchoolInput {
@@ -131,7 +132,15 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
 
   if (input.country) profile.country = sourced(countryName(input.country)!, input.sourceLabel, 0.9);
   if (input.city) profile.city = sourced(input.city, input.sourceLabel, 0.85);
-  if (input.website) profile.website = sourced(input.website, input.sourceLabel, 0.9);
+  if (input.website) {
+    profile.website = sourced(input.website, input.sourceLabel, 0.9);
+  } else {
+    // The listing gave no address, so the crawl — and with it the careers
+    // email, the package and any published pay — would be skipped entirely.
+    // Fall back to one established separately.
+    const known = knownWebsite(input.schoolKey);
+    if (known) profile.website = sourced(known.url, `website lookup (${known.via})`, 0.8);
+  }
 
   // ---- from board data -------------------------------------------------
   if (input.curriculum.length) {
