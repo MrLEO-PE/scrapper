@@ -68,7 +68,24 @@ export function sameSchool(
   const cityB = norm(b.city);
   if (cityA && cityB && cityA !== cityB) return undefined;
 
+  /*
+   * A name that survives stopword-stripping as nothing but its own location is
+   * not an identity.
+   *
+   * "American International School Vietnam" reduces to "vietnam", because
+   * American, International and School are all generic — and so does "British
+   * International School Vietnam", which is a different school. The same holds
+   * for "Harare International School" -> "harare". Nothing has collided yet,
+   * but 166 of 577 stored schools reduce to a single word, so it is a matter
+   * of time. Where the core is only the place, the website has to settle it.
+   */
+  const isJustPlace = (s: SchoolIdentity, core: string) =>
+    !core.includes("-") && (core === norm(s.country) || core === norm(s.city));
+
   if (coreA === coreB) {
+    if (isJustPlace(a, coreA) || isJustPlace(b, coreB)) {
+      return sameHost ? "same name and website" : undefined;
+    }
     // The usual case: a board gave no country, the directory did.
     if (!countryA || !countryB) return "same name, country unknown";
     if (countryA === countryB) return "same name, country unknown";

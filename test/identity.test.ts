@@ -98,6 +98,54 @@ test("different cities on one domain are different campuses", () => {
   assert.equal(sameSchool(tokyo, osaka, 3), undefined);
 });
 
+test("a name that reduces to nothing but its own country is not an identity", () => {
+  // "American" and "British" International School Vietnam are different
+  // schools, but American, International and School are all stripped as
+  // generic, leaving both as "vietnam". A Wikidata lookup matched the American
+  // school to the British school's domain on exactly this.
+  const american = school({
+    schoolKey: "vietnam|vietnam", name: "American International School Vietnam", country: "Vietnam",
+  });
+  const british = school({
+    schoolKey: "vietnam-bis|vietnam", name: "British International School Vietnam",
+    country: "Vietnam", origin: "directory",
+  });
+  assert.equal(sameSchool(american, british), undefined);
+
+  // A shared website still settles it, since that is real evidence.
+  assert.equal(
+    sameSchool(
+      { ...american, website: "https://bisvietnam.com" },
+      { ...british, website: "https://www.bisvietnam.com" },
+    ),
+    "same name and website",
+  );
+});
+
+test("a name that reduces to nothing but its own city is not an identity", () => {
+  // "Harare International School" -> "harare".
+  const a = school({
+    schoolKey: "harare|zimbabwe", name: "Harare International School",
+    country: "Zimbabwe", city: "Harare",
+  });
+  const b = school({
+    schoolKey: "harare-2|zimbabwe", name: "Harare Academy International School",
+    country: "Zimbabwe", city: "Harare", origin: "directory",
+  });
+  assert.equal(sameSchool(a, b), undefined);
+});
+
+test("a distinctive single-word name still matches normally", () => {
+  // The guard must only fire on place names, or it would break every school
+  // whose identity genuinely is one word.
+  const a = school({ schoolKey: "craighouse", name: "Craighouse School", city: "Lo Barnechea" });
+  const b = school({
+    schoolKey: "craighouse|chile", name: "Craighouse School",
+    country: "Chile", city: "Lo Barnechea", origin: "directory",
+  });
+  assert.equal(sameSchool(a, b), "same name, country unknown");
+});
+
 test("a record never matches itself", () => {
   const s = school({ schoolKey: "k|china", name: "A School", country: "China" });
   assert.equal(sameSchool(s, s), undefined);
