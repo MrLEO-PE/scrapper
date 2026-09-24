@@ -23,7 +23,7 @@ import { formLabel } from "../match/appform.ts";
 import { draftEmail, emailCell, loadProfile, resetProfile } from "./email.ts";
 import { assessFit, fitSummary } from "../match/fit.ts";
 import { BASIS_LABEL } from "../enrich/salary.ts";
-import { benchmarkAverage, countryBenchmark } from "../enrich/benchmarks.ts";
+import { benchmarkAverage, benchmarkSavings, countryBenchmark } from "../enrich/benchmarks.ts";
 import { RANK_BASIS_LABEL } from "../match/packagevalue.ts";
 import { STATUS_LABEL as MY_STATUS_LABEL } from "../track.ts";
 
@@ -333,10 +333,29 @@ export const FIELDS: FieldDef[] = [
         !!parseJsonColumn<Salary | null>(c.job?.salary_json ?? null, null);
       if (hasOwn && stored) return stored;
       const hit = countryBenchmark(c.school?.country ?? c.job?.country);
-      // The report count travels with the figure: five submissions and five
-      // hundred should not read the same.
-      return hit ? `${BASIS_LABEL["country-benchmark"]} (${hit.reports} reports)` : (stored ?? "");
+      if (!hit) return stored ?? "";
+      // The sample travels with the figure: five submissions and five hundred
+      // should not read the same, and a figure with no pool behind it should
+      // not pretend to have one.
+      return hit.reports
+        ? `${BASIS_LABEL["country-benchmark"]} (${hit.reports} reports)`
+        : `country figure — ${hit.source}`;
     },
+  },
+  {
+    key: "savings", label: "Typical Savings/year", group: "package", scope: "both",
+    help: "What teachers there actually keep after rent and tax. Usually the more useful number: Bangkok on $38k out-saves Singapore on $55k, because Singapore rent eats the difference.",
+    get: (c) => {
+      const s = benchmarkSavings(c.school?.country ?? c.job?.country);
+      if (!s) return "";
+      const n = (v: number) => (v / 1000).toFixed(0);
+      return `USD ${n(s[0])}k–${n(s[1])}k`;
+    },
+  },
+  {
+    key: "salary_crosscheck", label: "Salary Cross-check", group: "package", scope: "both",
+    help: "An independent source's figure for the same country. Where it disagrees with the average, the average is the one to distrust.",
+    get: (c) => countryBenchmark(c.school?.country ?? c.job?.country)?.crosscheck ?? "",
   },
   {
     key: "salary_range", label: "Salary Range (country)", group: "package", scope: "both",

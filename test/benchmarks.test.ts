@@ -9,7 +9,7 @@
 
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { benchmarkAverage, countryBenchmark } from "../src/enrich/benchmarks.ts";
+import { benchmarkAverage, benchmarkSavings, countryBenchmark } from "../src/enrich/benchmarks.ts";
 import { BASIS_LABEL } from "../src/enrich/salary.ts";
 
 test("publishes an average backed by enough teachers", () => {
@@ -26,18 +26,64 @@ test("withholds an average that rests on too few reports", () => {
   // neighbours, and the most eye-catching wrong number the sheet could carry.
   assert.equal(countryBenchmark("Bangladesh"), null);
   assert.equal(benchmarkAverage("Bangladesh"), null);
-  for (const thin of ["Guatemala", "Laos", "Fiji", "Australia", "Pakistan"]) {
+  for (const thin of ["Guatemala", "Laos", "Fiji", "Tanzania", "Pakistan"]) {
     assert.equal(countryBenchmark(thin), null, `${thin} is below the report threshold`);
   }
 });
 
+test("a thin report count is overridden by real published figures", () => {
+  // Australia had two submissions averaging $83k, below the threshold and so
+  // withheld. Published national scales give AUD 91,500-110,000, which is
+  // solid ground — and the two submissions are kept as the cross-check.
+  const au = countryBenchmark("Australia");
+  assert.ok(au, "Australia should publish from sourced figures");
+  assert.equal(au.reports, 0);
+  assert.equal(benchmarkAverage("Australia"), 66000);
+  assert.match(au.crosscheck!, /\$83k/);
+  // The local-scale caveat matters: no expat premium, so an empty Package
+  // column there is by design, not a gap.
+  assert.match(au.salary.evidence!, /no expat premium/);
+});
+
 test("says nothing for a country with no data at all", () => {
-  for (const missing of ["Nepal", "Bhutan", "Costa Rica", "Mozambique", "Tuvalu"]) {
+  for (const missing of ["Nepal", "Bhutan", "Mozambique", "Tuvalu", "Nicaragua"]) {
     assert.equal(countryBenchmark(missing), null);
   }
   assert.equal(countryBenchmark(null), null);
   assert.equal(countryBenchmark(undefined), null);
   assert.equal(countryBenchmark(""), null);
+});
+
+test("publishes a figure with named sources but no submission pool", () => {
+  // Costa Rica has no teacher submissions, but a real posting at
+  // $2,400-$2,600/month plus the mandated aguinaldo. The report threshold
+  // cannot apply to a figure that was never a poll.
+  const hit = countryBenchmark("Costa Rica");
+  assert.ok(hit, "a sourced figure should still publish");
+  assert.equal(hit.reports, 0);
+  assert.match(hit.salary.evidence!, /aguinaldo/);
+  // And it must not claim a sample it does not have.
+  assert.doesNotMatch(hit.salary.evidence!, /teachers reporting/);
+  assert.ok(countryBenchmark("Papua New Guinea"));
+});
+
+test("carries an independent cross-check where one exists", () => {
+  // Singapore's average sits at the ceiling of the second source's range,
+  // which is exactly the kind of disagreement worth showing rather than
+  // averaging away.
+  const sg = countryBenchmark("Singapore");
+  assert.match(sg!.crosscheck!, /\$55k-\$90k/);
+  assert.match(sg!.salary.evidence!, /Cross-check/);
+  // Peru's own average is contradicted by a real posting; say so.
+  assert.match(countryBenchmark("Peru")!.crosscheck!, /may be high/);
+});
+
+test("reports what a teacher actually keeps, where it is known", () => {
+  assert.deepEqual(benchmarkSavings("Thailand"), [12000, 22000]);
+  assert.deepEqual(benchmarkSavings("China"), [15000, 40000]);
+  // Not invented for countries where nobody published it.
+  assert.equal(benchmarkSavings("Vietnam"), null);
+  assert.equal(benchmarkSavings("Nepal"), null);
 });
 
 test("matches a country regardless of case or padding", () => {

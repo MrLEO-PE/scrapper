@@ -17,6 +17,8 @@
   "salary_estimate": true,
   "salary_basis": true,
   "salary_range": true,
+  "savings": true,
+  "salary_crosscheck": true,
   "package": true,
   "package_score": true,
   "rank_basis": true,
