@@ -150,8 +150,19 @@ export function draftEmail(inputs: EmailInputs): DraftEmail {
  * What goes in the spreadsheet cell: the email, or a note naming the gaps.
  * Phrased as an instruction so the cell is actionable rather than just empty.
  */
-export function emailCell(draft: DraftEmail): string {
+/**
+ * The cell for the Prepared Email column.
+ *
+ * When a detail is missing the email is not written, on purpose — a
+ * half-personalised approach is worse than none. What the cell owes you in
+ * that case is somewhere to go, so it names the school's website: that is the
+ * one place every missing detail can actually be found, and it turns the
+ * column from a dead end into a two-minute job.
+ */
+export function emailCell(draft: DraftEmail, website?: string | null): string {
   if (draft.body) return draft.body;
   if (!draft.missing.length) return "";
-  return `NEEDS: ${draft.missing.join(", ")} — check the school's website and fill in by hand`;
+  const where = website ? `: ${website}` : "";
+  const it = draft.missing.length === 1 ? "this" : "these";
+  return `NEEDS: ${draft.missing.join(", ")} — find ${it} on the school's website${where} and fill in by hand`;
 }

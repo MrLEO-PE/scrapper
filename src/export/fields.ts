@@ -266,6 +266,9 @@ export const FIELDS: FieldDef[] = [
           peHook: c.school?.pe_hook,
           advertText: c.job.description,
         }),
+        // The website is where every missing detail lives, so an incomplete
+        // draft points straight at it rather than just saying one is missing.
+        c.school?.website ?? c.job.school_website,
       );
     },
   },

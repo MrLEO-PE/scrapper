@@ -164,7 +164,7 @@ sheet. Ticked by default:
 | Country, City | Board data, resolved against the country list |
 | School Name | Board data |
 | Curriculum | Board tags, else the school website or advert |
-| PE Team (teachers) | School website / job pack — an estimate |
+| Website | The school's own site — the tool you use to finish the Prepared Email, since every missing detail lives there |
 | Students in School | School website / job pack |
 | School Type | Grade levels, else the website (Primary / Secondary / Primary + Secondary / University) |
 | Approx. Salary (PE expat) | Averaged across that school's adverts, grouped by currency |
@@ -382,7 +382,12 @@ guessing. Measured over a real run of 71 schools:
 | Students in School | 39% | Only where the school states a roll |
 | Approx. Salary | 39% | Most international schools advertise "competitive" and no figure |
 | Careers Page | 35% | Not every school has a dedicated vacancies page |
-| **PE Team (teachers)** | **4%** | Schools almost never publish this — see below |
+| **PE Team (teachers)** | **1%** | Schools almost never publish this — **unticked by default**, see below |
+
+**PE team size is unticked**, because at 3 schools in 521 a column is just a column of blanks.
+`Website` takes its place in the default sheet: it is the tool you use to finish the Prepared
+Email, since the principal's name, the school fact and the PE fact all live there. Re-tick it with
+`npm run fields -- --enable pe_team_size` if you want it back.
 
 **PE team size is the honest weak spot.** Schools essentially never write "our PE department has
 six teachers", so the only route is counting PE roles on a staff directory — which many schools

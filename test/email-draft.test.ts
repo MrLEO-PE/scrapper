@@ -52,7 +52,29 @@ test("refuses to write when a hook is missing, and names which", () => {
 test("the cell tells you what to go and find", () => {
   const cell = emailCell(draftEmail({ ...complete, principal: null, peHook: null }));
   assert.match(cell, /^NEEDS: principal name, PE\/sport fact/);
-  assert.match(cell, /check the school's website/);
+  assert.match(cell, /school's website/);
+});
+
+test("the cell names the website, since that is where the answers are", () => {
+  // Saying a detail is missing is only half the job. The website is the one
+  // place all three details can be found, so an incomplete draft points at it
+  // and becomes a two-minute task instead of a dead end.
+  const cell = emailCell(
+    draftEmail({ ...complete, principal: null, peHook: null }),
+    "https://www.aisdhaka.org",
+  );
+  assert.match(cell, /https:\/\/www\.aisdhaka\.org/);
+
+  // No website known: still say what is missing, just without a dead link.
+  const bare = emailCell(draftEmail({ ...complete, principal: null }), null);
+  assert.match(bare, /^NEEDS: principal name/);
+  assert.doesNotMatch(bare, /https?:/);
+});
+
+test("a complete email is never replaced by the website prompt", () => {
+  const cell = emailCell(draftEmail(complete), "https://www.aisdhaka.org");
+  assert.doesNotMatch(cell, /^NEEDS/);
+  assert.doesNotMatch(cell, /aisdhaka/);
 });
 
 test("matches what I bring to what their PE page talks about", () => {
