@@ -51,6 +51,8 @@ import {
   runExport,
   runFindSites,
   runSchoolsDb,
+  runDoris,
+  runKnownSchools,
   runScrape,
   type ScrapeSummary,
 } from "./pipeline.ts";
@@ -312,6 +314,8 @@ USAGE
   npm run rank                       re-rank each country by package and salary
   npm run find-websites              track down the school websites we lack
   npm run schoolsdb                  add schools and tuition fees from the schools database
+  npm run doris                      add schools from the second database (covers India, Sri Lanka...)
+  npm run known                      verify and add schools recorded by hand
   npm run dedupe -- --dry-run        find schools stored twice
   npm run watch -- --every 24h       keep running on an interval
   npm run schedule -- --daily 07:00  install an OS scheduled task
@@ -562,6 +566,25 @@ async function main(): Promise<void> {
       log.plain(`  schools found     ${r.found}`);
       log.plain(`  with a website    ${r.withWebsite}`);
       log.plain(`  with tuition fees ${r.withFees}`);
+      break;
+    }
+
+    case "doris": {
+      const r = await runDoris({ fresh: bool(args, "fresh") });
+      log.step("Second schools database");
+      log.plain(`  countries read   ${r.cities}`);
+      log.plain(`  schools found    ${r.found}`);
+      log.plain(`  with a website   ${r.withWebsite}`);
+      break;
+    }
+
+    case "known": {
+      const r = await runKnownSchools({ concurrency: num(args, "concurrency") });
+      log.step("Hand-recorded schools");
+      log.plain(`  listed           ${r.listed}`);
+      log.plain(`  added            ${r.added}`);
+      log.plain(`  already had      ${r.alreadyHad}`);
+      log.plain(`  could not verify ${r.unverified}`);
       break;
     }
 

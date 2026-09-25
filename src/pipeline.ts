@@ -17,6 +17,8 @@ import { bestCareerEmail, bestSchoolEmail, domainOf, extractEmails } from "./enr
 import { findWebsite } from "./enrich/findsite.ts";
 import { findSchoolHook } from "./enrich/hooks.ts";
 import { citiesFor, fetchCity } from "./schoolsdb.ts";
+import { loadKnownSchools, rememberWebsite } from "./known.ts";
+import { fetchCountry } from "./doris.ts";
 import { saveWebsites, type WebsiteEntry } from "./enrich/websites.ts";
 import { fetchCountryDirectory, phaseFromOrgType, type DirectorySchool } from "./directory.ts";
 import { enrichSchool, type EnrichOptions, type SchoolInput } from "./enrich/school.ts";
@@ -637,6 +639,124 @@ export async function runSchoolsDb(opts: { fresh?: boolean } = {}): Promise<Scho
       `${ranked.schools} re-ranked`,
   );
   finishRun(runId, summary);
+  return summary;
+}
+
+/**
+ * The second schools database, read country by country.
+ *
+ * Runs over every country in config/directory.json rather than a city list,
+ * which is the point: the other database has no pages at all for India, Sri
+ * Lanka, Nepal, Bangladesh, Australia or New Zealand, so no amount of reading
+ * cities would ever have found them. Schools present in both are merged by the
+ * identity rules; schools present in only one are the reason both are read.
+ */
+export async function runDoris(opts: { fresh?: boolean } = {}): Promise<SchoolsDbSummary> {
+  const countries = loadDirectoryTargets().map((t) => t.name);
+  log.step(`Second schools database — ${countries.length} countries`);
+  const summary: SchoolsDbSummary = { cities: countries.length, found: 0, added: 0, withWebsite: 0, withFees: 0 };
+  const runId = startRun("doris");
+
+  for (const country of countries) {
+    const schools = await fetchCountry(country, opts.fresh);
+    for (const s of schools) {
+      summary.found++;
+      if (s.website) summary.withWebsite++;
+
+      const src = { confidence: 0.85, source: "doris schools database" };
+      const hook = s.description ? findSchoolHook(s.description, "doris schools database") : null;
+      const social = s.social.find((u) => /facebook|instagram/i.test(u)) ?? s.social[0];
+
+      upsertSchool(
+        {
+          schoolKey: schoolKey(s.name, country),
+          schoolName: s.name,
+          country: { value: country, provenance: src },
+          ...(s.city ? { city: { value: s.city, provenance: { ...src, confidence: 0.8 } } } : {}),
+          ...(s.website ? { website: { value: s.website, provenance: src } } : {}),
+          ...(social ? { social: { value: social, provenance: { ...src, confidence: 0.8 } } } : {}),
+          ...(hook ? { schoolHook: { value: hook.text, provenance: { ...src, confidence: 0.75 } } } : {}),
+          notes: ["listed by the doris schools database"],
+        },
+        "directory",
+        undefined,
+        false,
+      );
+      summary.added++;
+    }
+  }
+
+  const ranked = rerankCountries();
+  log.ok(`${summary.found} schools read — ${summary.withWebsite} with a website; ${ranked.schools} re-ranked`);
+  finishRun(runId, summary);
+  return summary;
+}
+
+export interface KnownSummary {
+  listed: number;
+  added: number;
+  alreadyHad: number;
+  unverified: number;
+}
+
+/**
+ * Bring in the hand-recorded schools, verifying each one.
+ *
+ * A name is not evidence. Every entry without a website is put through the
+ * same discovery and page check as a guess, and dropped if the school cannot
+ * be confirmed to exist at the address found — otherwise a mistyped name from
+ * a listicle becomes a row that looks exactly as solid as Patana.
+ */
+export async function runKnownSchools(opts: { concurrency?: number } = {}): Promise<KnownSummary> {
+  const entries = loadKnownSchools();
+  if (!entries.length) {
+    log.info("no hand-recorded schools yet — add some to config/known-schools.json");
+    return { listed: 0, added: 0, alreadyHad: 0, unverified: 0 };
+  }
+
+  log.step(`Checking ${entries.length} hand-recorded schools`);
+  const existing = getSchools();
+  const summary: KnownSummary = { listed: entries.length, added: 0, alreadyHad: 0, unverified: 0 };
+
+  await mapLimit(entries, opts.concurrency ?? 4, async (e) => {
+    const key = schoolKey(e.name, e.country);
+    if (existing.has(key)) {
+      summary.alreadyHad++;
+      return;
+    }
+
+    let website = e.website;
+    if (!website) {
+      const hit = await findWebsite(e.name, e.country, null);
+      if (!hit) {
+        summary.unverified++;
+        log.warn(`  unverified — ${e.name} (${e.country}): no website could be confirmed`);
+        return;
+      }
+      website = hit.url;
+      // Record it so the next run does not repeat the search.
+      rememberWebsite(e.name, e.country, website);
+    }
+
+    const src = { confidence: 0.85, source: e.via ?? "recorded by hand" };
+    upsertSchool(
+      {
+        schoolKey: key,
+        schoolName: e.name,
+        country: { value: e.country, provenance: src },
+        ...(e.city ? { city: { value: e.city, provenance: src } } : {}),
+        website: { value: website, provenance: src },
+        notes: [e.note ?? `recorded by hand${e.via ? ` (${e.via})` : ""}`],
+      },
+      "directory",
+      undefined,
+      false,
+    );
+    summary.added++;
+    log.info(`  added ${e.name.slice(0, 40).padEnd(42)}${website}`);
+  });
+
+  if (summary.added) rerankCountries();
   return summary;
 }
 

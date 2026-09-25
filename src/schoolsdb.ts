@@ -150,8 +150,34 @@ export async function fetchCity(city: string, fresh = false): Promise<DbSchool[]
   return schools;
 }
 
-/** The database's whole city list, read from any one city page. */
+/**
+ * Every city the database covers, from its sitemap.
+ *
+ * Not from a city page's navigation, which is what this used to do: that nav
+ * is regional, so reading it from Bangkok returned 146 cities and silently
+ * omitted Singapore — 71 schools — along with Hong Kong, Da Nang, Busan and
+ * 196 others. The sitemap lists 345. For a list whose whole purpose is not to
+ * miss a good school, deriving coverage from a page's own links was the wrong
+ * instinct.
+ */
 export async function allCities(fresh = false): Promise<string[]> {
+  const xml = await fetchText(`${ORIGIN}/sitemap.xml`, {
+    soft: true,
+    fresh,
+    retries: 1,
+    timeoutMs: 45000,
+    label: "schoolsdb sitemap",
+  });
+  if (xml) {
+    const found = new Set<string>();
+    for (const m of xml.matchAll(/<loc>https:\/\/www\.international-schools-database\.com\/in\/([a-z0-9-]+)<\/loc>/g)) {
+      found.add(m[1]!);
+    }
+    if (found.size) return [...found];
+    log.warn("schoolsdb: sitemap had no city pages — falling back to page navigation");
+  }
+
+  // Only if the sitemap is unreachable. Incomplete, but better than nothing.
   const html = await fetchText(`${ORIGIN}/in/bangkok`, { soft: true, fresh, retries: 1, timeoutMs: 30000, label: "schoolsdb cities" });
   return html ? citiesIn(html) : [];
 }

@@ -1,0 +1,10 @@
+{
+  "//": "Schools recorded by hand, for places the databases do not reach.",
+  "//why": "Two databases between them still miss whole countries. This is the third route: add a school by name from research, an association's member list, or a colleague, and it is verified and merged like any other.",
+  "//verification": "An entry without a website goes through the same discovery and page check as a guessed one, and is dropped if the school cannot be confirmed. A name without a verified school behind it is a rumour, and a rumour in the sheet is indistinguishable from a fact. Once resolved, the website is written back here so the search runs once.",
+  "//fields": "name and country are required. city, website, via and note are optional. Set \"on\": false to keep an entry on file without using it.",
+  "//adding": "npm run known -- checks every entry and reports which could not be verified.",
+  "//sources-worth-mining": "EARCOS (East Asia), FOBISIA (British schools in Asia), ISAT (Thailand), ACAMIS (China), TAISI (India), AISA (Africa), and the accreditation bodies CIS, COBIS, NEASC and WASC — all publish member lists covering the configured countries.",
+
+  "schools": []
+}
