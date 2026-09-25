@@ -31,6 +31,8 @@ export interface WebsiteEntry {
   social?: string;
   /** Where this came from: "wikidata", "search", "manual". */
   via: string;
+  /** Which school this is, so the file reads without cross-referencing. */
+  note?: string;
   /** When it was established, so a stale entry can be spotted. */
   found?: string;
 }

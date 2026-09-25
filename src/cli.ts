@@ -49,6 +49,7 @@ import {
   runDirectory,
   runSite,
   runExport,
+  runFindSites,
   runScrape,
   type ScrapeSummary,
 } from "./pipeline.ts";
@@ -308,6 +309,7 @@ USAGE
   npm run locations                  show / tick countries and cities
   npm run directory                  top schools per country, recruiting or not
   npm run rank                       re-rank each country by package and salary
+  npm run find-websites              track down the school websites we lack
   npm run dedupe -- --dry-run        find schools stored twice
   npm run watch -- --every 24h       keep running on an interval
   npm run schedule -- --daily 07:00  install an OS scheduled task
@@ -533,6 +535,20 @@ async function main(): Promise<void> {
         const ranked = rerankCountries();
         log.info(`re-ranked ${ranked.schools} schools after merging`);
       }
+      break;
+    }
+
+    case "find-websites": {
+      const r = await runFindSites({
+        limit: num(args, "limit"),
+        concurrency: num(args, "concurrency"),
+        dryRun: bool(args, "dry-run"),
+      });
+      log.step("Website discovery");
+      log.plain(`  schools without one   ${r.considered}`);
+      log.plain(`  found from an email   ${r.fromEmail}`);
+      log.plain(`  guessed and verified  ${r.fromGuess}`);
+      log.plain(`  still unknown         ${r.notFound}`);
       break;
     }
 

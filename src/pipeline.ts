@@ -14,6 +14,8 @@ import { dedupe, normalize } from "./core/normalize.ts";
 import { slugify } from "./core/text.ts";
 import type { Job, Salary, SchoolProfile, SourceId } from "./core/types.ts";
 import { bestCareerEmail, bestSchoolEmail, domainOf, extractEmails } from "./enrich/email.ts";
+import { findWebsite } from "./enrich/findsite.ts";
+import { saveWebsites, type WebsiteEntry } from "./enrich/websites.ts";
 import { fetchCountryDirectory, phaseFromOrgType, type DirectorySchool } from "./directory.ts";
 import { enrichSchool, type EnrichOptions, type SchoolInput } from "./enrich/school.ts";
 import { selectedCountries } from "./locations.ts";
@@ -42,6 +44,7 @@ import {
   expirePastDeadline,
   finishRun,
   getSchools,
+  getSchoolsNeedingWebsite,
   parseJsonColumn,
   queryJobs,
   recordSightings,
@@ -464,6 +467,63 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
 }
 
 // ---------------------------------------------------------------------------
+
+export interface FindSitesOptions {
+  limit?: number;
+  concurrency?: number;
+  /** Report what would be written without touching the file. */
+  dryRun?: boolean;
+}
+
+export interface FindSitesSummary {
+  considered: number;
+  fromEmail: number;
+  fromGuess: number;
+  notFound: number;
+}
+
+/**
+ * Fill in the missing school websites, which gate almost everything else.
+ *
+ * Results go to `config/school-websites.json` rather than straight into the
+ * database, so every address is inspectable, editable and survives a rebuild —
+ * and so a wrong one can be deleted by hand rather than hunted through a
+ * binary file.
+ */
+export async function runFindSites(opts: FindSitesOptions = {}): Promise<FindSitesSummary> {
+  const targets = targetCountries();
+  const rows = getSchoolsNeedingWebsite(targets, opts.limit ?? 0);
+
+  log.step(`Looking for ${rows.length} missing school websites`);
+  const summary: FindSitesSummary = { considered: rows.length, fromEmail: 0, fromGuess: 0, notFound: 0 };
+  const found: Record<string, WebsiteEntry> = {};
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Each school is a different host, so these do not queue behind each other.
+  await mapLimit(rows, opts.concurrency ?? 6, async (s) => {
+    const hit = await findWebsite(s.name, s.country ?? "", s.career_email ?? s.school_email);
+    if (!hit) {
+      summary.notFound++;
+      return;
+    }
+    if (hit.via === "email") summary.fromEmail++;
+    else summary.fromGuess++;
+
+    found[s.school_key] = {
+      url: hit.url,
+      via: hit.via === "email" ? "email domain" : "domain-guess, verified",
+      found: today,
+      note: `${s.name} — ${s.country ?? "?"}`,
+    };
+    log.info(`  ${hit.via === "email" ? "from email" : "verified  "}  ${s.name.slice(0, 38).padEnd(40)}${hit.url}`);
+  });
+
+  if (!opts.dryRun && Object.keys(found).length) {
+    const added = saveWebsites(found);
+    log.ok(`${added} new entries written to config/school-websites.json`);
+  }
+  return summary;
+}
 
 export interface ExportOptions {
   formats?: string[];

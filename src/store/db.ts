@@ -707,6 +707,32 @@ export function byCountryRank(a: SchoolRow, b: SchoolRow): number {
   );
 }
 
+/**
+ * Schools with no website, best-ranked first — the queue for site discovery.
+ *
+ * Any address already held comes along, because its domain is usually the
+ * website and costs nothing to check.
+ */
+export function getSchoolsNeedingWebsite(
+  countries: Set<string>,
+  limit = 0,
+): { school_key: string; name: string; country: string | null; career_email: string | null; school_email: string | null }[] {
+  const rows = getDb()
+    .prepare(
+      `SELECT school_key, name, country, career_email, school_email
+         FROM schools
+        WHERE website IS NULL AND country IS NOT NULL
+        ORDER BY COALESCE(country_rank, 9999)`,
+    )
+    .all() as { school_key: string; name: string; country: string | null; career_email: string | null; school_email: string | null }[];
+
+  const wanted = rows.filter((r) => {
+    const c = r.country?.trim().toLowerCase();
+    return !!c && countries.has(c);
+  });
+  return limit > 0 ? wanted.slice(0, limit) : wanted;
+}
+
 export function getSchools(keys?: string[]): Map<string, SchoolRow> {
   const d = getDb();
   const rows = (
