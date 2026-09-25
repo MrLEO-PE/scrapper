@@ -89,25 +89,86 @@ function shortName(school: string): string {
 const fill = (template: string, values: Record<string, string>): string =>
   template.replace(/\{(\w+)\}/g, (_, k: string) => values[k] ?? `{${k}}`);
 
+/**
+ * Acronyms that must stay shouting when a title is tidied. Anything else that
+ * is short and has no vowels — SNA, HCMC, KDU — is almost certainly a school
+ * or city code, so it keeps its capitals too.
+ */
+const KEEP_CAPS = new Set([
+  "IB", "PE", "PYP", "MYP", "DP", "AP", "IGCSE", "GCSE", "EAL", "ESL", "ICT",
+  "STEM", "SEN", "HOD", "EYFS", "KS1", "KS2", "KS3", "KS4", "KS5", "US", "UK",
+  "USA", "UAE", "HR", "PHE", "HPE", "CCA", "ECA", "SNA", "MYP/DP",
+]);
+
+/**
+ * Boards often shout a job title — "PHYSICAL EDUCATION TEACHER - SNA IB HCMC".
+ * Pasted straight into a letter that reads as careless, which is the opposite
+ * of what a personalised application is for. Only fully-shouted titles are
+ * touched; anything already mixed-case is left exactly as the school wrote it.
+ */
+/** Connectors that stay lowercase inside a title: "Head of PE", not "Head Of PE". */
+const LOWER_IN_TITLE = new Set(["of", "and", "the", "for", "in", "at", "to", "a", "an", "or"]);
+
+export function tidyRole(role: string): string {
+  const letters = role.replace(/[^A-Za-z]/g, "");
+  if (!letters || letters !== letters.toUpperCase()) return role.trim();
+
+  let seenWord = false;
+  return role
+    .trim()
+    .split(/(\s+|[-–/])/)
+    .map((word) => {
+      if (!/[A-Za-z]/.test(word)) return word;
+      const bare = word.replace(/[^A-Za-z0-9]/g, "");
+      const first = !seenWord;
+      seenWord = true;
+
+      if (KEEP_CAPS.has(bare)) return word;
+      // No vowels and short: a code, not a word.
+      if (bare.length <= 5 && !/[AEIOU]/.test(bare)) return word;
+      if (!first && LOWER_IN_TITLE.has(bare.toLowerCase())) return word.toLowerCase();
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join("");
+}
+
 export function draftEmail(inputs: EmailInputs): DraftEmail {
   const profile = loadProfile();
   if (!profile) {
     return { body: "", subject: "", missing: ["config/profile.json is missing"] };
   }
 
+  /*
+   * The two hooks are the substance of the letter — they are the reason it
+   * reads as written for this school rather than posted to fifty. Without
+   * them there is nothing worth sending, so the email is not written.
+   *
+   * The head's name is different. It is a salutation, not a claim about the
+   * school, and it is published by only about one school in fourteen. Blocking
+   * on it threw away every otherwise-complete draft. So the letter is written
+   * with the gap left open in the greeting itself, where it cannot be missed
+   * and cannot be sent by accident. Nothing is invented either way.
+   */
   const missing: string[] = [];
-  if (!inputs.principal) missing.push("principal name");
   if (!inputs.schoolHook) missing.push("school fact");
   if (!inputs.peHook) missing.push("PE/sport fact");
 
-  const subject = `Application for ${inputs.role}, ${profile.name}`;
+  const role = tidyRole(inputs.role);
+  const subject = `Application for ${role}, ${profile.name}`;
 
-  // Refuse to write a half-personalised email. The whole value of this column
-  // is that every detail in it is real.
-  if (missing.length) return { body: "", subject, missing };
+  if (missing.length) {
+    // Report the name too, so the cell lists everything still to find.
+    return {
+      body: "",
+      subject,
+      missing: inputs.principal ? missing : [...missing, "principal name"],
+    };
+  }
+
+  const greeting = inputs.principal ?? "[add the head's name — not published]";
 
   const values = {
-    role: inputs.role,
+    role,
     school: inputs.school,
     shortSchool: shortName(inputs.school),
   };
@@ -120,7 +181,7 @@ export function draftEmail(inputs: EmailInputs): DraftEmail {
     : "";
 
   const body = [
-    `Dear ${inputs.principal} and the HR Team,`,
+    `Dear ${greeting} and the HR Team,`,
     "",
     fill(profile.openingLine, values),
     "",

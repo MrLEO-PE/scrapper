@@ -190,6 +190,46 @@ const PE_HOOK_PATTERNS: { re: RegExp; shape: (m: RegExpExecArray) => string }[] 
     re: /\b((?:co[\s-]?curricular|extra[\s-]?curricular)\s+(?:programme|program|activities|sport)[\w\s,'’-]{0,60})/i,
     shape: (m) => `your ${m[1]!.toLowerCase().trim().replace(/\s+/g, " ")}`,
   },
+
+  /*
+   * The rest come from reading what PE adverts actually say. The patterns
+   * above were written for school websites, which describe facilities; an
+   * advert describes the programme it is hiring into, and says so in a handful
+   * of recurring shapes. Adding these took the PE fact from 3 of 31 open roles
+   * to a usable share of them.
+   */
+  {
+    // "programs in sports such as gymnastics, martial arts, basketball and cricket"
+    re: /\bsports?\s+(?:such\s+as|including|like)\s+([a-zA-Z][\w\s,&'’-]{10,90})/i,
+    shape: (m) => `your sports programme covering ${m[1]!.trim().replace(/\s+/g, " ").replace(/[.,;]$/, "")}`,
+  },
+  {
+    // "the volleyball performance pathway from upper primary through to Sixth Form"
+    re: /\b(?:the\s+)?([a-z]{4,14})\s+(?:performance\s+)?pathway\b/i,
+    shape: (m) => `the ${m[1]!.toLowerCase()} performance pathway you are building`,
+  },
+  {
+    // "established competition pathways", "competitive sports programmes"
+    re: /\b((?:established|strong|clear)\s+competition\s+pathways|competitive\s+sports?\s+(?:programmes?|programs?))\b/i,
+    shape: (m) => `the ${m[1]!.toLowerCase()} you have put in place`,
+  },
+  {
+    // "a high-calibre, specialist-led sports programme that drives participation"
+    re: /\b((?:specialist[\s-]led|high[\s-]calibre|high[\s-]caliber|high[\s-]performance)\s+sports?\s+programme?s?)\b/i,
+    shape: (m) => `your ${m[1]!.toLowerCase().replace(/\s+/g, " ")}`,
+  },
+  {
+    // A department with real structure: someone leads sport full time.
+    re: /\b(Director\s+of\s+Sports?|Head\s+of\s+(?:Sports?|PE|Physical\s+Education)|Athletics\s+Director|Head\s+of\s+Athletics)\b/,
+    shape: (m) => `that sport is led properly, with a ${m[1]!.replace(/\s+/g, " ")} in post`,
+  },
+  {
+    // A named sport sitting in the curriculum and beyond it — the Aga Khan
+    // Academy offers "swimming both as part of the MYP Physical and Health
+    // Education lessons and after school".
+    re: /\b(?:offers?|offering|provide[sd]?|run(?:s|ning)?|teach(?:es|ing)?|coach(?:es|ing)?)\s+(?:[\w\s]{0,24}?\s)?(swimming|basketball|football|soccer|rugby|netball|cricket|tennis|volleyball|badminton|hockey|athletics|gymnastics|dance|martial\s+arts)\b(?=[^.]{0,80}\b(?:after[\s-]school|co[\s-]?curricular|lessons?|curriculum|programme|department)\b)/i,
+    shape: (m) => `that ${m[1]!.toLowerCase()} runs right through the curriculum and beyond the timetable`,
+  },
 ];
 
 /**
@@ -204,8 +244,14 @@ const TOO_GENERIC =
  * A hook must name something — a sport, a facility, a competition. Without a
  * concrete noun it is a compliment that fits any school.
  */
+/*
+ * A named post or a structured pathway counts as concrete too. It is a
+ * specific thing this school has that many do not, and it is the thing a PE
+ * candidate actually cares about — "there is a Director of Sport in post" says
+ * more about a department than another mention of a sports hall.
+ */
 const CONCRETE =
-  /\b(?:pool|hall|complex|track|turf|pitch|court|courts|gym|gymnasium|studio|wall|centre|center|suite|league|games|championship|championships|conference|tournament|football|soccer|basketball|netball|rugby|cricket|tennis|volleyball|badminton|hockey|athletics|gymnastics|swimming|aquatics|rowing|golf|baseball|softball|dance|climbing|fitness)\b/i;
+  /\b(?:pool|hall|complex|track|turf|pitch|court|courts|gym|gymnasium|studio|wall|centre|center|suite|league|games|championship|championships|conference|tournament|football|soccer|basketball|netball|rugby|cricket|tennis|volleyball|badminton|hockey|athletics|gymnastics|swimming|aquatics|rowing|golf|baseball|softball|dance|climbing|fitness|martial\s+arts|pathways?|Director\s+of\s+Sport|Head\s+of\s+PE|Athletics\s+Director|specialist[\s-]led)\b/i;
 
 export function findPeHook(html: string, sourceUrl: string): Hook | null {
   const text = htmlToText(html).slice(0, 200_000).replace(/\s+/g, " ");

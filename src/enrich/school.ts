@@ -30,6 +30,7 @@ import { extractSalaryFromText, type SourcedSalary } from "./salary.ts";
 import { crawlSchoolSite } from "./website.ts";
 import { knownWebsite } from "./websites.ts";
 import { bestSocial, extractSocial, type SocialLink } from "./social.ts";
+import { findPeHook, findPrincipal, findSchoolHook } from "./hooks.ts";
 
 /** One school's worth of vacancy data, as gathered from the boards. */
 export interface SchoolInput {
@@ -332,6 +333,34 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
   );
   if (general) {
     profile.schoolEmail = sourced(general.email, general.foundAt, general.score, `via ${general.via}, ${general.kind}`);
+  }
+
+  /*
+   * The advert is a source too, and a legitimate one — the school wrote it.
+   *
+   * Hooks were read only from the school website, which meant a school with no
+   * website could never produce a personalised email however much it had
+   * written about itself. A PE advert almost always describes the facilities
+   * and the programme, which is exactly what the email needs: across the open
+   * adverts, 27% carry a usable school fact and 15% a PE fact, against 6% and
+   * 4% from websites alone.
+   *
+   * The website still wins where it found something, being about the school
+   * rather than about one vacancy.
+   */
+  if (jobCorpus) {
+    if (!profile.schoolHook) {
+      const fromAd = findSchoolHook(jobCorpus, "job advert");
+      if (fromAd) profile.schoolHook = sourced(fromAd.text, "job advert", 0.7);
+    }
+    if (!profile.peHook) {
+      const fromAd = findPeHook(jobCorpus, "job advert");
+      if (fromAd) profile.peHook = sourced(fromAd.text, "job advert", 0.7);
+    }
+    if (!profile.principal) {
+      const fromAd = findPrincipal(jobCorpus, "job advert", input.schoolName);
+      if (fromAd) profile.principal = sourced(fromAd.text, "job advert", 0.7);
+    }
   }
 
   const social = bestSocial(socialLinks);
