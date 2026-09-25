@@ -17,12 +17,29 @@ const watched = (postings: number, monthsObserved: number) => ({
   firstSeen: new Date(Date.now() - monthsObserved * 30.44 * 86_400_000).toISOString(),
 });
 
-test("says nothing before it has watched long enough", () => {
-  // A new database: everything looks like a burst.
-  assert.equal(turnoverLabel(watched(3, 0.02)), "");
-  assert.equal(turnoverLabel(watched(5, 2)), "");
-  // Just under the threshold is still silence.
-  assert.equal(turnoverLabel(watched(10, 5.9)), "");
+test("gives no verdict before it has watched long enough", () => {
+  // A new database: everything looks like a burst, so no rating is offered.
+  for (const early of [watched(3, 0.02), watched(5, 2), watched(10, 5.9)]) {
+    const cell = turnoverLabel(early);
+    assert.doesNotMatch(cell, /^(?:Low|Moderate|High)$/, "must not rate this early");
+    // But the cell says why it is empty, and when it will not be. Reading
+    // blank for every school made a working column look broken.
+    assert.match(cell, /watching/);
+    assert.match(cell, /to a verdict/);
+  }
+});
+
+test("counts down honestly while it waits", () => {
+  // One month in, five to go, and it reports what it has seen so far.
+  const cell = turnoverLabel(watched(1, 1));
+  assert.match(cell, /1 advert so far/);
+  assert.match(cell, /5mo/);
+  // Plural when it should be.
+  assert.match(turnoverLabel(watched(3, 1)), /3 adverts so far/);
+});
+
+test("a school never seen advertising has nothing to report", () => {
+  assert.equal(turnoverLabel(undefined), "");
 });
 
 test("rates a school once there is enough history", () => {

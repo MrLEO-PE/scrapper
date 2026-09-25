@@ -169,11 +169,48 @@ const MIN_MONTHS_TO_JUDGE = 6;
  * year unless people are leaving.
  */
 export function turnoverLabel(h: HiringHistory | undefined): string {
-  if (!h || h.monthsObserved < MIN_MONTHS_TO_JUDGE) return "";
+  if (!h) return "";
+
+  /*
+   * Say when the verdict arrives, rather than nothing at all.
+   *
+   * The column read blank for every school and looked broken. It is not: one
+   * posting in a fortnight is not a pattern, and calling it "High" would be
+   * guesswork about the thing that matters most — whether people leave. So
+   * until there is enough history the cell reports its own progress, which is
+   * both honest and a reason to keep the database running.
+   */
+  if (h.monthsObserved < MIN_MONTHS_TO_JUDGE) {
+    const left = Math.max(1, Math.ceil(MIN_MONTHS_TO_JUDGE - h.monthsObserved));
+    return `watching — ${h.postings} advert${h.postings === 1 ? "" : "s"} so far, ${left}mo to a verdict`;
+  }
+
   const perYear = h.postings / (h.monthsObserved / 12);
   if (perYear >= 3) return "High";
   if (perYear >= 1.5) return "Moderate";
   return "Low";
+}
+
+/**
+ * Where teachers talk about schools. Searched by you, never by the scraper.
+ *
+ * Reddit's robots.txt is `Disallow: /` and International Schools Review is
+ * subscription-only, so neither can be collected automatically. That does not
+ * make what they contain worthless — staff reviews are the one thing no
+ * directory publishes, and they are where you learn a school is a bad place to
+ * work. So the sheet carries the search, not the answer.
+ */
+const FORUM_SITES = [
+  "reddit.com/r/internationalteachers",
+  "internationalschoolsreview.com",
+  "tes.com/jobs",
+];
+
+export function reputationSearch(school: string | null | undefined): string {
+  const name = school?.trim();
+  if (!name) return "";
+  const sites = FORUM_SITES.map((s) => `site:${s}`).join(" OR ");
+  return `https://duckduckgo.com/?q=${encodeURIComponent(`"${name}" (${sites})`)}`;
 }
 
 /**
@@ -268,6 +305,11 @@ export const FIELDS: FieldDef[] = [
     key: "contact_type", label: "Contact Type", group: "contact", scope: "both",
     help: "What the Best Contact actually is, so a general inbox is never mistaken for a recruitment address.",
     get: (c) => bestContact(c).kind,
+  },
+  {
+    key: "reputation", label: "What Teachers Say", group: "school", scope: "both",
+    help: "A prepared search across the teacher forums for this school. The scraper cannot read Reddit or ISR — both forbid automated collection — but you can, and what current staff say about a school is the one thing no directory will tell you. Open it before you apply.",
+    get: (c) => reputationSearch(c.school?.name ?? c.job?.school_name),
   },
   {
     key: "phone", label: "Phone", group: "contact", scope: "both",
