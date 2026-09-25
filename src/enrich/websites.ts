@@ -21,7 +21,14 @@ import { join } from "node:path";
 import { log } from "../core/logger.ts";
 
 export interface WebsiteEntry {
-  url: string;
+  /** The school's own site. Omit when it genuinely has none. */
+  url?: string;
+  /**
+   * A Facebook or Instagram page, for a school that has no website at all.
+   * Recorded so there is somewhere to send you; never fetched, because those
+   * platforms forbid automated collection.
+   */
+  social?: string;
   /** Where this came from: "wikidata", "search", "manual". */
   via: string;
   /** When it was established, so a stale entry can be spotted. */
@@ -42,7 +49,9 @@ function load(): Record<string, WebsiteEntry> {
       // Keys beginning "//" are notes in the file, not schools.
       if (key.startsWith("//") || typeof value !== "object" || !value) continue;
       const entry = value as WebsiteEntry;
-      if (entry.url) out[key] = entry;
+      // One or the other is enough: a school with only a Facebook page is
+      // exactly the case this file exists for.
+      if (entry.url || entry.social) out[key] = entry;
     }
     cache = out;
   } catch (err) {

@@ -165,6 +165,7 @@ sheet. Ticked by default:
 | School Name | Board data |
 | Curriculum | Board tags, else the school website or advert |
 | Website | The school's own site — the tool you use to finish the Prepared Email, since every missing detail lives there |
+| Facebook / Instagram | The school's social page. For a school with no website this is the only route left — **you** open it; the scraper never reads it (see below) |
 | Students in School | School website / job pack |
 | School Type | Grade levels, else the website (Primary / Secondary / Primary + Secondary / University) |
 | Approx. Salary (PE expat) | Averaged across that school's adverts, grouped by currency |
@@ -191,6 +192,26 @@ country and the next build shows its roles, with no re-scrape. Widen a single ex
 A vacancy whose country the board did not state is kept rather than hidden. A school with no
 country can wait for the next directory run; a vacancy has a deadline, and hiding it to tidy a list
 is the one outcome here that actually costs something.
+
+### Schools with no website
+
+Plenty of smaller schools have no website but do run a Facebook or Instagram page, and that page
+usually carries the head's name, the sports facilities and often a contact address — exactly what
+the Prepared Email needs.
+
+The scraper records the link and never opens it. [Meta's Automated Data Collection
+Terms](https://www.facebook.com/legal/automated_data_collection_terms) prohibit automated
+collection from Facebook and Instagram without express written permission, and LinkedIn says the
+same. You opening a public page in your browser is an entirely different thing, and that is the
+division of labour here: the tool finds the link, you do the reading.
+
+The refusal is enforced by hostname in the crawler, not by trusting where a URL came from — a
+school whose only presence is a Facebook page has that link stored where a website would normally
+go, so the guard has to hold there too. Links are collected from advert text and from school site
+footers, and can be added by hand in `config/school-websites.json` with `social` in place of `url`.
+
+Share buttons, login walls and post permalinks are ignored; only paths that look like an account
+are kept, and tracking query strings are stripped so one page is one link.
 
 ### One school, one row
 

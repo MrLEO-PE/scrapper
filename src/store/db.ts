@@ -98,6 +98,7 @@ CREATE TABLE IF NOT EXISTS schools (
   prominence      INTEGER,
   package_score   INTEGER,
   rank_basis      TEXT,
+  social          TEXT,
   enriched_at     TEXT,
   created_at      TEXT NOT NULL
 );
@@ -163,6 +164,8 @@ const MIGRATIONS: { table: string; column: string; ddl: string }[] = [
   // What a country rank was decided on, and the package score behind it.
   { table: "schools", column: "package_score", ddl: "ALTER TABLE schools ADD COLUMN package_score INTEGER" },
   { table: "schools", column: "rank_basis", ddl: "ALTER TABLE schools ADD COLUMN rank_basis TEXT" },
+  // A Facebook or Instagram page, for schools that have no website at all.
+  { table: "schools", column: "social", ddl: "ALTER TABLE schools ADD COLUMN social TEXT" },
 ];
 
 function migrate(d: DatabaseSync): void {
@@ -602,8 +605,8 @@ export function upsertSchool(
         student_count, school_type, salary_json, package_json, school_email,
         career_email, careers_url, principal, school_hook, pe_hook, salary_basis,
         emails_json, provenance_json, notes_json,
-        origin, country_rank, accreditation, prominence, enriched_at, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        origin, country_rank, accreditation, prominence, social, enriched_at, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(school_key) DO UPDATE SET
         name = excluded.name,
         country = COALESCE(excluded.country, schools.country),
@@ -635,6 +638,7 @@ export function upsertSchool(
         country_rank = COALESCE(excluded.country_rank, schools.country_rank),
         accreditation = COALESCE(excluded.accreditation, schools.accreditation),
         prominence = COALESCE(excluded.prominence, schools.prominence),
+        social = COALESCE(excluded.social, schools.social),
         enriched_at = COALESCE(excluded.enriched_at, schools.enriched_at)`,
     )
     .run(
@@ -649,6 +653,7 @@ export function upsertSchool(
       p.salaryBasis ?? null,
       j(p.allEmails), j(provenance), j(p.notes),
       origin, countryRank ?? null, p.accreditation ?? null, p.prominence ?? null,
+      p.social?.value ?? null,
       markEnriched ? (p.enrichedAt ?? now) : null, now,
     );
 }
@@ -679,6 +684,7 @@ export interface SchoolRow {
   prominence: number | null;
   package_score: number | null;
   rank_basis: string | null;
+  social: string | null;
   enriched_at: string | null;
 }
 

@@ -226,6 +226,11 @@ export const FIELDS: FieldDef[] = [
     get: (c) => c.school?.website ?? c.job?.school_website ?? "",
   },
   {
+    key: "social", label: "Facebook / Instagram", group: "school", scope: "both",
+    help: "The school's social page. For a school with no website this is the only route left — open it yourself and read the About section for the head's name and a contact address. The scraper never reads these: Meta's terms forbid automated collection.",
+    get: (c) => c.school?.social ?? "",
+  },
+  {
     key: "pe_roles_seen", label: "PE Roles Seen", group: "school", scope: "both",
     help: "How many separate PE vacancies this school has advertised since the scraper started watching. Repeated adverts hint at people not staying.",
     get: (c) => {
@@ -267,8 +272,9 @@ export const FIELDS: FieldDef[] = [
           advertText: c.job.description,
         }),
         // The website is where every missing detail lives, so an incomplete
-        // draft points straight at it rather than just saying one is missing.
-        c.school?.website ?? c.job.school_website,
+        // draft points straight at it. Where there is no website, the school's
+        // social page is the only route left, so send the reader there instead.
+        c.school?.website ?? c.job.school_website ?? c.school?.social,
       );
     },
   },

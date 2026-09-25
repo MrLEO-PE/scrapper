@@ -6,6 +6,7 @@
   "school_name": true,
   "curriculum": true,
   "website": true,
+  "social": true,
   "student_count": true,
   "school_type": true,
   "pe_roles_seen": true,

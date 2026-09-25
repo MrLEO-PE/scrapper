@@ -11,6 +11,7 @@
  * delay and the cache all apply.
  */
 
+import { extractSocial, isNeverFetch, type SocialLink } from "./social.ts";
 import { fetchBuffer, fetchText } from "../core/http.ts";
 import { log } from "../core/logger.ts";
 import { htmlToText } from "../core/text.ts";
@@ -62,6 +63,8 @@ export interface SiteFindings {
   principal?: Hook;
   schoolHook?: Hook;
   peHook?: Hook;
+  /** The school's own social pages, for the reader to open. Never fetched. */
+  social: SocialLink[];
   /** A pay figure published on the school site or in a job pack. */
   salary?: SourcedSalary;
 }
@@ -140,7 +143,20 @@ export async function crawlSchoolSite(
   const start = normaliseSite(siteUrl);
   if (!start) return null;
 
-  const findings: SiteFindings = { emails: [], pagesVisited: 0, pdfsRead: 0, notes: [] };
+  /*
+   * A school whose only presence is a Facebook page will have that link stored
+   * where a website would go, so the refusal has to be by host here rather
+   * than by trusting the caller. Meta's and LinkedIn's terms prohibit
+   * automated collection; the link is for the reader to open, not for us.
+   */
+  if (isNeverFetch(start)) {
+    return {
+      emails: [], social: [], pagesVisited: 0, pdfsRead: 0,
+      notes: ["social page, not crawled — open it yourself; automated collection there is not permitted"],
+    };
+  }
+
+  const findings: SiteFindings = { emails: [], social: [], pagesVisited: 0, pdfsRead: 0, notes: [] };
   const origin = new URL(start).origin;
   const visited = new Set<string>();
   const pdfQueue: Candidate[] = [];
@@ -193,6 +209,10 @@ export async function crawlSchoolSite(
       pageEmails,
       extractEmails(mailtos.join(" "), next.url, "html"),
     );
+
+    // The school's own social pages, almost always linked from the footer.
+    // Recorded as somewhere for the reader to look, never fetched.
+    findings.social.push(...extractSocial(html));
 
     // Queue further pages, staying on this origin.
     for (const link of linksFrom(html, next.url)) {

@@ -29,6 +29,7 @@ import { pdfToText } from "./pdf.ts";
 import { extractSalaryFromText, type SourcedSalary } from "./salary.ts";
 import { crawlSchoolSite } from "./website.ts";
 import { knownWebsite } from "./websites.ts";
+import { bestSocial, extractSocial, type SocialLink } from "./social.ts";
 
 /** One school's worth of vacancy data, as gathered from the boards. */
 export interface SchoolInput {
@@ -139,7 +140,7 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
     // email, the package and any published pay — would be skipped entirely.
     // Fall back to one established separately.
     const known = knownWebsite(input.schoolKey);
-    if (known) profile.website = sourced(known.url, `website lookup (${known.via})`, 0.8);
+    if (known?.url) profile.website = sourced(known.url, `website lookup (${known.via})`, 0.8);
   }
 
   // ---- from board data -------------------------------------------------
@@ -175,6 +176,14 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
 
   // Vacancy text often names the address to apply to.
   emails = mergeEmails(emails, extractEmails(jobCorpus, "job advert", "html"));
+
+  // A school's social pages, collected from the adverts and later from its own
+  // site. For a school with no website this is the only place left to look —
+  // by hand, since those platforms forbid automated collection.
+  const socialLinks: SocialLink[] = extractSocial(jobCorpus);
+  // A page recorded by hand for a school that has no website at all.
+  const lookedUp = knownWebsite(input.schoolKey)?.social;
+  if (lookedUp) socialLinks.unshift(...extractSocial(lookedUp));
 
   // ---- job packs attached to the advert --------------------------------
   // These are the single best source for a careers address: a school that
@@ -216,6 +225,7 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
         );
         emails = mergeEmails(emails, found.emails);
         notes.push(...found.notes);
+        socialLinks.push(...found.social);
 
         siteSalary ??= found.salary;
         if (found.principal) profile.principal = sourced(found.principal.text, found.principal.source, 0.8);
@@ -322,6 +332,15 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
   );
   if (general) {
     profile.schoolEmail = sourced(general.email, general.foundAt, general.score, `via ${general.via}, ${general.kind}`);
+  }
+
+  const social = bestSocial(socialLinks);
+  if (social) profile.social = sourced(social.url, `${social.kind} page`, 0.7);
+
+  // Worth saying out loud, because it is the one case where the sheet is
+  // telling you to go and do the reading yourself.
+  if (social && !profile.website) {
+    notes.push(`no website — ${social.kind} page is the only route: ${social.url}`);
   }
 
   return profile;

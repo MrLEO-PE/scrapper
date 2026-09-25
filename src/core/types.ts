@@ -187,6 +187,8 @@ export interface SchoolProfile {
   packageNotes?: Sourced<string[]>;
   schoolEmail?: Sourced<string>;
   careerEmail?: Sourced<string>;
+  /** A Facebook or Instagram page, when the school has no website. Never crawled. */
+  social?: Sourced<string>;
   /** Every email found, classified; careerEmail is the best of these. */
   allEmails?: DiscoveredEmail[];
   careersPageUrl?: Sourced<string>;
