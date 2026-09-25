@@ -130,7 +130,38 @@ const SCHOOL_HOOK_PATTERNS: { re: RegExp; shape: (m: RegExpExecArray) => string 
     re: /\b(?:founded|established|opened)\s+in\s+((?:18|19|20)\d{2})\b/,
     shape: (m) => `has been going since ${m[1]}`,
   },
+
+  /*
+   * Directory blurbs, which read nothing like a school's own marketing.
+   *
+   * The patterns above were written for website prose — awards, accreditation
+   * announcements, founding stories. The Teach Away listing carries a short
+   * factual paragraph instead: "X is a private international college
+   * preparatory school that teaches students from...". 39% of schools have one
+   * and only 6% yielded anything, which is the gap these close.
+   */
+  {
+    // "is a private international college preparatory school"
+    re: /\bis\s+an?\s+((?:private|independent|non-?profit|not-?for-?profit|co-?educational|day|boarding|bilingual|through-?train)[\w\s,'’-]{0,50}?school)\b/i,
+    shape: (m) => `is ${indefinite(m[1]!)}`,
+  },
+  {
+    // "teaches students from nursery through grade 13" / "from age 3 to 18"
+    re: /\b(?:teaches|educates|serves|caters\s+for)\s+(?:students?|pupils?|children)\s+((?:from|aged?)\s+[\w\s.'’-]{4,45}?(?:to|through|-|–)\s*[\w\s.'’-]{2,25}?)(?:[.,;]|\s+(?:and|with|in)\b)/i,
+    shape: (m) => `teaches students ${m[1]!.trim().replace(/\s+/g, " ")}`,
+  },
+  {
+    // "a college preparatory school", stated on its own.
+    re: /\b(college\s+preparatory)\b/i,
+    shape: () => "is a college preparatory school",
+  },
 ];
+
+/** "private school" -> "a private school"; "IB World School" -> "an IB…". */
+function indefinite(phrase: string): string {
+  const p = phrase.trim().replace(/\s+/g, " ").toLowerCase();
+  return `${/^[aeiou]/.test(p) ? "an" : "a"} ${p}`;
+}
 
 /**
  * Cut a captured phrase back to a clean ending.

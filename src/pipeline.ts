@@ -15,6 +15,7 @@ import { hostOf, slugify } from "./core/text.ts";
 import type { Job, Salary, SchoolProfile, SourceId } from "./core/types.ts";
 import { bestCareerEmail, bestSchoolEmail, domainOf, extractEmails } from "./enrich/email.ts";
 import { findWebsite } from "./enrich/findsite.ts";
+import { findSchoolHook } from "./enrich/hooks.ts";
 import { saveWebsites, type WebsiteEntry } from "./enrich/websites.ts";
 import { fetchCountryDirectory, phaseFromOrgType, type DirectorySchool } from "./directory.ts";
 import { enrichSchool, type EnrichOptions, type SchoolInput } from "./enrich/school.ts";
@@ -357,6 +358,7 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
 
   if (opts.listOnly) {
     let listedEmails = 0;
+    let listedFacts = 0;
     for (const s of all) {
       /*
        * The listing publishes the address the school nominated for job
@@ -371,6 +373,17 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
       const emails = directoryEmails(s);
       if (emails.career) listedEmails++;
 
+      /*
+       * The listing's own blurb, which was going the same way as the emails.
+       *
+       * Two schools in five have a short factual paragraph in the directory,
+       * and it is the only thing written about the 62% of schools that have no
+       * website to crawl. Extracting the fact here is what lets those schools
+       * carry a speculative letter at all.
+       */
+      const blurbHook = s.description ? findSchoolHook(s.description, "teachaway directory") : null;
+      if (blurbHook) listedFacts++;
+
       upsertSchool(
         {
           schoolKey: s.schoolKey,
@@ -380,6 +393,7 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
           ...(s.website ? { website: { value: s.website, provenance: { confidence: 0.95, source: "teachaway directory" } } } : {}),
           ...(s.accredBodies.length ? { accreditation: s.accredBodies.join(", ") } : {}),
           ...emails.profile,
+          ...(blurbHook ? { schoolHook: { value: blurbHook.text, provenance: { confidence: 0.75, source: "teachaway directory" } } } : {}),
           ...(s.phone ? { phone: { value: s.phone, provenance: { confidence: 0.9, source: "teachaway directory" } } } : {}),
           prominence: s.prominence,
           notes: s.why,
@@ -393,6 +407,7 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
       );
     }
     if (listedEmails) log.ok(`${listedEmails} careers addresses taken straight from the listing`);
+    if (listedFacts) log.ok(`${listedFacts} school facts read from the listing blurbs`);
 
     // Listing refreshes each school's proxy score, so the order has to be
     // recomputed — schools already profiled keep their package-based place.
