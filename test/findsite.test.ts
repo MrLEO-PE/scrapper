@@ -168,3 +168,26 @@ test("a blank key counts as no key", async () => {
   if (before === undefined) delete process.env.SCRAPPER_SEARCH_KEY;
   else process.env.SCRAPPER_SEARCH_KEY = before;
 });
+
+// --- schools database breadcrumbs -------------------------------------------
+
+test("reads the country from a city-state's two-crumb breadcrumb", async () => {
+  const { countryOf } = await import("../src/schoolsdb.ts");
+  const crumbs = (names: string[]) =>
+    `<script type="application/ld+json">${JSON.stringify({
+      "@type": "BreadcrumbList",
+      itemListElement: names.map((n, i) => ({ "@type": "ListItem", position: i + 1, item: { name: n } })),
+    })}</script>`;
+
+  // The usual shape.
+  assert.equal(countryOf(crumbs(["Home", "Thailand", "Bangkok"])), "Thailand");
+
+  // Singapore has no third crumb, and requiring one dropped its 71 schools —
+  // the second-largest city in the database — from the list entirely.
+  assert.equal(countryOf(crumbs(["Home", "Singapore"])), "Singapore");
+  assert.equal(countryOf(crumbs(["Home", "Hong Kong"])), "Hong Kong");
+
+  // Nothing to read is still nothing.
+  assert.equal(countryOf(crumbs(["Home"])), undefined);
+  assert.equal(countryOf("<html></html>"), undefined);
+});

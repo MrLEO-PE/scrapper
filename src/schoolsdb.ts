@@ -90,8 +90,18 @@ export function countryOf(html: string): string | undefined {
     const b = block as { "@type"?: string; itemListElement?: { item?: { name?: string } ; name?: string }[] };
     if (b["@type"] !== "BreadcrumbList") continue;
     const items = b.itemListElement ?? [];
-    // Home, Country, City — the country is the second of three.
+
+    // Home > Country > City is the usual shape, so the country is the second
+    // of three.
     if (items.length >= 3) return (items[1]?.item?.name ?? items[1]?.name)?.trim();
+
+    /*
+     * A city-state has no third crumb: Singapore reads "Home > Singapore",
+     * and so do Hong Kong and Macau. Requiring three silently dropped
+     * Singapore's 71 schools — the second-largest city in the database — from
+     * a list whose entire purpose is not to miss anything.
+     */
+    if (items.length === 2) return (items[1]?.item?.name ?? items[1]?.name)?.trim();
   }
   return undefined;
 }
