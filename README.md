@@ -193,6 +193,24 @@ A vacancy whose country the board did not state is kept rather than hidden. A sc
 country can wait for the next directory run; a vacancy has a deadline, and hiding it to tidy a list
 is the one outcome here that actually costs something.
 
+### Why widening the net means more APIs, not more careers pages
+
+The school-careers source was pointed at 165 schools instead of 45 — every school in the configured
+countries that has a known website, best-ranked first. It returned **six** PE roles.
+
+The reason is not the target list and not robots.txt (8 refusals out of 165). It is that a school's
+careers page increasingly loads its vacancy list client-side, from an applicant-tracking widget.
+Concordia Shanghai's page is 233 KB with 69 links and **not one of them is a job** — the roles
+arrive by JavaScript after the page does, and there is no browser here to run it. Fourteen known
+careers pages were checked directly: all fourteen reachable, all role-shaped in their wording, and
+almost none with an extractable list.
+
+So the leverage is in APIs. Adding **International Schools Partnership** — one group, recruiting
+through Workday's JSON endpoint — found seven in-scope PE roles that nothing else was seeing,
+against six from 165 hand-crawled sites. Groups worth adding next, in rough order of value:
+Harrow International, Wellington College China, Maple Leaf, BASIS China, and the country boards
+ajarn.com (Thailand) and vietnamteachingjobs.com.
+
 ### Schools with no website
 
 Plenty of smaller schools have no website but do run a Facebook or Instagram page, and that page
@@ -746,6 +764,7 @@ so they are not re-attempted.
 
 | Source | Why not |
 |---|---|
+| **Most school careers pages** | The page loads, but the vacancy list does not — it is rendered client-side by an ATS widget. Concordia Shanghai serves 69 anchors and not one is a role. See below |
 | **Randstad / Teachanywhere** | Its international teaching section returns *no results at all*; the PE jobs it does list are UK domestic. Teachanywhere.com redirects to Randstad — one source, not two |
 | **TopTutorJob** | Behind Cloudflare bot protection (HTTP 403, "Just a moment…"). That is an access control, and working around it is not something this tool does |
 | **FOBISIA on Eteach** | The fair page states "The event has now ended" and lists nothing. Eteach's own job search is a 2.7 KB JavaScript shell, so it needs a real browser |
