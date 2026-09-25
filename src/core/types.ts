@@ -17,7 +17,9 @@ export type SourceId =
   | "schoolsite"
   // Job alerts received by email (the paid services' sanctioned feed).
   | "mailalert"
-  | "europeanchamber";
+  | "europeanchamber"
+  // School groups running their own Workday career site.
+  | "isp";
 
 /** How sure we are about a single enriched value, and where it came from. */
 export interface Provenance {

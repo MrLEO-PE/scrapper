@@ -69,6 +69,30 @@ const PROBES: Probe[] = [
   { label: "keyword:sports coordinator", subjects: [], keywords: "sports coordinator", positions: [] },
   { label: "keyword:athletic director", subjects: [], keywords: "athletic director", positions: [] },
   { label: "keyword:games teacher", subjects: [], keywords: "games teacher", positions: [] },
+
+  /*
+   * Added after checking what the board actually carries for the configured
+   * countries. The subject facet catches anything filed as Physical Education,
+   * but plenty of PE work is filed elsewhere:
+   *
+   *   - IB schools call it Physical and Health Education, or PHE, and those
+   *     roles sit under a different subject entirely. This matters most in
+   *     exactly the countries on the list.
+   *   - Sport-specific coaching posts — swimming, basketball, strength and
+   *     conditioning — are PE-linked jobs that name a sport, not a subject.
+   *   - Outdoor and adventurous education is a PE department role in most
+   *     international schools.
+   *
+   * Each probe costs one request per page, and the classifier filters the
+   * results either way, so a probe that returns nothing is cheap.
+   */
+  { label: "keyword:physical and health education", subjects: [], keywords: "physical and health education", positions: [] },
+  { label: "keyword:head of PE", subjects: [], keywords: "head of PE", positions: [] },
+  { label: "keyword:PE teacher", subjects: [], keywords: "PE teacher", positions: [] },
+  { label: "keyword:swimming teacher", subjects: [], keywords: "swimming teacher", positions: [] },
+  { label: "keyword:sports coach", subjects: [], keywords: "sports coach", positions: [] },
+  { label: "keyword:outdoor education", subjects: [], keywords: "outdoor education", positions: [] },
+  { label: "keyword:strength and conditioning", subjects: [], keywords: "strength and conditioning", positions: [] },
 ];
 
 function buildUrl(probe: Probe, page: number): string {

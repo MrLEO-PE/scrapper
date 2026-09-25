@@ -21,6 +21,14 @@ export interface FetchOptions {
   /** Cache lifetime in ms. Default 6h. */
   ttlMs?: number;
   headers?: Record<string, string>;
+  /**
+   * POST, for the handful of APIs that take a query in the body rather than
+   * the URL — Workday's career sites among them. A POST is never cached: the
+   * cache is keyed on the URL alone, so two different queries to one endpoint
+   * would otherwise return each other's results.
+   */
+  method?: "GET" | "POST";
+  body?: string;
   /** Treat a non-2xx as a soft failure returning null rather than throwing. */
   soft?: boolean;
   timeoutMs?: number;
@@ -100,7 +108,12 @@ async function gate(origin: string, crawlDelayMs: number): Promise<void> {
 export async function fetchText(url: string, opts: FetchOptions = {}): Promise<string | null> {
   const ttl = opts.ttlMs ?? DEFAULT_TTL;
 
-  if (!opts.fresh) {
+  // The cache is keyed on the URL alone, so a POST — whose query lives in the
+  // body — must not touch it. Five different searches against one Workday
+  // endpoint would otherwise all return the first one's results.
+  const cacheable = (opts.method ?? "GET") === "GET";
+
+  if (!opts.fresh && cacheable) {
     const hit = await readCache(url, ttl);
     if (hit !== null) {
       stats.cacheHits++;
@@ -130,6 +143,8 @@ export async function fetchText(url: string, opts: FetchOptions = {}): Promise<s
       try {
         stats.requests++;
         const res = await fetch(url, {
+          method: opts.method ?? "GET",
+          ...(opts.body != null ? { body: opts.body } : {}),
           headers: {
             "user-agent": USER_AGENT,
             accept: "text/html,application/json,application/xhtml+xml,*/*;q=0.8",
@@ -163,7 +178,7 @@ export async function fetchText(url: string, opts: FetchOptions = {}): Promise<s
 
         const body = await res.text();
         stats.bytes += body.length;
-        await writeCache(url, body);
+        if (cacheable) await writeCache(url, body);
         return body;
       } catch (err) {
         lastErr = err;

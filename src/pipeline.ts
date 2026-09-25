@@ -32,6 +32,7 @@ import { tesSource } from "./sources/tes.ts";
 import { teachawaySource } from "./sources/teachaway.ts";
 import { teacherHorizonsSource } from "./sources/teacherhorizons.ts";
 import { successFactorsSources } from "./sources/successfactors.ts";
+import { workdaySources } from "./sources/workday.ts";
 import { schoolSitesSource } from "./sources/schoolsites.ts";
 import { mailboxSource } from "./sources/mailbox.ts";
 import { europeanChamberSource } from "./sources/europeanchamber.ts";
@@ -60,6 +61,7 @@ export const ALL_SOURCES: Source[] = [
   teachawaySource,
   teacherHorizonsSource,
   ...successFactorsSources,
+  ...workdaySources,
   schoolSitesSource,
   europeanChamberSource,
   mailboxSource,
@@ -73,7 +75,7 @@ export const ALL_SOURCES: Source[] = [
 // Sources that list their full inventory each run, so a vacancy going missing
 // is meaningful. Email alerts and school pages are not: an alert is a one-off
 // message, and a school page shows only what is open today.
-const ENUMERATED: SourceId[] = ["tes", "teachaway", "nordanglia", "inspired", "europeanchamber"];
+const ENUMERATED: SourceId[] = ["tes", "teachaway", "nordanglia", "inspired", "europeanchamber", "isp"];
 
 export interface ScrapeOptions {
   sources?: string[];

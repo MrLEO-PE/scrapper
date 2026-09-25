@@ -19,7 +19,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fetchText } from "../core/http.ts";
 import { log } from "../core/logger.ts";
-import { decodeEntities, htmlToText, slugify } from "../core/text.ts";
+import { decodeEntities, hostOf, htmlToText, slugify } from "../core/text.ts";
+import { isTargetCountry, targetCountries } from "../directoryconfig.ts";
+import { isNeverFetch } from "../enrich/social.ts";
+import { getDb } from "../store/db.ts";
 import type { RawJob } from "../core/types.ts";
 import { detectApplicationForm } from "../match/appform.ts";
 import { classify } from "../match/classify.ts";
@@ -86,6 +89,81 @@ export function loadSchoolEntries(): SchoolEntry[] {
     log.warn(`could not read ${path}: ${(err as Error).message}`);
     return [];
   }
+}
+
+/**
+ * How many database-sourced schools to poll in one run.
+ *
+ * Each one costs a page fetch or two, so the whole directory cannot be swept
+ * every night. Best-ranked first, which is also where the jobs worth having
+ * are.
+ */
+const FROM_DB_LIMIT = 120;
+
+/**
+ * The schools to check, drawn from the database as well as the config file.
+ *
+ * The config file is a hand-curated shortlist of 45, and it was the only
+ * source of targets — yet the database already holds 151 schools in the
+ * configured countries with a known website, and 55 with a careers page
+ * already discovered by enrichment. Those are precisely the schools worth
+ * watching, and many post on their own site before a board picks the role up,
+ * or never post to a board at all.
+ *
+ * Config entries always win: they are deliberate, and they may carry a careers
+ * URL that discovery would not find.
+ */
+export function schoolsToCheck(): SchoolEntry[] {
+  const configured = loadSchoolEntries();
+  const seen = new Set(configured.map((s) => hostKey(s.website)).filter(Boolean));
+  const out = [...configured];
+
+  const targets = targetCountries();
+  let rows: {
+    name: string; website: string | null; careers_url: string | null;
+    country: string | null; city: string | null; country_rank: number | null;
+  }[] = [];
+  try {
+    rows = getDb()
+      .prepare(
+        `SELECT name, website, careers_url, country, city, country_rank
+           FROM schools
+          WHERE website IS NOT NULL
+          ORDER BY careers_url IS NULL, COALESCE(country_rank, 9999)`,
+      )
+      .all() as typeof rows;
+  } catch (err) {
+    // The source must still work against the config alone.
+    log.debug(`school sites: could not read the database (${(err as Error).message})`);
+    return configured;
+  }
+
+  let added = 0;
+  for (const r of rows) {
+    if (added >= FROM_DB_LIMIT) break;
+    if (!r.website || !isTargetCountry(r.country, targets)) continue;
+    // A social page is not a careers page, and must never be fetched.
+    if (isNeverFetch(r.website) || isNeverFetch(r.careers_url)) continue;
+    const key = hostKey(r.website);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    added++;
+    out.push({
+      name: r.name,
+      website: r.website,
+      ...(r.careers_url ? { careers: r.careers_url } : {}),
+      ...(r.country ? { country: r.country } : {}),
+      ...(r.city ? { city: r.city } : {}),
+    });
+  }
+
+  if (added) log.info(`school sites: ${configured.length} configured + ${added} from the directory`);
+  return out;
+}
+
+/** One entry per site, so a group's campuses are not all fetched separately. */
+function hostKey(url: string | null | undefined): string | null {
+  return hostOf(url) ?? null;
 }
 
 interface Anchor {
@@ -299,7 +377,7 @@ export const schoolSitesSource: Source = {
   note: "Target schools checked directly — they often post before the boards. Edit config/schools.json.",
 
   async collect(ctx: ScrapeContext): Promise<RawJob[]> {
-    const schools = loadSchoolEntries();
+    const schools = schoolsToCheck();
     if (!schools.length) {
       log.info("no schools configured — add some to config/schools.json");
       return [];
