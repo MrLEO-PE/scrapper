@@ -20,7 +20,14 @@ import {
 import { countryName, truncate } from "../core/text.ts";
 import type { ApplicationForm, DiscoveredEmail, Salary } from "../core/types.ts";
 import { formLabel } from "../match/appform.ts";
-import { draftEmail, emailCell, loadProfile, resetProfile } from "./email.ts";
+import {
+  draftEmail,
+  emailCell,
+  loadProfile,
+  resetProfile,
+  schoolFact,
+  speculativeEmail,
+} from "./email.ts";
 import { assessFit, fitSummary } from "../match/fit.ts";
 import { BASIS_LABEL } from "../enrich/salary.ts";
 import { benchmarkAverage, benchmarkSavings, countryBenchmark } from "../enrich/benchmarks.ts";
@@ -305,6 +312,43 @@ export const FIELDS: FieldDef[] = [
     key: "contact_type", label: "Contact Type", group: "contact", scope: "both",
     help: "What the Best Contact actually is, so a general inbox is never mistaken for a recruitment address.",
     get: (c) => bestContact(c).kind,
+  },
+  {
+    key: "speculative_email", label: "Speculative Letter", group: "contact", scope: "school",
+    help: "A letter to a school that is not advertising — most international appointments are made before a vacancy is published, which is what this whole list is for. Built only from facts held about the school; where there are none it says so rather than sending a form letter.",
+    get: (c) => {
+      const s = c.school;
+      if (!s) return "";
+      const draft = speculativeEmail({
+        school: s.name,
+        principal: s.principal,
+        schoolHook: s.school_hook,
+        peHook: s.pe_hook,
+        accreditation: s.accreditation,
+        curriculum: parseJsonColumn<string[]>(s.curriculum_json, []),
+        studentCount: s.student_count,
+      });
+      return emailCell(draft, s.website ?? s.social);
+    },
+  },
+  {
+    key: "outreach_ready", label: "Ready to Write?", group: "contact", scope: "school",
+    help: "Whether this school can be approached today: a route to reach them and something true to say. Sort on it to work down the list.",
+    get: (c) => {
+      const s = c.school;
+      if (!s) return "";
+      const reachable = !!bestContact(c).value;
+      const hasFact = !!schoolFact({
+        school: s.name,
+        schoolHook: s.school_hook,
+        accreditation: s.accreditation,
+        curriculum: parseJsonColumn<string[]>(s.curriculum_json, []),
+        studentCount: s.student_count,
+      });
+      if (reachable && hasFact) return "Yes — write today";
+      if (!reachable && !hasFact) return "No — no contact, nothing to say";
+      return reachable ? "Need a fact about them" : "Need a contact";
+    },
   },
   {
     key: "reputation", label: "What Teachers Say", group: "school", scope: "both",

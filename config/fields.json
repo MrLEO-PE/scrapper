@@ -31,6 +31,8 @@
   "phone": true,
   "principal": true,
   "draft_email": true,
+  "speculative_email": true,
+  "outreach_ready": true,
   "job_title": true,
   "seniority": true,
   "fit": true,

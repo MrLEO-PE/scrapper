@@ -216,6 +216,38 @@ against six from 165 hand-crawled sites. Groups worth adding next, in rough orde
 Harrow International, Wellington College China, Maple Leaf, BASIS China, and the country boards
 ajarn.com (Thailand) and vietnamteachingjobs.com.
 
+### Applying before the vacancy exists
+
+Most international appointments are made before a role is advertised, and the recruitment season
+runs roughly September to February for the following August. That is what the top-schools list is
+for: 528 schools in your countries, of which only about forty are advertising on any given day.
+The other 485 still hire.
+
+So the schools sheet carries its own letter, separate from the one written against a vacancy:
+
+| Column | What it does |
+| --- | --- |
+| **Speculative Letter** | A complete letter asking to be kept in mind for future PE openings. No role named, because there isn't one |
+| **Ready to Write?** | Whether the school can be approached today — sort on it and work down |
+| **Best Contact** | Who to send it to |
+
+The letter is built only from facts held about the school. Where there is a sentence read from
+their own pages it uses that; otherwise it uses what is verified and structured — accreditation,
+curriculum, roll — because "your accreditation with CIS and WASC" is specific and true even though
+nobody wrote it as prose. That distinction takes the reachable set from 52 schools to 130.
+
+Where there is nothing true to say, the cell says so rather than sending an admiring paragraph
+that would fit any school. Currently **173 letters are written in full and 129 schools are ready
+to write to today**.
+
+Two things worth doing alongside, which no scraper can do for you:
+
+- **Register for the fairs.** Search Associates and ISS run recruitment fairs December to
+  February, and a large share of international appointments are made there. Registration closes
+  months ahead.
+- **Subscribe to the alert services** in [`data/inbox/`](data/inbox/README.md). They email you
+  roles that never reach a public board.
+
 ### Finding the websites that gate everything
 
 The crawl finds the careers email, the package, the head's name and the PE facts, and it cannot

@@ -23,6 +23,9 @@ export interface Profile {
   websiteLabel: string;
   signOff: string;
   openingLine: string;
+  /** Used for the top-schools list, where there is no vacancy to name. */
+  speculativeOpening?: string;
+  speculativeClosing?: string;
   qualifications?: Qualification[];
   strengths: { when?: string; text: string }[];
   closing: string;
@@ -211,6 +214,114 @@ export function draftEmail(inputs: EmailInputs): DraftEmail {
  * What goes in the spreadsheet cell: the email, or a note naming the gaps.
  * Phrased as an instruction so the cell is actionable rather than just empty.
  */
+export interface SpeculativeInputs {
+  school: string;
+  principal?: string | null;
+  /** A sentence about the school, read from its own pages. */
+  schoolHook?: string | null;
+  /** Something concrete about their sport, if the crawl found any. */
+  peHook?: string | null;
+  /** Verified facts held about the school, used when no prose hook exists. */
+  accreditation?: string | null;
+  curriculum?: string[] | null;
+  studentCount?: number | null;
+}
+
+/**
+ * Turn the facts we hold into a sentence that is true and specific.
+ *
+ * A prose hook read from the school's own pages is best, but only one school
+ * in ten has one. What far more have is structured and equally real —
+ * accreditation, curriculum, roll — and saying "you are accredited by CIS and
+ * IB" is neither invented nor generic. It is the difference between writing to
+ * 130 schools and writing to 52.
+ *
+ * Returns nothing when there is no fact at all, because a letter that says
+ * only "I admire your school" is a form letter, and those are what this column
+ * exists to avoid.
+ */
+/** ["CIS","WASC","IB"] -> "CIS, WASC and IB". */
+function andList(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+export function schoolFact(i: SpeculativeInputs): string | null {
+  if (i.schoolHook) return `${i.school} ${i.schoolHook}`;
+
+  const parts: string[] = [];
+  if (i.accreditation) {
+    // Stored as "CIS, WASC"; written out it needs to read as a list, or the
+    // clause that follows gets swallowed into it.
+    parts.push(`your accreditation with ${andList(i.accreditation.split(/\s*,\s*/).filter(Boolean))}`);
+  }
+  const cur = i.curriculum?.filter(Boolean).slice(0, 3) ?? [];
+  if (cur.length) parts.push(`the ${andList(cur)} programme${cur.length > 1 ? "s" : ""} you run`);
+  if (i.studentCount && i.studentCount >= 100) {
+    parts.push(`a school of around ${i.studentCount.toLocaleString("en-GB")} students`);
+  }
+  if (!parts.length) return null;
+
+  // Each part is itself a list, so the parts are separated with ", and " —
+  // otherwise "accreditation with CIS, WASC and the American programme" reads
+  // as though the programme were a third accrediting body.
+  const joined =
+    parts.length > 1 ? `${parts.slice(0, -1).join(", ")}, and ${parts[parts.length - 1]}` : parts[0]!;
+  return `what stands out about ${i.school} is ${joined}`;
+}
+
+/**
+ * A letter to a school that is not advertising.
+ *
+ * Most international appointments are made before a vacancy is published, and
+ * the top-schools list exists precisely to reach those schools early — so this
+ * is arguably the more valuable of the two letters. It differs from the job
+ * version in what it can claim: there is no role to name and no advert to
+ * answer, so the personalisation rests entirely on what is known about the
+ * school, and the ask is to be remembered rather than considered.
+ *
+ * The same rule governs it: every detail is real, or the letter is not written.
+ */
+export function speculativeEmail(i: SpeculativeInputs): DraftEmail {
+  const profile = loadProfile();
+  if (!profile) return { body: "", subject: "", missing: ["config/profile.json is missing"] };
+
+  const fact = schoolFact(i);
+  const subject = `Physical Education — speculative enquiry, ${profile.name}`;
+  if (!fact) return { body: "", subject, missing: ["something specific about the school"] };
+
+  const values = { school: i.school, shortSchool: shortName(i.school), role: "Physical Education" };
+  const greeting = i.principal ?? "[add the head's name — not published]";
+
+  const body = [
+    `Dear ${greeting} and the HR Team,`,
+    "",
+    fill(profile.speculativeOpening ?? profile.openingLine, values),
+    "",
+    `${fact[0]!.toUpperCase()}${fact.slice(1)}. That is the kind of school where I would want to build a PE department, rather than simply teach in one.`,
+    "",
+    // Only when the crawl actually found something about their sport. Without
+    // it the letter stays about the school, which is still specific.
+    ...(i.peHook
+      ? [
+          `I also like ${i.peHook}. A school that treats sport as part of a well-rounded ` +
+            `education is a school where every student can find their own motivation to move.`,
+          "",
+        ]
+      : []),
+    chooseStrength(profile, i.peHook ?? ""),
+    "",
+    `You can find my CV and examples of my work on ${profile.websiteLabel}: ${profile.website}`,
+    "",
+    fill(profile.speculativeClosing ?? profile.closing, values),
+    "",
+    `${profile.signOff},`,
+    profile.name,
+  ].join("\n");
+
+  return { body, subject, missing: [] };
+}
+
 /**
  * The cell for the Prepared Email column.
  *
