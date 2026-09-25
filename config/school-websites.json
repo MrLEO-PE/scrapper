@@ -1,28 +1,66 @@
 {
-  "//": "Websites for schools whose directory listing carries none, so the crawl can run.",
-  "//why": "The crawl is what finds the careers email, the package and any published pay figure, and it cannot start without an address. Teach Away leaves this blank for most of its directory, and its per-school pages do not carry it either.",
+  "//warning": "A wrong address is worse than none: it produces a confident careers email for the wrong school. Verify before adding.",
   "//via": "wikidata = matched in an open dataset; search = found and verified by hand; manual = entered directly.",
-  "//warning": "A wrong address is worse than none: it yields a confident careers email for the wrong school, and nothing downstream looks any less certain than the truth. Check the city and country against the row before adding. There are two Lincoln Schools in this database — Kathmandu and Santo Domingo — and they are not related.",
-  "//social": "A school with no website at all can carry \"social\" instead of \"url\" — its Facebook or Instagram page. That link is shown in the sheet for you to open; the scraper never fetches it, because Meta and LinkedIn forbid automated collection.",
-  "//adding": "Key is the school_key exactly as stored. Find it with: npm run dedupe -- --dry-run, or query the schools table.",
-
-  "dhaka|bangladesh": {
-    "url": "https://www.aisdhaka.org",
-    "via": "search",
-    "found": "2026-09-24",
-    "note": "American International School Dhaka. CIS and NEASC, matching the stored accreditation."
+  "//": "Websites for schools whose directory listing carries none, so the crawl can run.",
+  "51talk|philippines": {
+    "url": "https://51talk.com",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "51Talk — Philippines"
   },
-  "lincoln|costa-rica": {
-    "url": "https://www.lincoln.ed.cr",
-    "via": "search",
-    "found": "2026-09-24",
-    "note": "Santo Domingo de Heredia — NOT the Lincoln School in Kathmandu (lincoln|nepal)."
+  "aleph|peru": {
+    "url": "https://grupotransforma.edu.pe",
+    "via": "email domain",
+    "found": "2026-09-25",
+    "note": "Aleph School — Peru"
   },
-  "country-day|costa-rica": {
-    "url": "https://www.nordangliaeducation.com/cds-costa-rica",
-    "via": "search",
-    "found": "2026-09-24",
-    "note": "San Rafael de Alajuela. Part of Nord Anglia, which is why it has no domain of its own."
+  "all-nations|sri-lanka": {
+    "url": "https://allnations.lk",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "All Nations International School — Sri Lanka"
+  },
+  "ayeyarwaddy|myanmar": {
+    "url": "https://ais.edu.mm",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Ayeyarwaddy International School — Myanmar"
+  },
+  "bloomingdale|india": {
+    "url": "https://bloomingdale.edu.in",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Bloomingdale International School — India"
+  },
+  "brent-manila|philippines": {
+    "url": "https://brent.edu.ph",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Brent International School Manila — Philippines"
+  },
+  "cempaka|malaysia": {
+    "url": "https://cempaka.edu.my",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Cempaka Schools — Malaysia"
+  },
+  "colegio-bolivar|colombia": {
+    "url": "https://colegiobolivar.edu.co",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Colegio Bolivar — Colombia"
+  },
+  "colegio-menor|ecuador": {
+    "url": "https://colegiomenor.edu.ec",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Colegio Menor — Ecuador"
+  },
+  "columbus|colombia": {
+    "url": "https://columbus.edu.co",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "The Columbus School — Colombia"
   },
   "costa-rica|costa-rica": {
     "url": "https://www.thebritishschoolofcostarica.com",
@@ -30,10 +68,256 @@
     "found": "2026-09-24",
     "note": "The British School of Costa Rica, San Jose. NEASC and IB."
   },
+  "country-day|costa-rica": {
+    "url": "https://www.nordangliaeducation.com/cds-costa-rica",
+    "via": "search",
+    "found": "2026-09-24",
+    "note": "San Rafael de Alajuela. Part of Nord Anglia, which is why it has no domain of its own."
+  },
+  "delhi-public|india": {
+    "url": "https://dps.edu.in",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Delhi Public School — India"
+  },
+  "dhaka|bangladesh": {
+    "url": "https://www.aisdhaka.org",
+    "via": "search",
+    "found": "2026-09-24",
+    "note": "American International School Dhaka. CIS and NEASC, matching the stored accreditation."
+  },
+  "elegant|cambodia": {
+    "url": "https://eis.edu.kh",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Elegant International School — Cambodia"
+  },
+  "els-language-centre-malaysia|malaysia": {
+    "url": "https://els.edu.my",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "ELS Language Centre, Malaysia — Malaysia"
+  },
+  "fairview|malaysia": {
+    "url": "https://fairview.edu.my",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Fairview International School — Malaysia"
+  },
+  "first-asia-technology-humanities|philippines": {
+    "url": "https://firstasia.edu.ph",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "First Asia Institute of Technology and Humanities — Philippines"
+  },
+  "fleming|peru": {
+    "url": "https://fleming.edu.pe",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Fleming College — Peru"
+  },
+  "global-prodigy|south-korea": {
+    "url": "https://prodigy.com",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Global Prodigy Academy — South Korea"
+  },
+  "highlands-quito|ecuador": {
+    "url": "https://highlandsquito.edu.ec",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "The Highlands School Quito — Ecuador"
+  },
+  "ho-chi-minh-city|vietnam": {
+    "url": "https://ishcmc.com",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "International School Ho Chi MInh City — Vietnam"
+  },
+  "horizon-bilingual|vietnam": {
+    "url": "https://horizon.edu.vn",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Horizon International Bilingual School — Vietnam"
+  },
+  "hus|india": {
+    "url": "https://hus.edu.in",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "HUS International — India"
+  },
+  "ilbc|myanmar": {
+    "url": "https://ilbc.edu.mm",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "ILBC — Myanmar"
+  },
+  "ise-eastern-seaboard|thailand": {
+    "url": "https://ise.ac.th",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "ISE International School Eastern Seaboard — Thailand"
+  },
+  "islamabad|pakistan": {
+    "url": "https://isoi.edu.pk",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "International School of Islamabad — Pakistan"
+  },
+  "ivy-bound|thailand": {
+    "url": "https://ivybound.com",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Ivy Bound International School — Thailand"
+  },
+  "karachi|pakistan": {
+    "url": "https://kas.edu.pk",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Karachi American School — Pakistan"
+  },
+  "lahore|pakistan": {
+    "url": "https://las.edu.pk",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Lahore American School — Pakistan"
+  },
+  "lincoln|costa-rica": {
+    "url": "https://www.lincoln.ed.cr",
+    "via": "search",
+    "found": "2026-09-24",
+    "note": "Santo Domingo de Heredia — NOT the Lincoln School in Kathmandu (lincoln|nepal)."
+  },
+  "lincoln|nicaragua": {
+    "url": "https://lincoln.edu.ni",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Lincoln International Academy — Nicaragua"
+  },
+  "minder-pathana-suksa|thailand": {
+    "url": "https://minderpathana.ac.th",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Minder Pathana Suksa School — Thailand"
+  },
+  "mindquest-tutorial-review-center|philippines": {
+    "url": "https://mindquesttutorial.com",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "MindQuest Tutorial and Review Center — Philippines"
+  },
+  "mutiara-grammar|malaysia": {
+    "url": "https://migs.edu.my",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Mutiara International Grammar School — Malaysia"
+  },
+  "niva|thailand": {
+    "url": "https://niva.ac.th",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "NIVA International School — Thailand"
+  },
+  "port-moresby|papua-new-guinea": {
+    "url": "https://pmis.iea.ac.pg",
+    "via": "email domain",
+    "found": "2026-09-25",
+    "note": "Port Moresby International School — Papua New Guinea"
+  },
   "quito|ecuador": {
     "url": "https://www.fcaq.k12.ec",
     "via": "search",
     "found": "2026-09-24",
     "note": "Colegio Americano de Quito. Stored city is the province, Pichincha."
+  },
+  "sekolah-victory-plus|indonesia": {
+    "url": "https://svp.sch.id",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Sekolah Victory Plus — Indonesia"
+  },
+  "sir-manasseh-meyer|singapore": {
+    "url": "https://smmis.edu.sg",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Sir Manasseh Meyer International School — Singapore"
+  },
+  "sri-utama|malaysia": {
+    "url": "https://sriutama.edu.my",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Sri Utama Schools — Malaysia"
+  },
+  "supphapanya|thailand": {
+    "url": "https://supphapanya.ac.th",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Supphapanya School — Thailand"
+  },
+  "taipei|taiwan": {
+    "url": "https://tas.edu.tw",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Taipei American School — Taiwan"
+  },
+  "tara-pattana|thailand": {
+    "url": "https://tpis.ac.th",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Tara Pattana International School — Thailand"
+  },
+  "tenby-setia-eco-park|malaysia": {
+    "url": "https://tenby.edu.my",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Tenby Setia Eco Park International — Malaysia"
+  },
+  "true-north|vietnam": {
+    "url": "https://truenorth.edu.vn",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "The True North School — Vietnam"
+  },
+  "ucsi|malaysia": {
+    "url": "https://ucsischools.edu.my",
+    "via": "email domain",
+    "found": "2026-09-25",
+    "note": "UCSI International School — Malaysia"
+  },
+  "vanke-pudong|china": {
+    "url": "https://dtd-edu.cn",
+    "via": "email domain",
+    "found": "2026-09-25",
+    "note": "Vanke School Pudong — China"
+  },
+  "vietnam-teaching-jobs|vietnam": {
+    "url": "https://vietnamteachingjobs.com",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Vietnam Teaching Jobs — Vietnam"
+  },
+  "westlink-hanoi|vietnam": {
+    "url": "https://westlink.edu.vn",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Westlink International School, Hanoi — Vietnam"
+  },
+  "westminster-in-tashkent|uzbekistan": {
+    "url": "https://westminster.uz",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Westminster International School in Tashkent — Uzbekistan"
+  },
+  "wichai-wittaya-bilingual|thailand": {
+    "url": "https://wichai.ac.th",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "wichai wittaya bilingual school — Thailand"
+  },
+  "yangon|myanmar": {
+    "url": "https://yis-yangon.edu.mm",
+    "via": "email domain",
+    "found": "2026-09-25",
+    "note": "Yangon International School — Myanmar"
   }
 }

@@ -11,7 +11,7 @@ import { OUT_DIR, loadFields, type Targets } from "./config.ts";
 import { mapLimit, stats as httpStats } from "./core/http.ts";
 import { log } from "./core/logger.ts";
 import { dedupe, normalize } from "./core/normalize.ts";
-import { slugify } from "./core/text.ts";
+import { hostOf, slugify } from "./core/text.ts";
 import type { Job, Salary, SchoolProfile, SourceId } from "./core/types.ts";
 import { bestCareerEmail, bestSchoolEmail, domainOf, extractEmails } from "./enrich/email.ts";
 import { findWebsite } from "./enrich/findsite.ts";
@@ -517,6 +517,29 @@ export async function runFindSites(opts: FindSitesOptions = {}): Promise<FindSit
     };
     log.info(`  ${hit.via === "email" ? "from email" : "verified  "}  ${s.name.slice(0, 38).padEnd(40)}${hit.url}`);
   });
+
+  /*
+   * A website belongs to one school.
+   *
+   * Five different "EF English First" branches all resolved to english.com,
+   * which is Pearson Languages. Two "Ministry of Education" records landed on
+   * ministry.com. Where several schools claim one host, the guess is telling
+   * us the stem was too generic to identify anything — so none of them keeps
+   * it. This mirrors the rule that stops a shared applicant-tracking domain
+   * merging thirteen BASIS schools into one.
+   */
+  const byHost = new Map<string, string[]>();
+  for (const [key, entry] of Object.entries(found)) {
+    const host = hostOf(entry.url);
+    if (host) byHost.set(host, [...(byHost.get(host) ?? []), key]);
+  }
+  for (const [host, keys] of byHost) {
+    if (keys.length < 2) continue;
+    for (const k of keys) delete found[k];
+    summary.fromGuess -= keys.length;
+    summary.notFound += keys.length;
+    log.warn(`dropped ${host} — ${keys.length} different schools resolved to it, so it identifies none`);
+  }
 
   if (!opts.dryRun && Object.keys(found).length) {
     const added = saveWebsites(found);

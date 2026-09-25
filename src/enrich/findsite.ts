@@ -151,8 +151,23 @@ export function pageIsSchool(html: string, name: string): boolean {
   if (!distinctive.length) return false;
 
   const hits = distinctive.filter((w) => text.includes(w)).length;
-  const schoolish = /\b(?:school|academy|college|students|pupils|curriculum|admissions|campus)\b/.test(text);
-  return schoolish && hits / distinctive.length >= 0.6;
+  if (hits / distinctive.length < 0.6) return false;
+
+  /*
+   * One word repeated is not a school; a school says many of them, often.
+   *
+   * basis.com answered for "BASIS Global" and is an advertising automation
+   * platform. It uses one schoolish word six times — its product is called
+   * Basis Academy — while Fairview International School's site uses eight
+   * different ones forty-five times. Variety is what separates them, and it
+   * does so without a title check, which wrongly rejected real schools whose
+   * homepage is titled "Malaysia's Best Rated International School".
+   */
+  const SCHOOLISH = /\b(?:school|academy|college|students?|pupils?|curriculum|admissions?|campus|teachers?|classrooms?|enrol)\b/g;
+  const found = [...text.matchAll(SCHOOLISH)].map((m) => m[0]);
+  if (found.length < 4 || new Set(found).size < 2) return false;
+
+  return true;
 }
 
 /** Free mailbox providers, whose domain says nothing about the school. */

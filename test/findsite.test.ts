@@ -56,6 +56,26 @@ test("accepts a page that is recognisably the school", () => {
   assert.equal(pageIsSchool(page, "Tenby Setia Eco Park International"), true);
 });
 
+test("accepts a school whose homepage is titled with marketing copy", () => {
+  // fairview.edu.my really is Fairview International School, but its title is
+  // "Malaysia's Best Rated International & Private School". Requiring the name
+  // in the title rejected it and several others like it.
+  const page = `<html><title>Malaysia's Best Rated International &amp; Private School</title>
+    <body>Fairview is a school with campuses across Malaysia. Our students follow
+    the IB curriculum. Admissions open. Our teachers and classrooms are
+    world-class, and every campus welcomes students.</body></html>`;
+  assert.equal(pageIsSchool(page, "Fairview International School"), true);
+});
+
+test("one schoolish word used repeatedly is not a school", () => {
+  // basis.com answered for "BASIS Global" and is an advertising platform whose
+  // product is called Basis Academy: six mentions, but all of one word.
+  const advertising = `<html><title>Advertising Automation Platform | Basis</title>
+    <body>Basis Academy. Basis Academy training. Visit Basis Academy for
+    Academy courses. Academy. Academy. Omnichannel media buying.</body></html>`;
+  assert.equal(pageIsSchool(advertising, "BASIS Global"), false);
+});
+
 test("rejects a school page belonging to a different school", () => {
   // Exactly the canadian.edu.sg case, written out.
   const wrong = `<html><title>Canadian Education College</title><body>
