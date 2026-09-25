@@ -227,6 +227,11 @@ export const FIELDS: FieldDef[] = [
     get: (c) => c.school?.website ?? c.job?.school_website ?? "",
   },
   {
+    key: "phone", label: "Phone", group: "contact", scope: "both",
+    help: "Switchboard number as the directory publishes it. The route left when a school has no email and no website — for a shortlisted school it is often faster than either.",
+    get: (c) => c.school?.phone ?? "",
+  },
+  {
     key: "social", label: "Facebook / Instagram", group: "school", scope: "both",
     help: "The school's social page. For a school with no website this is the only route left — open it yourself and read the About section for the head's name and a contact address. The scraper never reads these: Meta's terms forbid automated collection.",
     get: (c) => c.school?.social ?? "",

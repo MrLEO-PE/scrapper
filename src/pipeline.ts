@@ -12,7 +12,8 @@ import { mapLimit, stats as httpStats } from "./core/http.ts";
 import { log } from "./core/logger.ts";
 import { dedupe, normalize } from "./core/normalize.ts";
 import { slugify } from "./core/text.ts";
-import type { Job, Salary, SourceId } from "./core/types.ts";
+import type { Job, Salary, SchoolProfile, SourceId } from "./core/types.ts";
+import { bestCareerEmail, bestSchoolEmail, domainOf, extractEmails } from "./enrich/email.ts";
 import { fetchCountryDirectory, phaseFromOrgType, type DirectorySchool } from "./directory.ts";
 import { enrichSchool, type EnrichOptions, type SchoolInput } from "./enrich/school.ts";
 import { selectedCountries } from "./locations.ts";
@@ -252,6 +253,42 @@ export interface DirectoryOptions extends EnrichOptions {
   listOnly?: boolean;
 }
 
+/**
+ * Turn the addresses a directory listing publishes into profile fields.
+ *
+ * `notifJobEmail` is where the school asked for job applications to be sent,
+ * so it is a careers address by the school's own declaration — stronger
+ * evidence than anything a crawl infers from a page. It is still run through
+ * the classifier, which is what rejects a student careers adviser.
+ */
+function directoryEmails(s: DirectorySchool): {
+  career?: string;
+  profile: Partial<SchoolProfile>;
+} {
+  if (!s.emails.length) return { profile: {} };
+
+  const found = extractEmails(s.emails.join(" "), "teachaway directory", "source").map((e) => ({
+    ...e,
+    kind: e.kind === "other" || e.kind === "info" || e.kind === "admin" ? ("careers" as const) : e.kind,
+    score: Math.max(e.score, 0.9),
+  }));
+  if (!found.length) return { profile: {} };
+
+  const domain = domainOf(s.website);
+  const career = bestCareerEmail(found, domain);
+  const general = bestSchoolEmail(found, domain);
+  const src = { confidence: 0.9, source: "teachaway directory" };
+
+  return {
+    career: career?.email,
+    profile: {
+      allEmails: found,
+      ...(career ? { careerEmail: { value: career.email, provenance: src } } : {}),
+      ...(general ? { schoolEmail: { value: general.email, provenance: src } } : {}),
+    },
+  };
+}
+
 export interface DirectorySummary {
   countries: number;
   found: number;
@@ -316,7 +353,21 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
   }
 
   if (opts.listOnly) {
+    let listedEmails = 0;
     for (const s of all) {
+      /*
+       * The listing publishes the address the school nominated for job
+       * notifications, and it was being thrown away.
+       *
+       * Listing collected these, stored none of them, and the enrichment batch
+       * that runs afterwards reads from the database rather than the listing —
+       * so a careers address the directory handed over on a plate never
+       * reached the sheet. About one school in five has one, which against a
+       * Career Email column sitting at 10% is not a rounding error.
+       */
+      const emails = directoryEmails(s);
+      if (emails.career) listedEmails++;
+
       upsertSchool(
         {
           schoolKey: s.schoolKey,
@@ -325,6 +376,8 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
           ...(s.city ? { city: { value: s.city, provenance: { confidence: 0.9, source: "teachaway directory" } } } : {}),
           ...(s.website ? { website: { value: s.website, provenance: { confidence: 0.95, source: "teachaway directory" } } } : {}),
           ...(s.accredBodies.length ? { accreditation: s.accredBodies.join(", ") } : {}),
+          ...emails.profile,
+          ...(s.phone ? { phone: { value: s.phone, provenance: { confidence: 0.9, source: "teachaway directory" } } } : {}),
           prominence: s.prominence,
           notes: s.why,
         },
@@ -336,6 +389,8 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
         false,
       );
     }
+    if (listedEmails) log.ok(`${listedEmails} careers addresses taken straight from the listing`);
+
     // Listing refreshes each school's proxy score, so the order has to be
     // recomputed — schools already profiled keep their package-based place.
     const listRank = rerankCountries();
@@ -380,6 +435,7 @@ export async function runDirectory(opts: DirectoryOptions = {}): Promise<Directo
       // Directory facts the crawl cannot establish, kept for the re-rank.
       if (s.accredBodies.length) profile.accreditation = s.accredBodies.join(", ");
       profile.prominence = s.prominence;
+      if (s.phone) profile.phone = { value: s.phone, provenance: { confidence: 0.9, source: "teachaway directory" } };
 
       upsertSchool(profile, "directory", rankByKey.get(s.schoolKey));
       if (profile.careerEmail) withCareerEmail++;

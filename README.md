@@ -83,9 +83,12 @@ website, its country, the address applications go to, and any job-pack PDFs — 
 search API returns. It costs about a minute and roughly triples the usable data. Pass
 `--shallow` to skip it.
 
-Seven search passes run against TES: the Physical Education subject filter, plus keyword passes
+Fourteen search passes run against TES: the Physical Education subject filter, plus keyword passes
 for *head of sport*, *director of sport*, *head of physical education*, *sports coordinator*,
-*athletic director* and *games teacher*. Sport leadership roles are often filed under Senior
+*athletic director*, *games teacher*, and seven more added after checking what these countries
+actually carry — *physical and health education* (the IB name, filed under a different subject),
+*head of PE*, *PE teacher*, *swimming teacher*, *sports coach*, *outdoor education* and *strength
+and conditioning*. Sport leadership roles are often filed under Senior
 Leadership rather than PE, and the keyword passes are what catch them.
 
 #### Your target schools
@@ -175,7 +178,8 @@ sheet. Ticked by default:
 | Accreditation | CIS, IB, NEASC, WASC, MSA, COBIS, BSO… |
 | Rank in Country / Rank Basis | Position in its country's top schools, and what that position actually rests on |
 | School Email | Best general inbox |
-| Career Email | Best recruitment/HR address, including ones found inside PDFs |
+| Career Email | Best recruitment/HR address — the one the school nominated for job notifications, or one found on its site or inside a job-pack PDF |
+| Phone | Switchboard number the directory publishes. The route left when there is no email and no website |
 | Job Title, Role Level, Still Available?, Job Link, Deadline, Source | The vacancy |
 | Days Left | Days until the deadline — sort by it to see what is urgent |
 | Form to Fill? / Form Link | Whether applying needs an application form, and where it is |

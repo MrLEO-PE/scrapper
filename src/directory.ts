@@ -38,6 +38,8 @@ export interface DirectorySchool {
   recognised: boolean;
   description?: string;
   emails: string[];
+  /** Published by the directory. The only route left when no email exists. */
+  phone?: string;
   jobCount: number;
   prominence: number;
   /** Human-readable reasons behind the score, shown in the report. */
@@ -131,6 +133,7 @@ interface RawSchool {
     recognizedInstitution?: boolean;
     notifJobEmail?: string[];
     notifEmailAddresses?: string[];
+    phoneNumber?: string;
     slideshow?: unknown[];
     videos?: unknown[];
     brochures?: unknown[];
@@ -308,6 +311,7 @@ export async function fetchCountryDirectory(
       recognised: !!profile.recognizedInstitution,
       description: profile.description ? htmlToText(profile.description).slice(0, 2000) : undefined,
       emails,
+      phone: profile.phoneNumber?.trim() || undefined,
       jobCount: s.jobs?.length ?? 0,
       prominence: score,
       why,
