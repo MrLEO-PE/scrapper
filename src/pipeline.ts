@@ -479,6 +479,7 @@ export interface FindSitesSummary {
   considered: number;
   fromEmail: number;
   fromGuess: number;
+  fromSearch: number;
   notFound: number;
 }
 
@@ -495,7 +496,7 @@ export async function runFindSites(opts: FindSitesOptions = {}): Promise<FindSit
   const rows = getSchoolsNeedingWebsite(targets, opts.limit ?? 0);
 
   log.step(`Looking for ${rows.length} missing school websites`);
-  const summary: FindSitesSummary = { considered: rows.length, fromEmail: 0, fromGuess: 0, notFound: 0 };
+  const summary: FindSitesSummary = { considered: rows.length, fromEmail: 0, fromGuess: 0, fromSearch: 0, notFound: 0 };
   const found: Record<string, WebsiteEntry> = {};
   const today = new Date().toISOString().slice(0, 10);
 
@@ -507,11 +508,12 @@ export async function runFindSites(opts: FindSitesOptions = {}): Promise<FindSit
       return;
     }
     if (hit.via === "email") summary.fromEmail++;
+    else if (hit.via === "search") summary.fromSearch++;
     else summary.fromGuess++;
 
     found[s.school_key] = {
       url: hit.url,
-      via: hit.via === "email" ? "email domain" : "domain-guess, verified",
+      via: hit.via === "email" ? "email domain" : hit.via === "search" ? "web search, verified" : "domain-guess, verified",
       found: today,
       note: `${s.name} — ${s.country ?? "?"}`,
     };

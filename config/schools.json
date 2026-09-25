@@ -5,64 +5,358 @@
   "//note": "Schools inside Nord Anglia or Inspired are already covered by the group sources; those are listed with on:false.",
   "//on": "Set false to skip a school without deleting it.",
   "//adding": "Add any school with just a name and website. A site that cannot be read is logged and skipped, so a wrong URL costs nothing.",
-
   "schools": [
-    { "name": "Shanghai Singapore International School", "website": "https://www.ssis.asia", "careers": "https://www.ssis.asia/community/teaching-in-ssis/join-us/", "country": "China", "city": "Shanghai", "on": true },
-    { "name": "Shanghai American School", "website": "https://www.saschina.org", "country": "China", "city": "Shanghai", "on": true },
-    { "name": "Concordia International School Shanghai", "website": "https://www.concordiashanghai.org", "country": "China", "city": "Shanghai", "on": true },
-    { "name": "Yew Chung International School Shanghai", "website": "https://www.ycis-sh.com", "country": "China", "city": "Shanghai", "on": true },
-    { "name": "Western Academy of Beijing", "website": "https://www.wab.edu", "country": "China", "city": "Beijing", "on": true },
-    { "name": "International School of Beijing", "website": "https://www.isb.bj.edu.cn", "country": "China", "city": "Beijing", "on": true },
-    { "name": "Dulwich College Beijing", "website": "https://beijing.dulwich.org", "country": "China", "city": "Beijing", "on": true },
-    { "name": "Harrow International School Beijing", "website": "https://www.harrowbeijing.cn", "country": "China", "city": "Beijing", "on": true },
-
-    { "name": "Bangkok Patana School", "website": "https://www.patana.ac.th", "country": "Thailand", "city": "Bangkok", "on": true },
-    { "name": "NIST International School", "website": "https://www.nist.ac.th", "country": "Thailand", "city": "Bangkok", "on": true },
-    { "name": "Shrewsbury International School Bangkok", "website": "https://www.shrewsbury.ac.th", "country": "Thailand", "city": "Bangkok", "on": true },
-    { "name": "Harrow International School Bangkok", "website": "https://www.harrowschool.ac.th", "country": "Thailand", "city": "Bangkok", "on": true },
-    { "name": "International School Bangkok", "website": "https://www.isb.ac.th", "country": "Thailand", "city": "Bangkok", "on": true },
-    { "name": "Bromsgrove International School Thailand", "website": "https://www.bromsgrove.ac.th", "country": "Thailand", "city": "Bangkok", "on": true },
-
-    { "name": "International School Ho Chi Minh City", "website": "https://www.ishcmc.com", "careers": "https://www.ishcmc.com/about-us/careers-at-ishcmc", "country": "Vietnam", "city": "Ho Chi Minh City", "on": true },
-    { "name": "Saigon South International School", "website": "https://www.ssis.edu.vn", "country": "Vietnam", "city": "Ho Chi Minh City", "on": true },
-    { "name": "United Nations International School Hanoi", "website": "https://www.unishanoi.org", "country": "Vietnam", "city": "Hanoi", "on": true },
-
-    { "name": "United World College of South East Asia", "website": "https://www.uwcsea.edu.sg", "country": "Singapore", "city": "Singapore", "on": true },
-    { "name": "Tanglin Trust School", "website": "https://www.tts.edu.sg", "country": "Singapore", "city": "Singapore", "on": true },
-    { "name": "Singapore American School", "website": "https://www.sas.edu.sg", "country": "Singapore", "city": "Singapore", "on": true },
-    { "name": "Australian International School Singapore", "website": "https://www.ais.com.sg", "country": "Singapore", "city": "Singapore", "on": true },
-    { "name": "Canadian International School Singapore", "website": "https://www.cis.edu.sg", "country": "Singapore", "city": "Singapore", "on": true },
-    { "name": "Stamford American International School", "website": "https://www.sais.edu.sg", "country": "Singapore", "city": "Singapore", "on": true },
-
-    { "name": "Alice Smith School", "website": "https://www.alice-smith.edu.my", "country": "Malaysia", "city": "Kuala Lumpur", "on": true },
-    { "name": "Garden International School", "website": "https://www.gardenschool.edu.my", "country": "Malaysia", "city": "Kuala Lumpur", "on": true },
-    { "name": "Marlborough College Malaysia", "website": "https://www.marlboroughcollege.my", "country": "Malaysia", "city": "Johor Bahru", "on": true },
-
-    { "name": "Dubai College", "website": "https://www.dubaicollege.org", "country": "United Arab Emirates", "city": "Dubai", "on": true },
-    { "name": "Jumeirah English Speaking School", "website": "https://www.jess.sch.ae", "country": "United Arab Emirates", "city": "Dubai", "on": true },
-    { "name": "American School of Dubai", "website": "https://www.asdubai.org", "country": "United Arab Emirates", "city": "Dubai", "on": true },
-    { "name": "Repton School Dubai", "website": "https://www.reptondubai.org", "country": "United Arab Emirates", "city": "Dubai", "on": true },
-    { "name": "Dubai English Speaking College", "website": "https://www.descdubai.com", "country": "United Arab Emirates", "city": "Dubai", "on": true },
-    { "name": "British School Al Khubairat", "website": "https://www.britishschool.sch.ae", "country": "United Arab Emirates", "city": "Abu Dhabi", "on": true },
-    { "name": "Brighton College Abu Dhabi", "website": "https://www.brightoncollege.ae", "country": "United Arab Emirates", "city": "Abu Dhabi", "on": true },
-    { "name": "Cranleigh Abu Dhabi", "website": "https://www.cranleigh.ae", "country": "United Arab Emirates", "city": "Abu Dhabi", "on": true },
-
-    { "name": "Doha College", "website": "https://www.dohacollege.com", "country": "Qatar", "city": "Doha", "on": true },
-    { "name": "ACS International School Doha", "website": "https://www.acsdoha.school", "country": "Qatar", "city": "Doha", "on": true },
-
-    { "name": "English Schools Foundation", "website": "https://www.esf.edu.hk", "country": "Hong Kong", "city": "Hong Kong", "on": true },
-    { "name": "Chinese International School", "website": "https://www.cis.edu.hk", "country": "Hong Kong", "city": "Hong Kong", "on": true },
-
-    { "name": "International School of Geneva", "website": "https://www.ecolint.ch", "country": "Switzerland", "city": "Geneva", "on": true },
-    { "name": "Zurich International School", "website": "https://www.zis.ch", "country": "Switzerland", "city": "Zurich", "on": true },
-    { "name": "Aiglon College", "website": "https://www.aiglon.ch", "country": "Switzerland", "city": "Villars-sur-Ollon", "on": true },
-
-    { "name": "American School of Madrid", "website": "https://www.asmadrid.org", "country": "Spain", "city": "Madrid", "on": true },
-    { "name": "British Council School Madrid", "website": "https://www.britishcouncilschool.es", "country": "Spain", "city": "Madrid", "on": true },
-
-    { "name": "American School in Japan", "website": "https://www.asij.ac.jp", "country": "Japan", "city": "Tokyo", "on": true },
-    { "name": "Seoul Foreign School", "website": "https://www.seoulforeign.org", "country": "South Korea", "city": "Seoul", "on": true },
-
-    { "name": "British International School Ho Chi Minh City", "website": "https://www.bisvietnam.com", "country": "Vietnam", "city": "Ho Chi Minh City", "on": false, "//skip": "Nord Anglia group — already covered by the nordanglia source." }
+    {
+      "name": "Shanghai Singapore International School",
+      "website": "https://www.ssis.asia",
+      "careers": "https://www.ssis.asia/community/teaching-in-ssis/join-us/",
+      "country": "China",
+      "city": "Shanghai",
+      "on": true
+    },
+    {
+      "name": "Shanghai American School",
+      "website": "https://www.saschina.org",
+      "country": "China",
+      "city": "Shanghai",
+      "on": true
+    },
+    {
+      "name": "Concordia International School Shanghai",
+      "website": "https://www.concordiashanghai.org",
+      "country": "China",
+      "city": "Shanghai",
+      "on": true
+    },
+    {
+      "name": "Yew Chung International School Shanghai",
+      "website": "https://www.ycis-sh.com",
+      "country": "China",
+      "city": "Shanghai",
+      "on": true
+    },
+    {
+      "name": "Western Academy of Beijing",
+      "website": "https://www.wab.edu",
+      "country": "China",
+      "city": "Beijing",
+      "on": true
+    },
+    {
+      "name": "International School of Beijing",
+      "website": "https://www.isb.bj.edu.cn",
+      "country": "China",
+      "city": "Beijing",
+      "on": true
+    },
+    {
+      "name": "Dulwich College Beijing",
+      "website": "https://beijing.dulwich.org",
+      "country": "China",
+      "city": "Beijing",
+      "on": true
+    },
+    {
+      "name": "Harrow International School Beijing",
+      "website": "https://www.harrowbeijing.cn",
+      "country": "China",
+      "city": "Beijing",
+      "on": true
+    },
+    {
+      "name": "Bangkok Patana School",
+      "website": "https://www.patana.ac.th",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true
+    },
+    {
+      "name": "NIST International School",
+      "website": "https://www.nist.ac.th",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true
+    },
+    {
+      "name": "Shrewsbury International School Bangkok",
+      "website": "https://www.shrewsbury.ac.th",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true
+    },
+    {
+      "name": "Harrow International School Bangkok",
+      "website": "https://www.harrowschool.ac.th",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true
+    },
+    {
+      "name": "International School Bangkok",
+      "website": "https://www.isb.ac.th",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true
+    },
+    {
+      "name": "Bromsgrove International School Thailand",
+      "website": "https://www.bromsgrove.ac.th",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true
+    },
+    {
+      "name": "International School Ho Chi Minh City",
+      "website": "https://www.ishcmc.com",
+      "careers": "https://www.ishcmc.com/about-us/careers-at-ishcmc",
+      "country": "Vietnam",
+      "city": "Ho Chi Minh City",
+      "on": true
+    },
+    {
+      "name": "Saigon South International School",
+      "website": "https://www.ssis.edu.vn",
+      "country": "Vietnam",
+      "city": "Ho Chi Minh City",
+      "on": true
+    },
+    {
+      "name": "United Nations International School Hanoi",
+      "website": "https://www.unishanoi.org",
+      "country": "Vietnam",
+      "city": "Hanoi",
+      "on": true
+    },
+    {
+      "name": "United World College of South East Asia",
+      "website": "https://www.uwcsea.edu.sg",
+      "country": "Singapore",
+      "city": "Singapore",
+      "on": true
+    },
+    {
+      "name": "Tanglin Trust School",
+      "website": "https://www.tts.edu.sg",
+      "country": "Singapore",
+      "city": "Singapore",
+      "on": true
+    },
+    {
+      "name": "Singapore American School",
+      "website": "https://www.sas.edu.sg",
+      "country": "Singapore",
+      "city": "Singapore",
+      "on": true
+    },
+    {
+      "name": "Australian International School Singapore",
+      "website": "https://www.ais.com.sg",
+      "country": "Singapore",
+      "city": "Singapore",
+      "on": true
+    },
+    {
+      "name": "Canadian International School Singapore",
+      "website": "https://www.cis.edu.sg",
+      "country": "Singapore",
+      "city": "Singapore",
+      "on": true
+    },
+    {
+      "name": "Stamford American International School",
+      "website": "https://www.sais.edu.sg",
+      "country": "Singapore",
+      "city": "Singapore",
+      "on": true
+    },
+    {
+      "name": "Alice Smith School",
+      "website": "https://www.alice-smith.edu.my",
+      "country": "Malaysia",
+      "city": "Kuala Lumpur",
+      "on": true
+    },
+    {
+      "name": "Garden International School",
+      "website": "https://www.gardenschool.edu.my",
+      "country": "Malaysia",
+      "city": "Kuala Lumpur",
+      "on": true
+    },
+    {
+      "name": "Marlborough College Malaysia",
+      "website": "https://www.marlboroughcollege.my",
+      "country": "Malaysia",
+      "city": "Johor Bahru",
+      "on": true
+    },
+    {
+      "name": "Dubai College",
+      "website": "https://www.dubaicollege.org",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "on": true
+    },
+    {
+      "name": "Jumeirah English Speaking School",
+      "website": "https://www.jess.sch.ae",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "on": true
+    },
+    {
+      "name": "American School of Dubai",
+      "website": "https://www.asdubai.org",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "on": true
+    },
+    {
+      "name": "Repton School Dubai",
+      "website": "https://www.reptondubai.org",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "on": true
+    },
+    {
+      "name": "Dubai English Speaking College",
+      "website": "https://www.descdubai.com",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "on": true
+    },
+    {
+      "name": "British School Al Khubairat",
+      "website": "https://www.britishschool.sch.ae",
+      "country": "United Arab Emirates",
+      "city": "Abu Dhabi",
+      "on": true
+    },
+    {
+      "name": "Brighton College Abu Dhabi",
+      "website": "https://www.brightoncollege.ae",
+      "country": "United Arab Emirates",
+      "city": "Abu Dhabi",
+      "on": true
+    },
+    {
+      "name": "Cranleigh Abu Dhabi",
+      "website": "https://www.cranleigh.ae",
+      "country": "United Arab Emirates",
+      "city": "Abu Dhabi",
+      "on": true
+    },
+    {
+      "name": "Doha College",
+      "website": "https://www.dohacollege.com",
+      "country": "Qatar",
+      "city": "Doha",
+      "on": true
+    },
+    {
+      "name": "ACS International School Doha",
+      "website": "https://www.acsdoha.school",
+      "country": "Qatar",
+      "city": "Doha",
+      "on": true
+    },
+    {
+      "name": "English Schools Foundation",
+      "website": "https://www.esf.edu.hk",
+      "country": "Hong Kong",
+      "city": "Hong Kong",
+      "on": true
+    },
+    {
+      "name": "Chinese International School",
+      "website": "https://www.cis.edu.hk",
+      "country": "Hong Kong",
+      "city": "Hong Kong",
+      "on": true
+    },
+    {
+      "name": "International School of Geneva",
+      "website": "https://www.ecolint.ch",
+      "country": "Switzerland",
+      "city": "Geneva",
+      "on": true
+    },
+    {
+      "name": "Zurich International School",
+      "website": "https://www.zis.ch",
+      "country": "Switzerland",
+      "city": "Zurich",
+      "on": true
+    },
+    {
+      "name": "Aiglon College",
+      "website": "https://www.aiglon.ch",
+      "country": "Switzerland",
+      "city": "Villars-sur-Ollon",
+      "on": true
+    },
+    {
+      "name": "American School of Madrid",
+      "website": "https://www.asmadrid.org",
+      "country": "Spain",
+      "city": "Madrid",
+      "on": true
+    },
+    {
+      "name": "British Council School Madrid",
+      "website": "https://www.britishcouncilschool.es",
+      "country": "Spain",
+      "city": "Madrid",
+      "on": true
+    },
+    {
+      "name": "American School in Japan",
+      "website": "https://www.asij.ac.jp",
+      "country": "Japan",
+      "city": "Tokyo",
+      "on": true
+    },
+    {
+      "name": "Seoul Foreign School",
+      "website": "https://www.seoulforeign.org",
+      "country": "South Korea",
+      "city": "Seoul",
+      "on": true
+    },
+    {
+      "name": "British International School Ho Chi Minh City",
+      "website": "https://www.bisvietnam.com",
+      "country": "Vietnam",
+      "city": "Ho Chi Minh City",
+      "on": false,
+      "//skip": "Nord Anglia group — already covered by the nordanglia source."
+    },
+    {
+      "name": "Maple Leaf Educational Systems",
+      "website": "https://www.mapleleafschools.com",
+      "careers": "https://www.mapleleafschools.com/employment/jobs-in-china",
+      "country": "China",
+      "on": true
+    },
+    {
+      "name": "Globeducate",
+      "website": "https://globeducate.schoolrecruiter.com",
+      "careers": "https://globeducate.schoolrecruiter.com/",
+      "on": true
+    },
+    {
+      "name": "Wellington College China",
+      "website": "https://www.wellingtoncollege.cn",
+      "careers": "https://www.wellingtoncollege.cn/careers",
+      "country": "China",
+      "on": true
+    },
+    {
+      "name": "Dulwich College International",
+      "website": "https://www.dulwich.org",
+      "careers": "https://www.dulwich.org/careers/find-your-career",
+      "country": "China",
+      "on": true
+    }
   ]
 }

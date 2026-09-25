@@ -548,6 +548,7 @@ async function main(): Promise<void> {
       log.plain(`  schools without one   ${r.considered}`);
       log.plain(`  found from an email   ${r.fromEmail}`);
       log.plain(`  guessed and verified  ${r.fromGuess}`);
+      log.plain(`  found by search       ${r.fromSearch}`);
       log.plain(`  still unknown         ${r.notFound}`);
       break;
     }

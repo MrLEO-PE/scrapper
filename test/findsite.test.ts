@@ -114,3 +114,57 @@ test("an applicant-tracking domain is not the school's website", () => {
   assert.equal(siteFromEmail("apply@jobs.basisinternationalschools.com"), null);
   assert.equal(siteFromEmail("x@careers.someschool.com"), null);
 });
+
+// --- careers-page titles ----------------------------------------------------
+
+test("strips the table heading a careers page attaches to a role title", async () => {
+  const { cleanTitle } = await import("../src/sources/schoolsites.ts");
+  // Real case: Globeducate's table produced both of these, and they read as
+  // two different vacancies because dedupe compares titles.
+  assert.equal(
+    cleanTitle("Job Title Physical Education Primary Teacher"),
+    "Physical Education Primary Teacher",
+  );
+  assert.equal(cleanTitle("Position: Head of PE"), "Head of PE");
+  assert.equal(cleanTitle("Vacancy - Director of Sport"), "Director of Sport");
+  assert.equal(cleanTitle("PE Teacher — Apply Now"), "PE Teacher");
+  assert.equal(cleanTitle("Teacher of Games | Read more"), "Teacher of Games");
+});
+
+test("leaves a clean title exactly as the school wrote it", () => {
+  return import("../src/sources/schoolsites.ts").then(({ cleanTitle }) => {
+    for (const t of [
+      "Physical Education Primary Teacher",
+      "Head of Physical Education (IGCSE)",
+      "Teacher of PE and Games",
+    ]) {
+      assert.equal(cleanTitle(t), t);
+    }
+    // Too short to be a role once the furniture is gone.
+    assert.equal(cleanTitle("Job Title"), "");
+    assert.equal(cleanTitle("Apply now"), "");
+  });
+});
+
+// --- web search route -------------------------------------------------------
+
+test("search is skipped cleanly when no key is configured", async () => {
+  // The key is optional. Without it discovery must still work by guessing,
+  // not throw or hang.
+  const before = process.env.SCRAPPER_SEARCH_KEY;
+  delete process.env.SCRAPPER_SEARCH_KEY;
+  const { searchKey } = await import("../src/enrich/findsite.ts");
+  assert.equal(searchKey(), null);
+  if (before !== undefined) process.env.SCRAPPER_SEARCH_KEY = before;
+});
+
+test("a blank key counts as no key", async () => {
+  const before = process.env.SCRAPPER_SEARCH_KEY;
+  const { searchKey } = await import("../src/enrich/findsite.ts");
+  process.env.SCRAPPER_SEARCH_KEY = "   ";
+  assert.equal(searchKey(), null);
+  process.env.SCRAPPER_SEARCH_KEY = "abc123";
+  assert.equal(searchKey(), "abc123");
+  if (before === undefined) delete process.env.SCRAPPER_SEARCH_KEY;
+  else process.env.SCRAPPER_SEARCH_KEY = before;
+});

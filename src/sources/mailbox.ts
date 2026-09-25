@@ -37,6 +37,23 @@ const SENDERS: { re: RegExp; label: string }[] = [
   { re: /teachaway\.com/i, label: "Teach Away alert" },
   { re: /linkedin\.com/i, label: "LinkedIn alert" },
   { re: /indeed\.com/i, label: "Indeed alert" },
+  /*
+   * Boards that matter for the configured countries. None can be scraped —
+   * some forbid it, some are behind Cloudflare, some need a browser — but all
+   * of them will email you, and an email is a sanctioned feed. Signing up to
+   * these is the cheapest coverage available: no code runs until a message
+   * arrives, and the parser treats them like any other source.
+   */
+  { re: /ajarn\.com/i, label: "Ajarn (Thailand)" },
+  { re: /vietnamteachingjobs\.com/i, label: "Vietnam Teaching Jobs" },
+  { re: /seekteachers\.com/i, label: "SeekTeachers" },
+  { re: /edvectus\.com/i, label: "Edvectus" },
+  { re: /chinateachjobs\.com|teachingjobchina\.com/i, label: "China Teach Jobs" },
+  { re: /gaijinpot\.com/i, label: "GaijinPot (Japan)" },
+  { re: /toptutorjob\.com/i, label: "TopTutorJob" },
+  { re: /fobisia\.org/i, label: "FOBISIA" },
+  { re: /cois\.org|councilofinternationalschools/i, label: "CIS Careers" },
+  { re: /jobs\.tes\.com|eteach\.com/i, label: "Eteach alert" },
 ];
 
 interface ParsedMail {

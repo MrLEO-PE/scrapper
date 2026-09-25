@@ -250,6 +250,23 @@ async function discoverCareersPage(site: string, fresh?: boolean): Promise<strin
   return null;
 }
 
+/**
+ * Strip the table furniture that comes with a role title.
+ *
+ * Careers pages are often tables, and the cell text arrives with its own
+ * column heading attached: Globeducate produced "Job Title Physical Education
+ * Primary Teacher" alongside the clean version, which then read as two
+ * different vacancies because dedupe compares titles.
+ */
+export function cleanTitle(raw: string): string {
+  let t = raw.replace(/\s+/g, " ").trim();
+  t = t.replace(/^(?:job\s*title|position(?:\s*title)?|role|vacancy|post)\s*[:\-–—]?\s*/i, "");
+  // Trailing furniture: "Apply now", "Read more", "(View details)".
+  t = t.replace(/\s*[-–—|]?\s*(?:apply(?:\s*now)?|read\s*more|view\s*(?:details|more|job)|more\s*info)\s*$/i, "");
+  t = t.replace(/^[\s|>·•\-–—]+|[\s|<·•\-–—]+$/g, "").trim();
+  return t.length >= 6 && t.length <= 140 ? t : "";
+}
+
 function toRawJob(school: SchoolEntry, title: string, url: string): RawJob {
   return {
     source: "schoolsite",
@@ -282,7 +299,9 @@ function scanPage(
     text: htmlToText(html),
   });
 
-  const remember = (title: string, url: string): void => {
+  const remember = (rawTitle: string, url: string): void => {
+    const title = cleanTitle(rawTitle);
+    if (!title) return;
     const job = toRawJob(school, title, url);
     if (form.kind !== "none") job.applicationForm = form;
     if (!out.has(job.sourceJobId)) {

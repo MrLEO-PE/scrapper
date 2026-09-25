@@ -185,10 +185,86 @@ export function siteFromEmail(email: string | null | undefined): string | null {
 
 export interface SiteFound {
   url: string;
-  /** "email" when taken from an address, "guess" when found and verified. */
-  via: "email" | "guess";
+  /** How it was established: an address we hold, a guess, or a search. */
+  via: "email" | "guess" | "search";
   /** How many hosts were tried to get here. */
   tried: number;
+}
+
+/**
+ * Hosts a search will return for a school that are not the school: job boards,
+ * directories, social platforms, encyclopaedias. Taking any of these as the
+ * website would send the crawl to read Teach Away about Teach Away.
+ */
+const NOT_THE_SCHOOL =
+  /(?:^|\.)(?:teachaway|tes|teacherhorizons|seekteachers|edvectus|schrole|searchassociates|tieonline|linkedin|facebook|instagram|twitter|x|tiktok|youtube|wikipedia|wikimedia|glassdoor|indeed|ziprecruiter|simplify|crunchbase|bloomberg|tripadvisor|yelp|google|maps|ibo|cois|whichschooladvisor|internationalschoolsdatabase|edarabia|schoolsdirectory)\.[a-z.]+$/i;
+
+/**
+ * A web search for the school's own site.
+ *
+ * This is the route for the schools a guess cannot reach — the ones whose name
+ * gives nothing distinctive, or whose domain ignores the country convention.
+ * It needs an API key, and without one it is skipped silently: the rest of
+ * discovery still works, it just finds fewer.
+ *
+ * Brave's free tier allows 2,000 queries a month at one per second, which
+ * clears a backlog of a few hundred schools comfortably. Set the key as
+ * SCRAPPER_SEARCH_KEY.
+ */
+export function searchKey(): string | null {
+  return process.env.SCRAPPER_SEARCH_KEY?.trim() || null;
+}
+
+let warnedNoKey = false;
+
+async function searchForSite(name: string, country: string): Promise<string[]> {
+  const key = searchKey();
+  if (!key) {
+    if (!warnedNoKey) {
+      warnedNoKey = true;
+      log.info("no SCRAPPER_SEARCH_KEY set — skipping web search for missing websites (see README)");
+    }
+    return [];
+  }
+
+  const q = `"${name}" ${country} international school official website`;
+  const url = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(q)}&count=8`;
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { Accept: "application/json", "X-Subscription-Token": key },
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch (err) {
+    log.debug(`search failed for ${name}: ${(err as Error).message}`);
+    return [];
+  }
+  if (!res.ok) {
+    log.warn(`search returned ${res.status} for ${name}${res.status === 429 ? " — rate limited" : ""}`);
+    return [];
+  }
+
+  const body = (await res.json()) as { web?: { results?: { url?: string }[] } };
+  const out: string[] = [];
+  for (const r of body.web?.results ?? []) {
+    const host = hostOfUrl(r.url);
+    if (!host || NOT_THE_SCHOOL.test(host)) continue;
+    if (out.some((u) => hostOfUrl(u) === host)) continue;
+    out.push(`https://${host}`);
+  }
+  // The free tier allows one query a second; stay under it.
+  await new Promise((r) => setTimeout(r, 1100));
+  return out.slice(0, 4);
+}
+
+function hostOfUrl(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    return new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -202,23 +278,32 @@ export async function findWebsite(
   const fromEmail = siteFromEmail(knownEmail);
   if (fromEmail) return { url: fromEmail, via: "email", tried: 0 };
 
-  const hosts = candidateHosts(name, country);
   let tried = 0;
 
-  for (const host of hosts) {
+  const check = async (url: string, via: "guess" | "search"): Promise<SiteFound | null> => {
     tried++;
     // Dead domains are the common case, so fail fast and do not retry.
-    const html = await fetchText("https://" + host, {
-      soft: true,
-      retries: 0,
-      timeoutMs: 8000,
-      label: `site guess ${host}`,
-    });
-    if (!html) continue;
-    if (pageIsSchool(html, name)) {
-      log.debug(`${name}: ${host} verified`);
-      return { url: "https://" + host, via: "guess", tried };
-    }
+    const html = await fetchText(url, { soft: true, retries: 0, timeoutMs: 8000, label: `site ${via} ${url}` });
+    if (!html || !pageIsSchool(html, name)) return null;
+    log.debug(`${name}: ${url} verified by ${via}`);
+    return { url, via, tried };
+  };
+
+  // Guessing is free, so it goes first; search costs a quota query.
+  for (const host of candidateHosts(name, country)) {
+    const hit = await check("https://" + host, "guess");
+    if (hit) return hit;
   }
+
+  /*
+   * Whatever the name could not reach. Every result is put through the same
+   * verification as a guess — a search engine's first result is a strong hint,
+   * not proof, and the cost of being wrong is unchanged.
+   */
+  for (const url of await searchForSite(name, country)) {
+    const hit = await check(url, "search");
+    if (hit) return hit;
+  }
+
   return null;
 }

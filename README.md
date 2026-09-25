@@ -216,6 +216,43 @@ against six from 165 hand-crawled sites. Groups worth adding next, in rough orde
 Harrow International, Wellington College China, Maple Leaf, BASIS China, and the country boards
 ajarn.com (Thailand) and vietnamteachingjobs.com.
 
+### Finding the websites that gate everything
+
+The crawl finds the careers email, the package, the head's name and the PE facts, and it cannot
+start without an address. Teach Away leaves it blank for most of its directory, so
+`npm run find-websites` fills the gap, writing to `config/school-websites.json` where every entry
+can be inspected and a wrong one deleted by hand.
+
+Three routes, cheapest first: the domain of an address already held, a guess from the school's name
+against the domains schools in that country use, and — if a key is set — a web search.
+
+```bash
+npm run find-websites -- --dry-run     # show what it would write
+npm run find-websites                  # write config/school-websites.json
+```
+
+**The optional search key.** Guessing resolved 53 schools; the remaining 304 either have no
+distinctive name or ignore their country's domain convention, and only a search engine reaches
+those. Brave's free tier is 2,000 queries a month, which clears the backlog several times over:
+
+```bash
+export SCRAPPER_SEARCH_KEY=your-brave-api-key
+```
+
+Without it, search is skipped and the other two routes still run. Every search result is verified
+exactly as a guess is — a first result is a strong hint, not proof.
+
+**Why verification matters more than reach.** A wrong address produces a confident careers email,
+package and pay figure for a different school, and nothing downstream looks any less certain than
+the truth. Three rules stop that:
+
+- A nationality or place name is not distinctive enough to guess from. *Canadian International
+  School of Singapore* resolved to `canadian.edu.sg`, which is Canadian Education College.
+- A host several schools resolve to identifies none of them. Five *EF English First* branches all
+  reached `english.com`, which is Pearson Languages.
+- A real school site uses many schoolish words often, not one word repeatedly. `basis.com` is an
+  advertising platform whose product is called Basis Academy.
+
 ### Schools with no website
 
 Plenty of smaller schools have no website but do run a Facebook or Instagram page, and that page
@@ -770,6 +807,9 @@ so they are not re-attempted.
 | Source | Why not |
 |---|---|
 | **Most school careers pages** | The page loads, but the vacancy list does not — it is rendered client-side by an ATS widget. Concordia Shanghai serves 69 anchors and not one is a role. See below |
+| **Harrow International** | Recruits through TIC Recruitment, whose robots.txt cannot be fetched, so it is not crawled |
+| **Dulwich College International, Wellington College China** | Careers pages are JavaScript shells: 21 KB and 150 KB respectively, zero role links in the HTML |
+| **SABIS** | 14 KB shell, no roles server-rendered |
 | **Randstad / Teachanywhere** | Its international teaching section returns *no results at all*; the PE jobs it does list are UK domestic. Teachanywhere.com redirects to Randstad — one source, not two |
 | **TopTutorJob** | Behind Cloudflare bot protection (HTTP 403, "Just a moment…"). That is an access control, and working around it is not something this tool does |
 | **FOBISIA on Eteach** | The fair page states "The event has now ended" and lists nothing. Eteach's own job search is a 2.7 KB JavaScript shell, so it needs a real browser |
