@@ -74,12 +74,18 @@ jobs:
       # Profiling visits each school's site for the package, any published pay
       # figure and the careers contact. A slice per run keeps the job inside a
       # sane runtime; the next run picks up where this one stopped.
+      #
+      # Half the batch, six times the depth. Finding a school's website is the
+      # hard part; once it is known, a shallow crawl wastes it — eight pages
+      # routinely stopped before the contact page, which is where the address
+      # is. Fewer schools done properly beats more done badly, and the queue
+      # drains either way.
       - name: Profile the next batch
         if: ${{ inputs.list_only != true }}
         run: |
           node --experimental-strip-types --no-warnings src/cli.ts enrich \
-            --limit "${{ inputs.batch || '120' }}" \
-            --concurrency 6 --budget-ms 40000 --max-pages 8 --max-pdfs 2
+            --limit "${{ inputs.batch || '60' }}" \
+            --concurrency 6 --budget-ms 240000 --max-pages 25 --max-pdfs 6
 
       # The write path already refuses to create a duplicate. This is the
       # backstop for rows written before it did, and for a school that only

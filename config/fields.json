@@ -25,6 +25,8 @@
   "rank_basis": true,
   "school_email": true,
   "career_email": true,
+  "best_contact": true,
+  "contact_type": true,
   "phone": true,
   "principal": true,
   "draft_email": true,

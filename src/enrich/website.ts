@@ -40,6 +40,19 @@ const LINK_PRIORITIES: { re: RegExp; score: number; tag: string }[] = [
   { re: /(?:^|[\/\-_])(?:staff|faculty|our-?team|meet-?the-?team|leadership|senior-?leadership|directory|people)/i, score: 72, tag: "staff" },
   { re: /(?:^|[\/\-_])(?:pe|physical-?education|sport|sports|athletics|games)(?:[\/\-_.?#]|$)/i, score: 70, tag: "staff" },
   { re: /(?:^|[\/\-_])(?:about|about-?us|our-?school|who-?we-?are|welcome|overview|at-?a-?glance|fast-?facts|key-?facts)/i, score: 60, tag: "about" },
+  /*
+   * The rest exist because the crawl now has the budget to reach them, and
+   * each carries one of the columns that is still thin.
+   */
+  // Who leads the school — the Prepared Email needs a name, and a welcome
+  // letter from the head is where it is signed.
+  { re: /(?:^|[\/\-_])(?:head-?of-?school|headmaster|headmistress|principal|our-?principal|head-?teacher|senior-?team|leadership-?team|governance|our-?people|meet-?our)/i, score: 78, tag: "staff" },
+  // What the school offers a teacher: the package column.
+  { re: /(?:^|[\/\-_])(?:benefits|remuneration|package|why-?(?:work|join|choose)|working-?(?:at|with|here)|life-?at|staff-?benefits|professional-?development|cpd)/i, score: 76, tag: "careers" },
+  // Facilities and co-curricular pages are where a concrete PE fact lives.
+  { re: /(?:^|[\/\-_])(?:facilities|our-?facilities|campus(?:es)?|co-?curricular|extra-?curricular|activities|ccas?|clubs|swimming|aquatics)/i, score: 68, tag: "staff" },
+  // Accreditation and ethos pages carry the school fact the email opens with.
+  { re: /(?:^|[\/\-_])(?:accreditation|accredited|mission|vision|values|ethos|our-?story|history|awards)/i, score: 62, tag: "about" },
   { re: /(?:^|[\/\-_])(?:curriculum|academics|programmes?|programs?)/i, score: 40, tag: "curriculum" },
   { re: /(?:^|[\/\-_])(?:admissions?|fees|prospectus)/i, score: 30, tag: "admissions" },
 ];
@@ -134,9 +147,22 @@ export async function crawlSchoolSite(
   opts: CrawlOptions = {},
 ): Promise<SiteFindings | null> {
   const schoolName = opts.schoolName ?? "";
-  const maxPages = opts.maxPages ?? 8;
-  const maxPdfs = opts.maxPdfs ?? 3;
-  const deadline = Date.now() + (opts.budgetMs ?? 90_000);
+  /*
+   * Deliberately generous.
+   *
+   * Finding a school's website is the hard part and it is now mostly solved;
+   * once we have one, being thorough costs only time, and this runs unattended
+   * on a schedule. Eight pages was tuned when the crawl ran against every
+   * school in a nightly window — it routinely stopped before reaching the
+   * contact page, which is where the address usually is.
+   *
+   * Twenty-five pages with a four-minute ceiling reaches the careers page, the
+   * contact page, the staff directory and the PE pages on all but the largest
+   * sites, and still cannot hang: the deadline is absolute.
+   */
+  const maxPages = opts.maxPages ?? 25;
+  const maxPdfs = opts.maxPdfs ?? 6;
+  const deadline = Date.now() + (opts.budgetMs ?? 240_000);
   // School sites are unreliable; one quick retry, then move on.
   const net = { retries: 1, soft: true as const, fresh: opts.fresh };
 

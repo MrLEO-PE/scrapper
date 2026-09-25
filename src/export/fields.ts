@@ -176,6 +176,39 @@ export function turnoverLabel(h: HiringHistory | undefined): string {
   return "Low";
 }
 
+/**
+ * The best way to reach this school, whatever that turns out to be.
+ *
+ * A careers address is what you want, and a bit over a quarter of schools have
+ * one. The rest are not unreachable — most have a general inbox, a switchboard
+ * number, or at least a Facebook page — but that was spread across four
+ * columns, so a row with no careers address read as a dead end when it was
+ * not. This resolves the whole ladder into one cell, and names what it found,
+ * because writing to a general inbox needs a different opening line than
+ * writing to HR.
+ */
+export function bestContact(c: FieldContext): { value: string; kind: string } {
+  const s = c.school;
+  if (s?.career_email) return { value: s.career_email, kind: "careers address" };
+  if (s?.school_email) return { value: s.school_email, kind: "general inbox" };
+
+  // Anything the crawl found but did not rank highly enough to promote. A
+  // named teacher's address still reaches a human at the school.
+  const any = parseJsonColumn<DiscoveredEmail[]>(s?.emails_json ?? null, [])
+    .sort((a, b) => b.score - a.score)[0];
+  if (any) return { value: any.email, kind: `${any.kind} address` };
+
+  const fromJob = parseJsonColumn<string[]>(c.job?.emails_json ?? null, [])[0];
+  if (fromJob) return { value: fromJob, kind: "from the advert" };
+
+  if (s?.phone) return { value: s.phone, kind: "phone — no email published" };
+  // Last resort, and the reason the social column exists: the scraper cannot
+  // read these pages, but you can, and the About section usually has an address.
+  if (s?.social) return { value: s.social, kind: "social page — look it up yourself" };
+
+  return { value: "", kind: "" };
+}
+
 /** School columns fall back to the job row when a school has not been enriched. */
 const schoolCountry = (c: FieldContext): string =>
   countryName(c.school?.country ?? c.job?.country ?? undefined) ?? "";
@@ -225,6 +258,16 @@ export const FIELDS: FieldDef[] = [
     key: "website", label: "Website", group: "school", scope: "both",
     help: "School website.",
     get: (c) => c.school?.website ?? c.job?.school_website ?? "",
+  },
+  {
+    key: "best_contact", label: "Best Contact", group: "contact", scope: "both",
+    help: "The single best way to reach this school, whatever that turns out to be: the careers address, else HR, else the general inbox, else any address found at all, else the phone, else the Facebook page. Read it with Contact Type beside it — a switchboard number is not a careers desk.",
+    get: (c) => bestContact(c).value,
+  },
+  {
+    key: "contact_type", label: "Contact Type", group: "contact", scope: "both",
+    help: "What the Best Contact actually is, so a general inbox is never mistaken for a recruitment address.",
+    get: (c) => bestContact(c).kind,
   },
   {
     key: "phone", label: "Phone", group: "contact", scope: "both",

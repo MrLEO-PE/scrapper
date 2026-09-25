@@ -81,7 +81,7 @@ jobs:
 
       - name: Enrich schools
         run: |
-          ARGS="--concurrency 6 --budget-ms 45000 --max-pages 8 --max-pdfs 2"
+          ARGS="--concurrency 6 --budget-ms 240000 --max-pages 25 --max-pdfs 6"
           if [ -n "${{ inputs.enrich_limit }}" ]; then ARGS="$ARGS --limit ${{ inputs.enrich_limit }}"; fi
           node --experimental-strip-types --no-warnings src/cli.ts enrich $ARGS
 

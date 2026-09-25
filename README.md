@@ -178,6 +178,7 @@ sheet. Ticked by default:
 | Accreditation | CIS, IB, NEASC, WASC, MSA, COBIS, BSO… |
 | Rank in Country / Rank Basis | Position in its country's top schools, and what that position actually rests on |
 | School Email | Best general inbox |
+| **Best Contact** / Contact Type | The single best route to the school, whatever it turns out to be: careers address, else HR, else the general inbox, else any address found, else the phone, else the Facebook page — and what each one is, because a switchboard is not a careers desk |
 | Career Email | Best recruitment/HR address — the one the school nominated for job notifications, or one found on its site or inside a job-pack PDF |
 | Phone | Switchboard number the directory publishes. The route left when there is no email and no website |
 | Job Title, Role Level, Still Available?, Job Link, Deadline, Source | The vacancy |
