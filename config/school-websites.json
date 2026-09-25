@@ -1,12 +1,18 @@
 {
-  "//warning": "A wrong address is worse than none: it produces a confident careers email for the wrong school. Verify before adding.",
-  "//via": "wikidata = matched in an open dataset; search = found and verified by hand; manual = entered directly.",
   "//": "Websites for schools whose directory listing carries none, so the crawl can run.",
+  "//via": "wikidata = matched in an open dataset; search = found and verified by hand; manual = entered directly.",
+  "//warning": "A wrong address is worse than none: it produces a confident careers email for the wrong school. Verify before adding.",
   "51talk|philippines": {
     "url": "https://51talk.com",
     "via": "domain-guess, verified",
     "found": "2026-09-25",
     "note": "51Talk — Philippines"
+  },
+  "acg-strathallan|new-zealand": {
+    "url": "https://acg.ac.nz",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "ACG Strathallan — New Zealand"
   },
   "aleph|peru": {
     "url": "https://grupotransforma.edu.pe",
@@ -50,11 +56,23 @@
     "found": "2026-09-25",
     "note": "Colegio Bolivar — Colombia"
   },
+  "colegio-gran-bretana|colombia": {
+    "url": "https://cgb.edu.co",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Colegio Gran Bretaña — Colombia"
+  },
   "colegio-menor|ecuador": {
     "url": "https://colegiomenor.edu.ec",
     "via": "domain-guess, verified",
     "found": "2026-09-25",
     "note": "Colegio Menor — Ecuador"
+  },
+  "colegio-nueva-granada|colombia": {
+    "url": "https://colegionuevagranada.com.co",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "Colegio Nueva Granada — Colombia"
   },
   "columbus|colombia": {
     "url": "https://columbus.edu.co",
@@ -217,6 +235,12 @@
     "via": "domain-guess, verified",
     "found": "2026-09-25",
     "note": "NIVA International School — Thailand"
+  },
+  "nuces-fast|pakistan": {
+    "url": "https://nuces.com",
+    "via": "domain-guess, verified",
+    "found": "2026-09-25",
+    "note": "NUCES-FAST — Pakistan"
   },
   "port-moresby|papua-new-guinea": {
     "url": "https://pmis.iea.ac.pg",
