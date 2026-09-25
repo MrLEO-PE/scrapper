@@ -65,6 +65,7 @@ const SOURCE_LABELS: Record<string, string> = {
   schoolsite: "School website",
   mailalert: "Email alert",
   europeanchamber: "European Chamber",
+  isp: "Intl Schools Partnership",
 };
 
 const PHASE_LABELS: Record<string, string> = {
