@@ -50,6 +50,7 @@ import {
   runSite,
   runExport,
   runFindSites,
+  runSchoolsDb,
   runScrape,
   type ScrapeSummary,
 } from "./pipeline.ts";
@@ -310,6 +311,7 @@ USAGE
   npm run directory                  top schools per country, recruiting or not
   npm run rank                       re-rank each country by package and salary
   npm run find-websites              track down the school websites we lack
+  npm run schoolsdb                  add schools and tuition fees from the schools database
   npm run dedupe -- --dry-run        find schools stored twice
   npm run watch -- --every 24h       keep running on an interval
   npm run schedule -- --daily 07:00  install an OS scheduled task
@@ -550,6 +552,16 @@ async function main(): Promise<void> {
       log.plain(`  guessed and verified  ${r.fromGuess}`);
       log.plain(`  found by search       ${r.fromSearch}`);
       log.plain(`  still unknown         ${r.notFound}`);
+      break;
+    }
+
+    case "schoolsdb": {
+      const r = await runSchoolsDb({ fresh: bool(args, "fresh") });
+      log.step("International Schools Database");
+      log.plain(`  cities read       ${r.cities}`);
+      log.plain(`  schools found     ${r.found}`);
+      log.plain(`  with a website    ${r.withWebsite}`);
+      log.plain(`  with tuition fees ${r.withFees}`);
       break;
     }
 

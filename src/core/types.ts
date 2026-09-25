@@ -191,6 +191,8 @@ export interface SchoolProfile {
   careerEmail?: Sourced<string>;
   /** A Facebook or Instagram page, when the school has no website. Never crawled. */
   social?: Sourced<string>;
+  /** Yearly tuition, the best per-school proxy for what a school pays. */
+  fees?: { low?: number; high?: number; currency?: string };
   /** Switchboard number, when the directory publishes one. */
   phone?: Sourced<string>;
   /** Every email found, classified; careerEmail is the best of these. */

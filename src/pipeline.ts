@@ -11,11 +11,12 @@ import { OUT_DIR, loadFields, type Targets } from "./config.ts";
 import { mapLimit, stats as httpStats } from "./core/http.ts";
 import { log } from "./core/logger.ts";
 import { dedupe, normalize } from "./core/normalize.ts";
-import { hostOf, slugify } from "./core/text.ts";
+import { hostOf, schoolKey, slugify } from "./core/text.ts";
 import type { Job, Salary, SchoolProfile, SourceId } from "./core/types.ts";
 import { bestCareerEmail, bestSchoolEmail, domainOf, extractEmails } from "./enrich/email.ts";
 import { findWebsite } from "./enrich/findsite.ts";
 import { findSchoolHook } from "./enrich/hooks.ts";
+import { citiesFor, fetchCity } from "./schoolsdb.ts";
 import { saveWebsites, type WebsiteEntry } from "./enrich/websites.ts";
 import { fetchCountryDirectory, phaseFromOrgType, type DirectorySchool } from "./directory.ts";
 import { enrichSchool, type EnrichOptions, type SchoolInput } from "./enrich/school.ts";
@@ -562,6 +563,80 @@ export async function runFindSites(opts: FindSitesOptions = {}): Promise<FindSit
     const added = saveWebsites(found);
     log.ok(`${added} new entries written to config/school-websites.json`);
   }
+  return summary;
+}
+
+export interface SchoolsDbSummary {
+  cities: number;
+  found: number;
+  added: number;
+  withWebsite: number;
+  withFees: number;
+}
+
+/**
+ * Pull in the International Schools Database.
+ *
+ * Teach Away lists only schools that advertise with it, which left the most
+ * established ones out entirely: a check of Bangkok found Patana, Regent's,
+ * Bromsgrove and Harrow missing, while NIST sat 33rd. This source carries them
+ * all, and brings a website for essentially every school and published tuition
+ * for most — the website being the bottleneck behind every thin column, and
+ * the fees being the only per-school money signal that exists, since a country
+ * salary benchmark is identical for every school in that country.
+ */
+export async function runSchoolsDb(opts: { fresh?: boolean } = {}): Promise<SchoolsDbSummary> {
+  const targets = targetCountries();
+  const cities = citiesFor((country) => isTargetCountry(country, targets));
+  if (!cities.length) {
+    log.warn("no cities matched config/directory.json — nothing to read");
+    return { cities: 0, found: 0, added: 0, withWebsite: 0, withFees: 0 };
+  }
+
+  log.step(`International Schools Database — ${cities.length} cities`);
+  const summary: SchoolsDbSummary = { cities: cities.length, found: 0, added: 0, withWebsite: 0, withFees: 0 };
+  const runId = startRun("schoolsdb");
+
+  for (const { city, country } of cities) {
+    const schools = await fetchCity(city, opts.fresh);
+    for (const s of schools) {
+      summary.found++;
+      if (s.website) summary.withWebsite++;
+      if (s.feeLow != null) summary.withFees++;
+
+      const src = { confidence: 0.9, source: "international schools database" };
+      const hook = s.description ? findSchoolHook(s.description, "international schools database") : null;
+      const social = s.social.find((u) => /facebook|instagram/i.test(u)) ?? s.social[0];
+
+      upsertSchool(
+        {
+          schoolKey: schoolKey(s.name, s.country ?? country),
+          schoolName: s.name,
+          country: { value: s.country ?? country, provenance: src },
+          ...(s.city ? { city: { value: s.city, provenance: { ...src, confidence: 0.85 } } } : {}),
+          ...(s.website ? { website: { value: s.website, provenance: src } } : {}),
+          ...(social ? { social: { value: social, provenance: { ...src, confidence: 0.8 } } } : {}),
+          ...(hook ? { schoolHook: { value: hook.text, provenance: { ...src, confidence: 0.75 } } } : {}),
+          ...(s.feeLow != null || s.feeHigh != null
+            ? { fees: { low: s.feeLow, high: s.feeHigh, currency: s.feeCurrency } }
+            : {}),
+          notes: [`listed by the International Schools Database (${city})`],
+        },
+        "directory",
+        undefined,
+        // Listing is not profiling: leave these for the enrichment queue.
+        false,
+      );
+      summary.added++;
+    }
+  }
+
+  const ranked = rerankCountries();
+  log.ok(
+    `${summary.found} schools read — ${summary.withWebsite} with a website, ${summary.withFees} with fees; ` +
+      `${ranked.schools} re-ranked`,
+  );
+  finishRun(runId, summary);
   return summary;
 }
 

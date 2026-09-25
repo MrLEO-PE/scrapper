@@ -19,6 +19,7 @@
     "directory": "node --experimental-strip-types --no-warnings src/cli.ts directory",
     "rank": "node --experimental-strip-types --no-warnings src/cli.ts rank",
     "find-websites": "node --experimental-strip-types --no-warnings src/cli.ts find-websites",
+    "schoolsdb": "node --experimental-strip-types --no-warnings src/cli.ts schoolsdb",
     "dedupe": "node --experimental-strip-types --no-warnings src/cli.ts dedupe",
     "watch": "node --experimental-strip-types --no-warnings src/cli.ts watch",
     "schedule": "node --experimental-strip-types --no-warnings src/cli.ts schedule",

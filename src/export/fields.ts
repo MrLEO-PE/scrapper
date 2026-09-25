@@ -454,6 +454,17 @@ export const FIELDS: FieldDef[] = [
 
   // ---- package --------------------------------------------------------
   {
+    key: "fees", label: "Yearly Fees", group: "package", scope: "both",
+    help: "Published tuition, from the International Schools Database. Not a salary — but it is the only per-school money signal that exists, and a school charging three times its neighbour is not paying its teachers the same. A country salary average cannot tell schools apart; this can.",
+    get: (c) => {
+      const s = c.school;
+      if (!s?.fee_low && !s?.fee_high) return "";
+      const n = (v: number | null) => (v == null ? "?" : v.toLocaleString("en-GB"));
+      const cur = s.fee_currency ? s.fee_currency + " " : "";
+      return s.fee_low && s.fee_high ? `${cur}${n(s.fee_low)}–${n(s.fee_high)}` : `${cur}${n(s.fee_high ?? s.fee_low)}`;
+    },
+  },
+  {
     key: "salary_estimate", label: "Approx. Salary (PE expat)", group: "package", scope: "both",
     help: "What this school pays, when it or its adverts say so. Otherwise the country average — always read the Salary Basis column beside it.",
     get: (c) => {

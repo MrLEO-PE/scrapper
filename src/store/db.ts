@@ -99,6 +99,9 @@ CREATE TABLE IF NOT EXISTS schools (
   package_score   INTEGER,
   rank_basis      TEXT,
   social          TEXT,
+  fee_low         INTEGER,
+  fee_high        INTEGER,
+  fee_currency    TEXT,
   phone           TEXT,
   enriched_at     TEXT,
   created_at      TEXT NOT NULL
@@ -169,6 +172,12 @@ const MIGRATIONS: { table: string; column: string; ddl: string }[] = [
   { table: "schools", column: "social", ddl: "ALTER TABLE schools ADD COLUMN social TEXT" },
   // Published by the directory; the only route left when no email exists.
   { table: "schools", column: "phone", ddl: "ALTER TABLE schools ADD COLUMN phone TEXT" },
+  // Yearly tuition. The first per-school money signal available anywhere: a
+  // country salary benchmark is identical for every school in a country, so it
+  // cannot rank them against each other. Fees can.
+  { table: "schools", column: "fee_low", ddl: "ALTER TABLE schools ADD COLUMN fee_low INTEGER" },
+  { table: "schools", column: "fee_high", ddl: "ALTER TABLE schools ADD COLUMN fee_high INTEGER" },
+  { table: "schools", column: "fee_currency", ddl: "ALTER TABLE schools ADD COLUMN fee_currency TEXT" },
 ];
 
 function migrate(d: DatabaseSync): void {
@@ -608,8 +617,9 @@ export function upsertSchool(
         student_count, school_type, salary_json, package_json, school_email,
         career_email, careers_url, principal, school_hook, pe_hook, salary_basis,
         emails_json, provenance_json, notes_json,
-        origin, country_rank, accreditation, prominence, social, phone, enriched_at, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        origin, country_rank, accreditation, prominence, social, phone,
+        fee_low, fee_high, fee_currency, enriched_at, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(school_key) DO UPDATE SET
         name = excluded.name,
         country = COALESCE(excluded.country, schools.country),
@@ -643,6 +653,9 @@ export function upsertSchool(
         prominence = COALESCE(excluded.prominence, schools.prominence),
         social = COALESCE(excluded.social, schools.social),
         phone = COALESCE(excluded.phone, schools.phone),
+        fee_low = COALESCE(excluded.fee_low, schools.fee_low),
+        fee_high = COALESCE(excluded.fee_high, schools.fee_high),
+        fee_currency = COALESCE(excluded.fee_currency, schools.fee_currency),
         enriched_at = COALESCE(excluded.enriched_at, schools.enriched_at)`,
     )
     .run(
@@ -658,6 +671,7 @@ export function upsertSchool(
       j(p.allEmails), j(provenance), j(p.notes),
       origin, countryRank ?? null, p.accreditation ?? null, p.prominence ?? null,
       p.social?.value ?? null, p.phone?.value ?? null,
+      p.fees?.low ?? null, p.fees?.high ?? null, p.fees?.currency ?? null,
       markEnriched ? (p.enrichedAt ?? now) : null, now,
     );
 }
@@ -689,6 +703,9 @@ export interface SchoolRow {
   package_score: number | null;
   rank_basis: string | null;
   social: string | null;
+  fee_low: number | null;
+  fee_high: number | null;
+  fee_currency: string | null;
   phone: string | null;
   enriched_at: string | null;
 }
@@ -924,13 +941,13 @@ export function rerankCountries(): RerankResult {
   const d = getDb();
   const rows = d
     .prepare(
-      `SELECT school_key, name, country, package_json, salary_json, prominence
+      `SELECT school_key, name, country, package_json, salary_json, prominence, fee_high, fee_currency
          FROM schools
         WHERE country IS NOT NULL AND country <> ''`,
     )
     .all() as Pick<
     SchoolRow,
-    "school_key" | "name" | "country" | "package_json" | "salary_json" | "prominence"
+    "school_key" | "name" | "country" | "package_json" | "salary_json" | "prominence" | "fee_high" | "fee_currency"
   >[];
 
   const byCountry = new Map<string, typeof rows>();
@@ -959,6 +976,8 @@ export function rerankCountries(): RerankResult {
           // A school listed but never profiled keeps the directory's proxy
           // score, and its rank says so rather than implying a poor package.
           accreditationScore: r.prominence ?? 0,
+          feeHigh: r.fee_high,
+          feeCurrency: r.fee_currency,
         };
       }),
     );

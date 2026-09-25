@@ -80,13 +80,29 @@ export function scorePackage(terms: string[] | null | undefined): PackageValue {
 }
 
 /** What the rank was actually decided on — never leave that implicit. */
-export type RankBasis = "package" | "package+salary" | "accreditation";
+export type RankBasis = "package" | "package+salary" | "fees" | "fees+package" | "accreditation";
 
 export const RANK_BASIS_LABEL: Record<RankBasis, string> = {
   package: "package",
   "package+salary": "package + salary",
+  fees: "tuition fees (pay proxy)",
+  "fees+package": "fees + package",
   accreditation: "accreditation only",
 };
+
+/**
+ * How much of the ranking tuition fees carry when both are known.
+ *
+ * Fees are not salary, and nothing here pretends otherwise. They are the only
+ * per-school money signal that exists: a country salary benchmark is identical
+ * for every school in that country and so cannot order them at all, while a
+ * school charging three times its neighbour is not paying its teachers the
+ * same. Weighted slightly above the package because it is available for far
+ * more schools and is harder to overstate — a school cannot quietly inflate
+ * its published fees the way an advert can list "professional development" as
+ * a benefit.
+ */
+const FEE_WEIGHT = 0.55;
 
 export interface RankInput {
   schoolKey: string;
@@ -100,6 +116,9 @@ export interface RankInput {
   salaryPeriod?: string | null;
   /** Fallback when nothing about the package is known yet. */
   accreditationScore: number;
+  /** Yearly tuition, compared only against schools in the same country. */
+  feeHigh?: number | null;
+  feeCurrency?: string | null;
 }
 
 export interface RankedSchool {
@@ -137,10 +156,44 @@ export function rankByValue(schools: RankInput[]): RankedSchool[] {
   const hi = Math.max(...figures);
   const inComparable = new Set(comparable.map((s) => s.schoolKey));
 
+  /*
+   * Fees, scored against the other schools in this country.
+   *
+   * Only one currency is compared, for the same reason salary is: converting
+   * without a rate would be inventing the answer. Within a country the fee
+   * currency is effectively always the same, so this rarely bites.
+   */
+  const feeRows = schools.filter((s) => s.feeHigh != null && s.feeHigh > 0);
+  const feeUnit = new Map<string, RankInput[]>();
+  for (const s of feeRows) feeUnit.set(s.feeCurrency ?? "?", [...(feeUnit.get(s.feeCurrency ?? "?") ?? []), s]);
+  const feeGroup = [...feeUnit.values()].sort((a, b) => b.length - a.length)[0] ?? [];
+  const feeFigures = feeGroup.map((s) => s.feeHigh!);
+  const feeLo = Math.min(...feeFigures);
+  const feeHi = Math.max(...feeFigures);
+  const feeUsable = feeGroup.length >= 2 && feeHi > feeLo;
+  const feeKeys = new Set(feeGroup.map((s) => s.schoolKey));
+
+  const feeScoreOf = (s: RankInput): number | null =>
+    feeUsable && feeKeys.has(s.schoolKey) ? ((s.feeHigh! - feeLo) / (feeHi - feeLo)) * 100 : null;
+
   const scored = schools.map((s) => {
     const pkg = scorePackage(s.packageTerms);
+    const fee = feeScoreOf(s);
     let score: number;
     let basis: RankBasis;
+
+    // Fees first when they are known: they are per-school, published, and the
+    // closest thing to an answer on what a school pays.
+    if (fee != null) {
+      if (pkg.score >= SUBSTANTIVE) {
+        score = fee * FEE_WEIGHT + pkg.score * (1 - FEE_WEIGHT);
+        basis = "fees+package";
+      } else {
+        score = fee;
+        basis = "fees";
+      }
+      return { schoolKey: s.schoolKey, name: s.name ?? s.schoolKey, score, packageScore: pkg.score, basis };
+    }
 
     if (pkg.score >= SUBSTANTIVE) {
       score = pkg.score;

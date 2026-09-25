@@ -15,6 +15,7 @@
   "hiring_now_deadline": true,
   "turnover": true,
   "accreditation": true,
+  "fees": true,
   "salary_estimate": true,
   "salary_basis": true,
   "salary_range": true,
