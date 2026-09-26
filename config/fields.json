@@ -42,6 +42,7 @@
   "my_status": true,
   "status": true,
   "job_url": true,
+  "last_day": true,
   "deadline": true,
   "days_left": true,
   "source": true,

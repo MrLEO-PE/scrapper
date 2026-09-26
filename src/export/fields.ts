@@ -199,6 +199,48 @@ export function turnoverLabel(h: HiringHistory | undefined): string {
 }
 
 /**
+ * How long is left to apply, written the way you would say it.
+ *
+ * A bare date makes you do the arithmetic, and a bare number of days makes you
+ * look up the date. This gives both, and leads with whichever matters: a
+ * closing date three weeks out is a date, one closing tomorrow is a warning.
+ *
+ * The blank case is the common one and the most easily misread. About half of
+ * adverts publish no closing date at all, and that does not mean there is
+ * time — international schools tend to close a post as soon as they have the
+ * right person, so no date means apply sooner, not later. The cell says that
+ * rather than leaving an empty square that reads as "no rush".
+ */
+export function lastDay(deadline: string | null | undefined, hasVacancy = false): string {
+  if (!deadline) {
+    // No vacancy is nothing to say. A vacancy with no published date is the
+    // opposite of nothing to say, and an empty cell would read as "no rush".
+    return hasVacancy ? "not stated — these close once filled" : "";
+  }
+
+  const when = new Date(deadline);
+  if (Number.isNaN(when.getTime())) return "";
+  const on = when.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+  /*
+   * Calendar days, not elapsed hours divided by 24.
+   *
+   * `daysUntil` measures the gap in milliseconds, so a deadline at noon today
+   * comes back as 1 and "TODAY" could never fire. A closing date is a date:
+   * applications are open during it, and what a reader wants to know is how
+   * many more dates they have — which is a difference between midnights.
+   */
+  const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((midnight(when) - midnight(new Date())) / 86_400_000);
+
+  if (days < 0) return `closed ${on}`;
+  if (days === 0) return `TODAY — ${on}`;
+  if (days === 1) return `TOMORROW — ${on}`;
+  if (days <= 7) return `${days} days — ${on}`;
+  return `${on} (${days} days)`;
+}
+
+/**
  * Where teachers talk about schools. Searched by you, never by the scraper.
  *
  * Reddit's robots.txt is `Disallow: /` and International Schools Review is
@@ -386,6 +428,15 @@ export const FIELDS: FieldDef[] = [
     key: "hiring_now_link", label: "Open Role Link", group: "school", scope: "school",
     help: "The vacancy behind the Open PE Role? column. Blank when the school is not advertising.",
     get: (c) => openRolesFor(c.school?.school_key)?.url ?? "",
+  },
+  {
+    key: "last_day", label: "Last Day", group: "job", scope: "both",
+    help: "The last day to apply, in plain words. On the schools list it is the soonest closing date among that school's open roles. Where no date is published it says so — half of adverts give none, and international schools usually close a post once they have the right person, so silence means apply sooner rather than later.",
+    get: (c) => {
+      // A job row always has a vacancy; a school row only when one is open.
+      const open = c.job ? undefined : openRolesFor(c.school?.school_key);
+      return lastDay(c.job?.deadline_at ?? open?.deadline, !!c.job || !!open);
+    },
   },
   {
     key: "hiring_now_deadline", label: "Open Role Deadline", group: "school", scope: "school",
