@@ -667,6 +667,15 @@ export async function runDoris(opts: { fresh?: boolean } = {}): Promise<SchoolsD
       const hook = s.description ? findSchoolHook(s.description, "doris schools database") : null;
       const social = s.social.find((u) => /facebook|instagram/i.test(u)) ?? s.social[0];
 
+      // Contact points are usually admissions — a real desk, published by the
+      // school. Classified like any other address, so a student careers
+      // adviser is still rejected.
+      const found = extractEmails(s.emails.join(" "), "doris schools database", "source");
+      const career = bestCareerEmail(found, domainOf(s.website));
+      const general = bestSchoolEmail(found, domainOf(s.website));
+
+      if (s.feeLow != null) summary.withFees++;
+
       upsertSchool(
         {
           schoolKey: schoolKey(s.name, country),
@@ -676,6 +685,13 @@ export async function runDoris(opts: { fresh?: boolean } = {}): Promise<SchoolsD
           ...(s.website ? { website: { value: s.website, provenance: src } } : {}),
           ...(social ? { social: { value: social, provenance: { ...src, confidence: 0.8 } } } : {}),
           ...(hook ? { schoolHook: { value: hook.text, provenance: { ...src, confidence: 0.75 } } } : {}),
+          ...(s.curriculum.length ? { curriculum: { value: s.curriculum, provenance: src } } : {}),
+          ...(found.length ? { allEmails: found } : {}),
+          ...(career ? { careerEmail: { value: career.email, provenance: src } } : {}),
+          ...(general ? { schoolEmail: { value: general.email, provenance: src } } : {}),
+          ...(s.feeLow != null || s.feeHigh != null
+            ? { fees: { low: s.feeLow, high: s.feeHigh, currency: s.feeCurrency } }
+            : {}),
           notes: ["listed by the doris schools database"],
         },
         "directory",
