@@ -289,7 +289,8 @@ function directoryEmails(s: DirectorySchool): {
   return {
     career: career?.email,
     profile: {
-      allEmails: found,
+      // No allEmails: a listing is not a complete candidate set. See the
+      // field's own note — passing one lets it blank a crawled address.
       ...(career ? { careerEmail: { value: career.email, provenance: src } } : {}),
       ...(general ? { schoolEmail: { value: general.email, provenance: src } } : {}),
     },
@@ -686,7 +687,9 @@ export async function runDoris(opts: { fresh?: boolean } = {}): Promise<SchoolsD
           ...(social ? { social: { value: social, provenance: { ...src, confidence: 0.8 } } } : {}),
           ...(hook ? { schoolHook: { value: hook.text, provenance: { ...src, confidence: 0.75 } } } : {}),
           ...(s.curriculum.length ? { curriculum: { value: s.curriculum, provenance: src } } : {}),
-          ...(found.length ? { allEmails: found } : {}),
+          // No allEmails: see the field's note. Passing this database's one
+          // admissions address as a complete set blanked careers addresses the
+          // crawl had found, taking the column from 273 schools to 250.
           ...(career ? { careerEmail: { value: career.email, provenance: src } } : {}),
           ...(general ? { schoolEmail: { value: general.email, provenance: src } } : {}),
           ...(s.feeLow != null || s.feeHigh != null

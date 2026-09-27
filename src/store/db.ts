@@ -631,15 +631,24 @@ export function upsertSchool(
         school_type = COALESCE(excluded.school_type, schools.school_type),
         salary_json = COALESCE(excluded.salary_json, schools.salary_json),
         package_json = COALESCE(excluded.package_json, schools.package_json),
-        -- Enrichment recomputes both addresses from the same candidate set, so
-        -- a fresh run must be able to move an address from one column to the
-        -- other. COALESCE alone would strand the previous value.
+        -- Two kinds of write reach these columns, and they get opposite rules.
+        --
+        -- A crawl of the school's own site sets emails_json, meaning it saw
+        -- every candidate and recomputed both columns from all of them. It
+        -- replaces outright, blanks included: if the recruitment page is gone,
+        -- continuing to offer the old address sends an application nowhere.
+        --
+        -- Everything else knows a fragment — a directory listing with one
+        -- admissions address — and only fills a gap. Letting a fragment
+        -- replace cost 168 schools their careers address in one run, and
+        -- quietly swapped info@ for admissions@ at 283 more, against this
+        -- codebase's own ranking of which desk to write to.
         school_email = CASE WHEN excluded.emails_json IS NOT NULL
                             THEN excluded.school_email
-                            ELSE COALESCE(excluded.school_email, schools.school_email) END,
+                            ELSE COALESCE(schools.school_email, excluded.school_email) END,
         career_email = CASE WHEN excluded.emails_json IS NOT NULL
                             THEN excluded.career_email
-                            ELSE COALESCE(excluded.career_email, schools.career_email) END,
+                            ELSE COALESCE(schools.career_email, excluded.career_email) END,
         careers_url = COALESCE(excluded.careers_url, schools.careers_url),
         principal = COALESCE(excluded.principal, schools.principal),
         school_hook = COALESCE(excluded.school_hook, schools.school_hook),

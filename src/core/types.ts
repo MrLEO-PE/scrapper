@@ -195,7 +195,16 @@ export interface SchoolProfile {
   fees?: { low?: number; high?: number; currency?: string };
   /** Switchboard number, when the directory publishes one. */
   phone?: Sourced<string>;
-  /** Every email found, classified; careerEmail is the best of these. */
+  /**
+   * Every email found by a crawl of the school's own site, classified;
+   * careerEmail is the best of these.
+   *
+   * Set this only from a complete crawl. The store reads its presence as
+   * "these two columns were recomputed from everything there is", which
+   * licences it to replace a careers address with nothing. A source that
+   * knows one address — a directory listing — must leave this unset and pass
+   * careerEmail/schoolEmail alone, or it erases what the crawl found.
+   */
   allEmails?: DiscoveredEmail[];
   careersPageUrl?: Sourced<string>;
   /** Details the prepared application email needs, from the school's site. */

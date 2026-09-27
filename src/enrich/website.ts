@@ -31,14 +31,31 @@ import { findPeHook, findPrincipal, findSchoolHook, type Hook } from "./hooks.ts
 import { extractSalaryFromText, type SourcedSalary } from "./salary.ts";
 
 /** Link scoring: higher = crawl sooner. */
+/*
+ * Where each rule ends matters as much as what it matches.
+ *
+ * These are tested against `url + " " + anchorText`, so a keyword at the end of
+ * a URL is followed by a space, not the end of the string. An `$` anchor here
+ * therefore never fires, and `/vacancies`, `/employment`, `/current-vacancies`
+ * and `/work-with-us` all scored nothing at all — the crawler never gave the
+ * page a school advertises its posts on any priority. A negative lookahead
+ * covers the space, the end and the punctuation together.
+ *
+ * The same held at the front: `(?:^|[\/\-_])` does not admit a space either, so
+ * a link whose URL is opaque and whose text reads "Current vacancies" matched
+ * nothing. The two careers rules use a symmetric word boundary because they
+ * decide the crawler's first and most valuable page. The rules below keep the
+ * original path-segment boundary on purpose — loosening all of them would
+ * reshuffle the whole frontier for no established gain.
+ */
 const LINK_PRIORITIES: { re: RegExp; score: number; tag: string }[] = [
-  { re: /(?:^|[\/\-_])(?:careers?|vacanc(?:y|ies)|recruit(?:ment)?|employment|job-?opportunities|jobs?|work-?(?:with|for)-?us|join-?(?:us|our-?team)|hiring|opportunities)(?:[\/\-_.?#]|$)/i, score: 100, tag: "careers" },
-  { re: /(?:^|[\/\-_])(?:work-?here|staff-?vacancies|teaching-?vacancies|current-?vacancies|apply)(?:[\/\-_.?#]|$)/i, score: 95, tag: "careers" },
+  { re: /(?<![A-Za-z0-9])(?:careers?|vacanc(?:y|ies)|recruit(?:ment)?|employment|job-?opportunities|jobs?|work-?(?:with|for)-?us|join-?(?:us|our-?team)|hiring|opportunities)(?![A-Za-z0-9])/i, score: 100, tag: "careers" },
+  { re: /(?<![A-Za-z0-9])(?:work-?here|staff-?vacancies|teaching-?vacancies|current-?vacancies|apply)(?![A-Za-z0-9])/i, score: 95, tag: "careers" },
   { re: /(?:^|[\/\-_])(?:contact|contact-?us|get-?in-?touch|enquir)/i, score: 75, tag: "contact" },
   // Staff directories and PE department pages are the only places a PE team
   // size is ever countable, so they outrank the general "about" pages.
   { re: /(?:^|[\/\-_])(?:staff|faculty|our-?team|meet-?the-?team|leadership|senior-?leadership|directory|people)/i, score: 72, tag: "staff" },
-  { re: /(?:^|[\/\-_])(?:pe|physical-?education|sport|sports|athletics|games)(?:[\/\-_.?#]|$)/i, score: 70, tag: "staff" },
+  { re: /(?:^|[\/\-_])(?:pe|physical-?education|sport|sports|athletics|games)(?![A-Za-z0-9])/i, score: 70, tag: "staff" },
   { re: /(?:^|[\/\-_])(?:about|about-?us|our-?school|who-?we-?are|welcome|overview|at-?a-?glance|fast-?facts|key-?facts)/i, score: 60, tag: "about" },
   /*
    * The rest exist because the crawl now has the budget to reach them, and
@@ -108,10 +125,33 @@ function linksFrom(html: string, base: string): { url: string; text: string }[] 
   return out;
 }
 
-function scoreLink(url: string, text: string): { score: number; tag: string } | null {
+/**
+ * "Careers" at a school usually means the pupils' careers, not ours.
+ *
+ * A careers-and-university-guidance page, a careers counsellor, a careers fair
+ * — these advise pupils on where to study next, and they match the recruitment
+ * patterns above word for word. The email classifier already refuses a student
+ * careers adviser's address; without the same guard on links, the crawler spent
+ * its highest-priority slot on the wrong page at 89 schools and recorded that
+ * page as where to apply for a job.
+ *
+ * Demoted rather than dropped: these pages are still worth reading late, and a
+ * school whose only careers-ish page is this one has genuinely told us it does
+ * not advertise posts.
+ */
+const STUDENT_GUIDANCE =
+  /careers?[\s\-_]?(?:and|&|amp;)[\s\-_]?(?:universit(?:y|ies)|uni|college|higher)|(?:universit(?:y|ies)|uni|college|higher[\s\-_]?ed)[\s\-_]?(?:and|&|amp;)?[\s\-_]?careers?|careers?[\s\-_](?:guidance|advice|advis(?:e|o)r|counsell?(?:ing|or)|programme|program|education|fair|day|week|centre|center|hub|lesson|curriculum|readiness)|(?:guidance|counsell?(?:ing|or)|advis(?:e|o)r)[\s\-_]?(?:and|&|amp;)?[\s\-_]?careers?|student[\s\-_]?careers?|careers?[\s\-_]?(?:in|for)[\s\-_]?(?:sport|medicine|stem|law)|college[\s\-_]?placement|university[\s\-_]?(?:destination|placement|counsel)|career[\s\-_]?(?:and|&|amp;)[\s\-_]?technical|technical[\s\-_]?(?:and|&|amp;)[\s\-_]?career/i;
+
+export function scoreLink(url: string, text: string): { score: number; tag: string } | null {
   const haystack = url + " " + text;
   for (const p of LINK_PRIORITIES) {
-    if (p.re.test(haystack)) return { score: p.score, tag: p.tag };
+    if (!p.re.test(haystack)) continue;
+    // A pupils' careers page must not outrank the school's real vacancy page,
+    // and must never be reported as the place to apply.
+    if (p.tag === "careers" && STUDENT_GUIDANCE.test(haystack)) {
+      return { score: 35, tag: "about" };
+    }
+    return { score: p.score, tag: p.tag };
   }
   return null;
 }
