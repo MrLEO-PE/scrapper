@@ -9,7 +9,7 @@
 
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { lastDay } from "../src/export/fields.ts";
+import { daysUntil, lastDay } from "../src/export/fields.ts";
 
 const inDays = (n: number): string => {
   const d = new Date();
@@ -60,4 +60,23 @@ test("always carries the actual date, not only the count", () => {
   for (const n of [0, 1, 3, 30]) {
     assert.match(lastDay(inDays(n)), /\d{1,2} \w{3}/, `day ${n} should name the date`);
   }
+});
+
+test("counts dates, not elapsed hours", () => {
+  // A deadline late tonight is still today. Dividing the millisecond gap by 24
+  // hours made it 1, so a role closing today was labelled "tomorrow" — on the
+  // one row where getting it wrong costs you the application.
+  const tonight = new Date();
+  tonight.setHours(23, 59, 0, 0);
+  assert.equal(daysUntil(tonight.toISOString()), 0);
+  assert.match(lastDay(tonight.toISOString()), /^TODAY/);
+
+  // And one just after midnight is tomorrow, not today.
+  const justAfterMidnight = new Date();
+  justAfterMidnight.setDate(justAfterMidnight.getDate() + 1);
+  justAfterMidnight.setHours(0, 1, 0, 0);
+  assert.equal(daysUntil(justAfterMidnight.toISOString()), 1);
+
+  assert.equal(daysUntil(null), null);
+  assert.equal(daysUntil("not a date"), null);
 });

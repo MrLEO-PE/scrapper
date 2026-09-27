@@ -13,6 +13,7 @@
 
 import { getDb, parseJsonColumn, type JobRow } from "./store/db.ts";
 import type { Salary } from "./core/types.ts";
+import { daysUntil } from "./export/fields.ts";
 
 /** A deadline this close is worth flagging. */
 export const CLOSING_SOON_DAYS = 7;
@@ -27,12 +28,6 @@ export interface Alert {
 
 const LEADERSHIP = new Set(["director_of_sport", "head_of_department", "second_in_department"]);
 
-function daysUntil(iso: string | null): number | null {
-  if (!iso) return null;
-  const t = new Date(iso).getTime();
-  if (Number.isNaN(t)) return null;
-  return Math.ceil((t - Date.now()) / 86_400_000);
-}
 
 export interface FindOptions {
   /** Report roles already alerted about. Useful for a manual digest. */

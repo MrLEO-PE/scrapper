@@ -159,7 +159,15 @@ export function writeHtml(
   const freshCount = rows.filter(isFresh).length;
   const markFresh = rows.length > 0 && freshCount / rows.length < 0.4;
 
-  const rowClass = (r: string[], row: SheetRow) => {
+  /*
+   * The badge said "soon" on every closing role, which tells you to hurry but
+   * not how much. Four days left and tomorrow are different decisions, so the
+   * badge carries the count and the CSS reads it off the row.
+   */
+  const soonBadge = (left: number): string =>
+    left === 0 ? "today" : left === 1 ? "tomorrow" : `${left} days`;
+
+  const rowAttrs = (r: string[], row: SheetRow) => {
     const classes: string[] = [];
     if (statusIndex >= 0) {
       const s = r[statusIndex];
@@ -169,11 +177,16 @@ export function writeHtml(
     if (seniorityIndex >= 0 && LEADERSHIP.has(r[seniorityIndex] ?? "")) classes.push("lead");
 
     const left = daysUntil(row.job?.deadline_at);
-    if (left !== null && left >= 0 && left <= 7) classes.push("urgent");
+    const urgent = left !== null && left >= 0 && left <= 7;
+    if (urgent) classes.push("urgent");
 
     if (markFresh && isFresh(row)) classes.push("fresh");
 
-    return classes.length ? ` class="${classes.join(" ")}"` : "";
+    if (!classes.length) return "";
+    const attrs = ` class="${classes.join(" ")}"`;
+    // A custom property, because attr() on a pseudo-element resolves against
+    // the cell it hangs off, not the row that knows the deadline.
+    return urgent ? `${attrs} style="--soon:'${esc(soonBadge(left!))}'"` : attrs;
   };
 
   const leadershipCount = body.filter((r) =>
@@ -204,7 +217,7 @@ export function writeHtml(
   tr.lead td:first-child { box-shadow: inset 3px 0 0 dodgerblue; }
   tr.lead.stale { background: color-mix(in srgb, orange 12%, transparent); }
   tr.urgent td:nth-child(2) { position: relative; }
-  tr.urgent td:first-child::after { content: "soon"; margin-left: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #d1242f; color: #fff; vertical-align: middle; }
+  tr.urgent td:first-child::after { content: var(--soon, "soon"); margin-left: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #d1242f; color: #fff; vertical-align: middle; }
   tr.fresh td:first-child::before { content: "new"; margin-right: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #1f883d; color: #fff; vertical-align: middle; }
   label.only { margin-left: 14px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
   a { color: inherit; }
@@ -230,7 +243,7 @@ ${leadershipCount ? '<label class="only"><input type="checkbox" id="leadOnly"> l
 <div class="wrap"><table>
 <thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
 <tbody>
-${body.map((r, i) => `<tr${rowClass(r, rows[i]!)}>${r.map((v, i) => `<td>${cell(v, fields[i]!)}</td>`).join("")}</tr>`).join("\n")}
+${body.map((r, i) => `<tr${rowAttrs(r, rows[i]!)}>${r.map((v, i) => `<td>${cell(v, fields[i]!)}</td>`).join("")}</tr>`).join("\n")}
 </tbody></table></div>
 <script>
 const rows = [...document.querySelectorAll("tbody tr")];

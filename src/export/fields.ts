@@ -124,11 +124,21 @@ function list(v: unknown): string {
 }
 
 /** Whole days from now until an ISO date; negative once it has passed. */
+/**
+ * Days left to apply, counted in dates rather than elapsed hours.
+ *
+ * A closing date is a date: applications are open during it, and what a reader
+ * wants is how many more dates they have. Dividing a millisecond gap by 24
+ * hours answers a different question and answers it wrongly at both ends — a
+ * deadline at 23:59 tonight came back as 1, so a role closing today was
+ * labelled "tomorrow", and one closing at noon today could never read as 0.
+ */
 export function daysUntil(v: string | null | undefined): number | null {
   if (!v) return null;
-  const t = new Date(v).getTime();
-  if (Number.isNaN(t)) return null;
-  return Math.ceil((t - Date.now()) / 86_400_000);
+  const when = new Date(v);
+  if (Number.isNaN(when.getTime())) return null;
+  const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  return Math.round((midnight(when) - midnight(new Date())) / 86_400_000);
 }
 
 function date(v: string | null | undefined): string {
@@ -222,16 +232,7 @@ export function lastDay(deadline: string | null | undefined, hasVacancy = false)
   if (Number.isNaN(when.getTime())) return "";
   const on = when.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
-  /*
-   * Calendar days, not elapsed hours divided by 24.
-   *
-   * `daysUntil` measures the gap in milliseconds, so a deadline at noon today
-   * comes back as 1 and "TODAY" could never fire. A closing date is a date:
-   * applications are open during it, and what a reader wants to know is how
-   * many more dates they have — which is a difference between midnights.
-   */
-  const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  const days = Math.round((midnight(when) - midnight(new Date())) / 86_400_000);
+  const days = daysUntil(deadline) ?? 0;
 
   if (days < 0) return `closed ${on}`;
   if (days === 0) return `TODAY — ${on}`;

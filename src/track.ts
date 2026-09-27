@@ -11,6 +11,7 @@
 
 import { getDb, type JobRow } from "./store/db.ts";
 import { slugify } from "./core/text.ts";
+import { daysUntil } from "./export/fields.ts";
 
 export const STATUSES = [
   "interested",
@@ -134,9 +135,3 @@ export function counts(): Record<string, number> {
   return Object.fromEntries(rows.map((r) => [r.s, Number(r.c)]));
 }
 
-function daysUntil(iso: string | null): number | null {
-  if (!iso) return null;
-  const t = new Date(iso).getTime();
-  if (Number.isNaN(t)) return null;
-  return Math.ceil((t - Date.now()) / 86_400_000);
-}
