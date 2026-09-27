@@ -276,16 +276,30 @@ export function reputationSearch(school: string | null | undefined): string {
 export function bestContact(c: FieldContext): { value: string; kind: string } {
   const s = c.school;
   if (s?.career_email) return { value: s.career_email, kind: "careers address" };
-  if (s?.school_email) return { value: s.school_email, kind: "general inbox" };
+
+  /*
+   * A vacancies page is the school's own answer to "how do I apply", so it
+   * qualifies every weaker contact below it. Email the inbox by all means, but
+   * without this note the sheet said "general inbox" at 511 schools that had
+   * published a proper application route, and the better route was invisible
+   * unless you thought to check another column.
+   */
+  const page = s?.careers_url ? " — they have a vacancies page" : "";
+
+  if (s?.school_email) return { value: s.school_email, kind: "general inbox" + page };
 
   // Anything the crawl found but did not rank highly enough to promote. A
   // named teacher's address still reaches a human at the school.
   const any = parseJsonColumn<DiscoveredEmail[]>(s?.emails_json ?? null, [])
     .sort((a, b) => b.score - a.score)[0];
-  if (any) return { value: any.email, kind: `${any.kind} address` };
+  if (any) return { value: any.email, kind: `${any.kind} address` + page };
 
   const fromJob = parseJsonColumn<string[]>(c.job?.emails_json ?? null, [])[0];
-  if (fromJob) return { value: fromJob, kind: "from the advert" };
+  if (fromJob) return { value: fromJob, kind: "from the advert" + page };
+
+  // No address anywhere. The page is a real route and a phone number is not,
+  // so it goes first.
+  if (s?.careers_url) return { value: s.careers_url, kind: "vacancies page — no email published" };
 
   if (s?.phone) return { value: s.phone, kind: "phone — no email published" };
   // Last resort, and the reason the social column exists: the scraper cannot

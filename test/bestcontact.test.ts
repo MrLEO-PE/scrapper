@@ -94,3 +94,31 @@ test("truly nothing stays empty rather than inventing a route", () => {
   assert.equal(c.kind, "");
   assert.equal(bestContact({}).value, "");
 });
+
+test("says so when the school publishes a vacancies page", () => {
+  // 511 schools had no careers address but did have a real application route.
+  // The sheet called that "general inbox" and left the better route in a
+  // column you had to think to look at.
+  const c = bestContact({
+    school: school({ school_email: "info@s.ac.th", careers_url: "https://s.ac.th/vacancies" }),
+  });
+  assert.equal(c.value, "info@s.ac.th");
+  assert.equal(c.kind, "general inbox — they have a vacancies page");
+});
+
+test("a careers address needs no such note", () => {
+  const c = bestContact({
+    school: school({ career_email: "hr@s.ac.th", careers_url: "https://s.ac.th/vacancies" }),
+  });
+  assert.equal(c.kind, "careers address");
+});
+
+test("the vacancies page outranks a phone number when no address exists", () => {
+  // A page is somewhere an application can actually be sent; a switchboard
+  // number is not.
+  const c = bestContact({
+    school: school({ careers_url: "https://s.ac.th/join-us", phone: "+66 2 123 4567" }),
+  });
+  assert.equal(c.value, "https://s.ac.th/join-us");
+  assert.equal(c.kind, "vacancies page — no email published");
+});
