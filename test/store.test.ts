@@ -105,12 +105,16 @@ test("a directory cannot swap the general inbox for a narrower desk", () => {
   assert.equal(emailsOf(key).school, "info@school4.ac.th");
 });
 
-test("a fresh crawl may move an address between the two columns", () => {
+// Enrichment records the page it read, so a crawled value's source is a URL.
+// That is what tells a later crawl which values are its own to withdraw.
+const crawled = { confidence: 0.9, source: "https://school3.ac.th/careers" };
+
+test("a fresh crawl may withdraw an address it found itself", () => {
   const key = "th-recrawl";
   upsertSchool(
     {
       ...base(key),
-      careerEmail: { value: "jobs@school3.ac.th", provenance: src },
+      careerEmail: { value: "jobs@school3.ac.th", provenance: crawled },
       allEmails: [{ email: "jobs@school3.ac.th", kind: "careers", score: 0.97, foundAt: "p", via: "html" }],
     },
     "job",
@@ -118,12 +122,11 @@ test("a fresh crawl may move an address between the two columns", () => {
   assert.equal(emailsOf(key).career, "jobs@school3.ac.th");
 
   // The school took its recruitment page down and now publishes only info@.
-  // Continuing to offer jobs@ would send an application into a dead mailbox,
-  // so a complete crawl is allowed to clear the column.
+  // Continuing to offer jobs@ would send an application into a dead mailbox.
   upsertSchool(
     {
       ...base(key),
-      schoolEmail: { value: "info@school3.ac.th", provenance: src },
+      schoolEmail: { value: "info@school3.ac.th", provenance: crawled },
       allEmails: [{ email: "info@school3.ac.th", kind: "info", score: 0.4, foundAt: "p", via: "html" }],
     },
     "job",
@@ -131,4 +134,27 @@ test("a fresh crawl may move an address between the two columns", () => {
   const after = emailsOf(key);
   assert.equal(after.career, null);
   assert.equal(after.school, "info@school3.ac.th");
+});
+
+test("a crawl may not withdraw an address it never found", () => {
+  const key = "th-foreign";
+  // A directory published a general inbox. The school's own pages never print
+  // it — plenty of schools only appear in a directory with an address — but it
+  // is still a real address, and the crawl has no standing to delete it.
+  upsertSchool(
+    { ...base(key), schoolEmail: { value: "info@school5.ac.th", provenance: src } },
+    "directory",
+    undefined,
+    false,
+  );
+
+  upsertSchool(
+    {
+      ...base(key),
+      principal: { value: "Someone", provenance: { confidence: 0.8, source: "https://school5.ac.th/about" } },
+      allEmails: [],
+    },
+    "job",
+  );
+  assert.equal(emailsOf(key).school, "info@school5.ac.th");
 });

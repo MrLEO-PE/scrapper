@@ -17,7 +17,7 @@ import { log } from "../core/logger.ts";
 import { hostOf, schoolCore } from "../core/text.ts";
 import { findMatch, preferred, sameSchool, type SchoolIdentity } from "./identity.ts";
 import { rankByValue } from "../match/packagevalue.ts";
-import type { Job, Salary, SchoolProfile, SourceId } from "../core/types.ts";
+import type { Job, Provenance, Salary, SchoolProfile, SourceId } from "../core/types.ts";
 
 export type JobStatus = "open" | "stale" | "closed";
 
@@ -594,6 +594,46 @@ function resolveSchoolKey(
   };
 }
 
+/**
+ * Keep an address the crawl has no standing to delete.
+ *
+ * A crawl of the school's own site is authoritative about that site, and so it
+ * may clear an address it previously found there — a recruitment page that has
+ * come down should not keep sending applications into a dead mailbox. It is not
+ * authoritative about anything else. A general inbox that a directory
+ * published is still real when the school's own pages never print it, and
+ * letting the crawl clear those cost 312 schools their only address in one run.
+ *
+ * Provenance settles it: enrichment records the page it read, so a crawled
+ * value's source is a URL, and every other source names itself.
+ */
+function keepForeignEmails(p: SchoolProfile, schoolKey: string): void {
+  const row = getDb()
+    .prepare("SELECT school_email, career_email, provenance_json FROM schools WHERE school_key = ?")
+    .get(schoolKey) as { school_email: string | null; career_email: string | null; provenance_json: string | null } | undefined;
+  if (!row) return;
+
+  let prov: Record<string, Partial<Provenance> | undefined> = {};
+  try {
+    prov = row.provenance_json ? JSON.parse(row.provenance_json) : {};
+  } catch {
+    return; // unreadable provenance: treat the values as unattributed and let the crawl win
+  }
+
+  const fromACrawl = (field: string) => /^https?:\/\//i.test(prov[field]?.source ?? "");
+  const kept = (field: string): Provenance => ({
+    confidence: prov[field]?.confidence ?? 0.6,
+    source: prov[field]?.source ?? "an earlier source",
+  });
+
+  if (!p.careerEmail && row.career_email && !fromACrawl("careerEmail")) {
+    p.careerEmail = { value: row.career_email, provenance: kept("careerEmail") };
+  }
+  if (!p.schoolEmail && row.school_email && !fromACrawl("schoolEmail")) {
+    p.schoolEmail = { value: row.school_email, provenance: kept("schoolEmail") };
+  }
+}
+
 export function upsertSchool(
   p: SchoolProfile,
   origin: "job" | "directory" = "job",
@@ -602,6 +642,7 @@ export function upsertSchool(
   markEnriched = true,
 ): void {
   const { key: schoolKeyToUse, name: nameToUse, keepExistingPlace } = resolveSchoolKey(p, origin);
+  if (p.allEmails) keepForeignEmails(p, schoolKeyToUse);
   const now = new Date().toISOString();
   const provenance: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(p)) {
