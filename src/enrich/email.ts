@@ -67,12 +67,23 @@ const KIND_RULES: { re: RegExp; kind: EmailKind; score: number }[] = [
   // clearly delimited — a bare "rh" inside a surname is not an HR desk.
   { re: /^(?:rrhh|recursoshumanos|recursos\.humanos|risorseumane|personalabteilung|insankaynaklari)(?:$|[._-])/i, kind: "hr", score: 0.94 },
   { re: /^(?:rh|drh|ik)(?:$|[._-])/i, kind: "hr", score: 0.85 },
+  // Departmental abbreviations schools actually use: recdept, recruit-dept.
+  { re: /^(?:rec|recruit(?:ment)?|hiring)[._-]?(?:dept|department|team|office)\b/i, kind: "careers", score: 0.93 },
   { re: /^(?:hr|humanresources|human\.resources|people|peopleteam|personnel|hrdept|hr\.dept|hrteam)/i, kind: "hr", score: 0.92 },
   { re: /(?:recruit|vacanc|career|hiring|employment)/i, kind: "careers", score: 0.88 },
   { re: /^(?:hr|people|personnel)[._-]/i, kind: "hr", score: 0.85 },
   { re: /(?:^|[._-])hr(?:$|[._-])/i, kind: "hr", score: 0.8 },
   { re: /^(?:principal|headteacher|head\.teacher|headmaster|headmistress|director|superintendent|ceo)/i, kind: "principal", score: 0.6 },
-  { re: /^(?:admin|administration|office|reception|secretary|enquir|enquiries|inquiry|contact|school)/i, kind: "admin", score: 0.45 },
+  /*
+   * Admissions is the commonest address a school publishes and the commonest
+   * mistake available here: 169 of the unclassified ones were admissions or a
+   * translation of it. It is a real, staffed desk — which is why it belongs
+   * above an anonymous mailbox — but it deals with prospective parents, so a
+   * teaching application sent there is as misdirected as one sent to the
+   * student careers adviser. Classified as admin, never promoted to careers.
+   */
+  { re: /^(?:admissions?|admisi[oó]n(?:es)?|admiss|registrar|enrol(?:ment|lment)s?|enroll?|tuyensinh|inscripci[oó]n(?:es)?|matr[ií]culas?)/i, kind: "admin", score: 0.5 },
+  { re: /^(?:admin|administration|office|reception|secretary|secretari[ao]t?|enquir|enquiries|inquiry|inquiries|contact|school)/i, kind: "admin", score: 0.45 },
   { re: /^(?:info|information|hello|mail|general)/i, kind: "info", score: 0.4 },
 ];
 
@@ -118,6 +129,18 @@ export function extractEmails(text: string, foundAt: string, via: string): Disco
   const seen = new Map<string, DiscoveredEmail>();
   for (const match of normalised.matchAll(EMAIL_RE)) {
     const raw = match[0];
+
+    /*
+     * Refuse a local part that is the tail of a longer one.
+     *
+     * The address pattern only accepts ASCII, so "admisión@s.edu.pe" matches
+     * from after the accent and yields "n@s.edu.pe" — an address that does not
+     * exist, presented with the same confidence as one that does. \b does not
+     * help: it treats "ó" as a boundary. So look at the character before the
+     * match and drop anything that continues a word.
+     */
+    const before = normalised[match.index! - 1];
+    if (before && /[\p{L}\p{N}]/u.test(before)) continue;
     // Strip a trailing dot that the regex can pick up from prose.
     const email = raw.replace(/\.$/, "").toLowerCase();
     const local = email.split("@")[0] ?? "";

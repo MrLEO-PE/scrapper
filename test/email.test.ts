@@ -168,3 +168,53 @@ test("reads the domain from a website URL", () => {
   assert.equal(domainOf("school.ae"), "school.ae");
   assert.equal(domainOf(undefined), undefined);
 });
+
+test("admissions is a real desk, but never the careers desk", () => {
+  // The commonest address a school publishes, and the commonest mistake
+  // available: 169 unclassified addresses were admissions or a translation.
+  // It is staffed, so it outranks an anonymous mailbox — but it handles
+  // prospective parents, so a teaching application sent there is as
+  // misdirected as one sent to the student careers adviser.
+  for (const e of [
+    "admissions@s.edu", "admission@s.edu", "admisiones@s.edu.co",
+    "registrar@s.edu", "enrolments@s.edu.au",
+    "tuyensinh@s.edu.vn", "matriculas@s.edu.es",
+  ]) {
+    const found = extractEmails(e, "page", "html")[0];
+    assert.equal(found?.kind, "admin", `${e} should be admin, was ${found?.kind}`);
+  }
+
+  // And it must not be picked as the careers address.
+  const found = extractEmails("admissions@s.edu info@s.edu", "page", "html");
+  assert.equal(bestCareerEmail(found, "s.edu"), undefined);
+
+  // A general inbox is still the better front door — admissions is one
+  // department, info@ is the school. But admissions must beat an anonymous
+  // named mailbox, which is the case this reclassification was for.
+  assert.equal(bestSchoolEmail(found, "s.edu")?.email, "info@s.edu");
+  const noInfo = extractEmails("admissions@s.edu j.smith@s.edu", "page", "html");
+  assert.equal(bestSchoolEmail(noInfo, "s.edu")?.email, "admissions@s.edu");
+});
+
+test("recognises a recruitment department abbreviation", () => {
+  // "recdept@" appeared in the data and was sitting unclassified.
+  for (const e of ["recdept@s.edu", "rec-dept@s.edu", "recruitment.team@s.edu", "hiring-office@s.edu"]) {
+    assert.equal(extractEmails(e, "page", "html")[0]?.kind, "careers", e);
+  }
+  // Not a false friend: reception is not recruitment.
+  assert.equal(extractEmails("reception@s.edu", "page", "html")[0]?.kind, "admin");
+});
+
+test("never invents an address from an accented one it cannot read", () => {
+  // The address pattern is ASCII-only, so "admisión@s.edu.pe" matched from
+  // after the accent and produced "n@s.edu.pe" — a mailbox that does not
+  // exist, offered with exactly the confidence of one that does. A word
+  // boundary does not catch it, because \b treats "ó" as a boundary.
+  assert.deepEqual(extractEmails("Contact admisión@s.edu.pe", "p", "html"), []);
+  assert.deepEqual(extractEmails("Écrire à inscripción@s.edu.pe", "p", "html"), []);
+
+  // Addresses that genuinely start where they appear are unaffected.
+  assert.equal(extractEmails("careers@s.edu", "p", "html")[0]?.email, "careers@s.edu");
+  assert.equal(extractEmails("Email:careers@s.edu", "p", "html")[0]?.email, "careers@s.edu");
+  assert.equal(extractEmails("(hr@s.edu)", "p", "html")[0]?.email, "hr@s.edu");
+});

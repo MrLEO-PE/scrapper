@@ -48,7 +48,7 @@
   "source": true,
   "application_form": true,
   "form_link": true,
-  "careers_page": false,
+  "careers_page": true,
   "all_emails": false,
   "pe_team_size": false,
   "contract": false,
