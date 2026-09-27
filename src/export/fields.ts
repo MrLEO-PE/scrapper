@@ -33,6 +33,7 @@ import { BASIS_LABEL } from "../enrich/salary.ts";
 import { benchmarkAverage, benchmarkSavings, countryBenchmark } from "../enrich/benchmarks.ts";
 import { RANK_BASIS_LABEL } from "../match/packagevalue.ts";
 import { STATUS_LABEL as MY_STATUS_LABEL } from "../track.ts";
+import { schoolGroup } from "./groups.ts";
 
 export interface FieldContext {
   job?: JobRow;
@@ -89,6 +90,15 @@ const STATUS_LABELS: Record<string, string> = {
   closed: "Closed",
 };
 
+/**
+ * Statuses that mean an application went out.
+ *
+ * "Interested" is a bookmark and "Not for me" is a decision not to apply, so
+ * neither earns the tick. Everything past "applied" does: an interview is an
+ * application you sent and then heard back about.
+ */
+const APPLIED = new Set(["applied", "interview", "offer", "rejected"]);
+
 function formatSalary(s: Salary | null | undefined): string {
   if (!s) return "";
   if (s.min == null && s.max == null) return s.text ?? "";
@@ -123,7 +133,6 @@ function list(v: unknown): string {
     .join("; ");
 }
 
-/** Whole days from now until an ISO date; negative once it has passed. */
 /**
  * Days left to apply, counted in dates rather than elapsed hours.
  *
@@ -352,8 +361,13 @@ export const FIELDS: FieldDef[] = [
   },
   {
     key: "school_type", label: "School Type", group: "school", scope: "both",
-    help: "Primary, Secondary, Primary + Secondary, or University.",
-    get: (c) => PHASE_LABELS[c.school?.school_type ?? ""] ?? "",
+    help: "Primary, Secondary, Primary + Secondary, or University — and the group that owns the school, where it belongs to one. A group runs a group pay scale, a central HR desk that often recruits for every campus at once, and a transfer route between countries, so who owns a school is a fact about the job. Edit config/school-groups.json to add a brand.",
+    get: (c) => {
+      const phase = PHASE_LABELS[c.school?.school_type ?? ""] ?? "";
+      const group = schoolGroup(c.school?.name ?? c.job?.school_name, c.school?.website ?? c.job?.school_website);
+      if (!group) return phase;
+      return phase ? `${phase} · ${group}` : group;
+    },
   },
   {
     key: "website", label: "Website", group: "school", scope: "both",
@@ -520,8 +534,8 @@ export const FIELDS: FieldDef[] = [
 
   // ---- package --------------------------------------------------------
   {
-    key: "fees", label: "Yearly Fees", group: "package", scope: "both",
-    help: "Published tuition, from the International Schools Database. Not a salary — but it is the only per-school money signal that exists, and a school charging three times its neighbour is not paying its teachers the same. A country salary average cannot tell schools apart; this can.",
+    key: "fees", label: "Yearly Fees (student tuition)", group: "package", scope: "both",
+    help: "What the school charges a pupil for a year, as published in the two international school databases. This is not your salary — but it is the only per-school money signal that exists, and a school charging three times its neighbour is not paying its teachers the same. A country salary average cannot tell schools apart; this can.",
     get: (c) => {
       const s = c.school;
       if (!s?.fee_low && !s?.fee_high) return "";
@@ -693,6 +707,22 @@ export const FIELDS: FieldDef[] = [
   },
 
   // ---- tracking -------------------------------------------------------
+  {
+    key: "applied", label: "Applied", group: "tracking", scope: "job",
+    help: "A tick and the date once you have confirmed you applied, so a long list shows at a glance what is already dealt with. Set with 'npm run track'. Interested and Not-for-me are not applications and stay blank; a status past Applied names itself, because an interview is still an application you sent.",
+    get: (c) => {
+      const status = c.job?.my_status ?? "";
+      if (!APPLIED.has(status)) return "";
+      const when = c.job?.my_status_at ? new Date(c.job.my_status_at) : null;
+      const on = when && !Number.isNaN(when.getTime())
+        ? when.toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+        : "";
+      // Past "applied" the stage is the more useful word, but the tick still
+      // answers the question the column is there for.
+      const stage = status === "applied" ? "" : ` · ${MY_STATUS_LABEL[status] ?? status}`;
+      return `✅ ${on}${stage}`.replace("✅  ", "✅ ").trim();
+    },
+  },
   {
     key: "my_status", label: "My Status", group: "tracking", scope: "job",
     help: "Where you stand with this role — set with 'npm run track'. A scrape never touches it.",
