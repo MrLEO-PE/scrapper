@@ -161,11 +161,13 @@ export function writeHtml(
 
   /*
    * The badge said "soon" on every closing role, which tells you to hurry but
-   * not how much. Four days left and tomorrow are different decisions, so the
-   * badge carries the count and the CSS reads it off the row.
+   * not how much. Four days left and tomorrow are different decisions, so it
+   * keeps the word and adds the count beside it. The CSS reads the text off
+   * the row, because the deadline is known there and the badge hangs off a
+   * cell.
    */
   const soonBadge = (left: number): string =>
-    left === 0 ? "today" : left === 1 ? "tomorrow" : `${left} days`;
+    left === 0 ? "soon · today" : left === 1 ? "soon · tomorrow" : `soon · ${left} days`;
 
   const rowAttrs = (r: string[], row: SheetRow) => {
     const classes: string[] = [];
