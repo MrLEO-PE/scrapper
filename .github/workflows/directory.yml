@@ -5,8 +5,17 @@ name: Scrape top schools
 #
 # Quotas live in config/directory.json. Collecting the list is cheap — one
 # request per country — but profiling each school means visiting its website,
-# so that is done in batches: each run enriches the next slice and the picture
-# fills in over a few days. Schools change slowly, so this runs weekly.
+# so that is done in batches: each run enriches the next slice.
+#
+# It runs daily rather than weekly, and the batch is large. Sixty schools a
+# week could not keep up with its own corpus: enrichment refreshes a profile
+# once it is thirty days old, and 2,400 schools on a thirty-day cycle need
+# about eighty a day just to stand still. The stale pile grew every week.
+#
+# Raising it is safe because that same thirty-day rule is the floor. A bigger
+# batch drains the backlog faster but never visits a school's website more
+# often than monthly, so no site sees more traffic than before — and once the
+# backlog is gone these runs find little to do and finish in minutes.
 
 on:
   workflow_dispatch:
@@ -22,15 +31,16 @@ on:
       batch:
         description: "How many schools to profile this run"
         required: false
-        default: "120"
+        default: "500"
       list_only:
         description: "Collect and rank without visiting any school website"
         required: false
         default: false
         type: boolean
   schedule:
-    # Sunday 03:00 UTC, away from the daily job scrape.
-    - cron: "0 3 * * 0"
+    # 02:00 UTC daily, four hours clear of the job scrape at 06:00. They share
+    # a concurrency group, so if this one overruns the scrape simply waits.
+    - cron: "0 2 * * *"
 
 permissions:
   contents: write
@@ -75,16 +85,18 @@ jobs:
       # figure and the careers contact. A slice per run keeps the job inside a
       # sane runtime; the next run picks up where this one stopped.
       #
-      # Half the batch, six times the depth. Finding a school's website is the
-      # hard part; once it is known, a shallow crawl wastes it — eight pages
-      # routinely stopped before the contact page, which is where the address
-      # is. Fewer schools done properly beats more done badly, and the queue
-      # drains either way.
+      # Depth over speed: finding a school's website is the hard part, and
+      # once it is known a shallow crawl wastes it — eight pages routinely
+      # stopped before the contact page, which is where the address is.
+      #
+      # Five hundred at this depth takes roughly an hour and a half, well
+      # inside the five-hour limit below, and the run ends early once nothing
+      # is stale enough to revisit.
       - name: Profile the next batch
         if: ${{ inputs.list_only != true }}
         run: |
           node --experimental-strip-types --no-warnings src/cli.ts enrich \
-            --limit "${{ inputs.batch || '60' }}" \
+            --limit "${{ inputs.batch || '500' }}" \
             --concurrency 6 --budget-ms 240000 --max-pages 25 --max-pdfs 6
 
       # The write path already refuses to create a duplicate. This is the

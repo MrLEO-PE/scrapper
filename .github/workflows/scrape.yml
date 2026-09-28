@@ -25,8 +25,12 @@ on:
         default: false
         type: boolean
   schedule:
-    # 06:00 UTC daily. GitHub queues scheduled runs, so it may start late.
+    # Twice a day. Vacancies are the time-critical half of this project — some
+    # close within a week of appearing — and a second pass halves how long a
+    # new posting sits unseen. GitHub queues scheduled runs, so either may
+    # start late.
     - cron: "0 6 * * *"
+    - cron: "0 18 * * *"
 
 # Needed to commit the database back and to publish Pages.
 permissions:
@@ -43,7 +47,11 @@ concurrency:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # Was 60, which the enrich step below could exceed on a large backlog. A
+    # job timeout cancels the remaining steps, so the database was never
+    # committed and the whole run's work was thrown away — the one failure
+    # here that loses data rather than merely delaying it.
+    timeout-minutes: 150
 
     # Secrets are not readable from a step-level `if`, so they are lifted into
     # env here and the Sheets step tests the env value instead.
@@ -79,10 +87,15 @@ jobs:
           if [ "${{ inputs.shallow }}" = "true" ]; then ARGS="$ARGS --shallow"; fi
           node --experimental-strip-types --no-warnings src/cli.ts scrape $ARGS
 
+      # Bulk profiling belongs to the directory workflow, which now does five
+      # hundred a day. This pass exists to profile the schools behind vacancies
+      # found minutes ago, so it takes a bounded slice and leaves the rest.
+      # Unbounded, it was the step that could overrun the job timeout and cost
+      # the run its database.
       - name: Enrich schools
         run: |
           ARGS="--concurrency 6 --budget-ms 240000 --max-pages 25 --max-pdfs 6"
-          if [ -n "${{ inputs.enrich_limit }}" ]; then ARGS="$ARGS --limit ${{ inputs.enrich_limit }}"; fi
+          ARGS="$ARGS --limit ${{ inputs.enrich_limit || '250' }}"
           node --experimental-strip-types --no-warnings src/cli.ts enrich $ARGS
 
       - name: Build the site

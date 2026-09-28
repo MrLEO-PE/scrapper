@@ -548,8 +548,8 @@ schedule means you rarely need it.
 
 | Workflow | What it does | When |
 |---|---|---|
-| **Scrape PE jobs** | Live vacancies, enrichment, alerts | Daily, 06:00 UTC |
-| **Scrape top schools** | The standing school directory — package and salary research | Weekly, Sunday 03:00 UTC |
+| **Scrape PE jobs** | Live vacancies, enrichment, alerts | Twice daily, 06:00 and 18:00 UTC |
+| **Scrape top schools** | The standing school directory — package and salary research | Daily, 02:00 UTC |
 
 They share one database, so a concurrency group stops them running at the same time.
 
@@ -557,7 +557,7 @@ They share one database, so a concurrency group stops them running at the same t
 
 - **Run it now:** the **Actions** tab → *Scrape PE jobs* → **Run workflow**. You can narrow it to
   certain sources, cap how many schools get enriched, or tick *shallow* for a quick pass.
-- **Automatically:** it already runs every morning at 06:00 UTC. Change or remove the `cron` line
+- **Automatically:** it already runs at 06:00 and 18:00 UTC. Change or remove a `cron` line
   in [`.github/workflows/scrape.yml`](.github/workflows/scrape.yml).
 - **Read the results:** your Pages URL, `https://<your-username>.github.io/<repo>/`, with three
   views and the CSVs:
@@ -711,8 +711,14 @@ returned nothing.
 
 Collecting the list is cheap — one request per country. **Profiling is not**: each school means
 visiting its website, so 495 schools would run for hours. Each run therefore profiles the next
-slice (120 by default) and the picture fills in over a few weeks. Schools behind a live vacancy
+slice (500 by default) and the picture fills in over a few days. Schools behind a live vacancy
 are always profiled first; a role you could apply to today outranks a survey.
+
+The batch has to beat the refresh rate or the backlog grows. A profile is revisited once it is
+thirty days old, so a corpus of 2,400 schools needs about **eighty a day** simply to stand still
+— which the old sixty-a-week never managed. That same thirty-day rule is why a large batch is
+polite rather than aggressive: it drains the queue faster but still never visits any one school
+more than monthly, and once the queue is empty the run ends in minutes.
 
 ```bash
 npm run directory -- --list-only          # collect and rank, visit nothing
