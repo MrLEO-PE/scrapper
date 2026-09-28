@@ -10,6 +10,7 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { findMatch, preferred, sameSchool, type SchoolIdentity } from "../src/store/identity.ts";
+import { schoolCore } from "../src/core/text.ts";
 
 const school = (over: Partial<SchoolIdentity> & { schoolKey: string; name: string }): SchoolIdentity => ({
   country: null, city: null, website: null, origin: "job",
@@ -98,27 +99,46 @@ test("different cities on one domain are different campuses", () => {
   assert.equal(sameSchool(tokyo, osaka, 3), undefined);
 });
 
-test("a name that reduces to nothing but its own country is not an identity", () => {
+test("a nationality is part of a school's identity, not noise", () => {
   // "American" and "British" International School Vietnam are different
-  // schools, but American, International and School are all stripped as
-  // generic, leaving both as "vietnam". A Wikidata lookup matched the American
-  // school to the British school's domain on exactly this.
+  // schools. American, International and School were once all stripped as
+  // generic, leaving both as "vietnam" — a Wikidata lookup matched the
+  // American school to the British school's domain on exactly that, and this
+  // file used to carry a guard against place-only names to contain it.
+  //
+  // The words are no longer stripped, so the two names simply differ and the
+  // guard is not reached. Which is the better place to fix it: the key is the
+  // primary key, so a collision there did not produce a duplicate to catch —
+  // it overwrote one school with the other.
   const american = school({
-    schoolKey: "vietnam|vietnam", name: "American International School Vietnam", country: "Vietnam",
+    schoolKey: "american-international-school-vietnam|vietnam",
+    name: "American International School Vietnam", country: "Vietnam",
   });
   const british = school({
-    schoolKey: "vietnam-bis|vietnam", name: "British International School Vietnam",
+    schoolKey: "british-international-school-vietnam|vietnam",
+    name: "British International School Vietnam",
     country: "Vietnam", origin: "directory",
   });
   assert.equal(sameSchool(american, british), undefined);
 
-  // A shared website still settles it, since that is real evidence.
+  // A shared website still settles it, on the website alone now rather than
+  // on names that only looked alike once both were stripped to "vietnam".
   assert.equal(
     sameSchool(
       { ...american, website: "https://bisvietnam.com" },
       { ...british, website: "https://www.bisvietnam.com" },
     ),
-    "same name and website",
+    "same website",
+  );
+});
+
+test("the same school written two ways still agrees", () => {
+  // The reason structural words are stripped at all. This must keep working.
+  assert.ok(
+    sameSchool(
+      school({ name: "The British School of Beijing", country: "China" }),
+      school({ schoolKey: "other", name: "British School Beijing", country: "China" }),
+    ),
   );
 });
 
@@ -159,4 +179,21 @@ test("finds the matching row among many", () => {
   ];
   const hit = findMatch(candidate, rows);
   assert.equal(hit?.existing.schoolKey, "life-plus|china");
+});
+
+test("a nationality plus a city is an identity, not a city", () => {
+  // Seventy-four stored schools had a key that was nothing but a place. Since
+  // the key is the primary key, two of them in one city did not collide into
+  // a duplicate — the second overwrote the first. Three of Vietnam's largest
+  // schools could not be added at all: their key was already someone else's.
+  const core = (n: string) => schoolCore(n);
+  assert.notEqual(core("British International School Ho Chi Minh City"), core("International School Ho Chi Minh City"));
+  assert.notEqual(core("The British School Manila"), core("American School Manila"));
+  assert.notEqual(core("Doha British School"), core("American International School of Doha"));
+  assert.notEqual(core("Taipei American School"), core("Taipei European School"));
+
+  // And none of them reduces to the bare city any more.
+  for (const n of ["Hong Kong International School", "Taipei American School", "The British School Yangon"]) {
+    assert.ok(core(n).split("-").length > 1, `${n} -> ${core(n)}`);
+  }
 });

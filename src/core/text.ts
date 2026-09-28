@@ -67,11 +67,30 @@ export function slugify(s: string): string {
     .replace(/\s+/g, "-");
 }
 
-/** Words that add no identity to a school name when deduplicating. */
+/**
+ * Words that add no identity to a school name when deduplicating.
+ *
+ * Only structural words belong here — the ones that appear in one rendering of
+ * a name and not another, so that "The British School of Beijing" and
+ * "British School Beijing" agree.
+ *
+ * "british", "american", "international", "school", "academy" and "college"
+ * were once on this list, and they are the opposite of structural: they are
+ * most of what distinguishes one school from another. Dropping them reduced
+ * any "<Nationality> International School <City>" to the city alone, so
+ * "The British School Manila" and an American school in the same city
+ * produced the identical key `manila`. Since the key is the primary key, the
+ * second school did not become a duplicate — it overwrote the first and
+ * vanished. Seventy-four schools held a key that was nothing but a place, and
+ * three of Vietnam's largest could not be added at all because their key was
+ * already taken by a different school.
+ *
+ * Erring the other way costs far less: a name that fails to match leaves two
+ * rows, which the dedupe pass and the website-based identity rules can still
+ * fold together, and which are at least visible.
+ */
 const SCHOOL_STOPWORDS = new Set([
-  "the", "school", "schools", "international", "academy", "college", "campus",
-  "private", "british", "american", "of", "and", "for", "group", "education",
-  "educational", "institute", "ltd", "llc",
+  "the", "of", "and", "for", "ltd", "llc", "inc", "co", "pte",
 ]);
 
 /**

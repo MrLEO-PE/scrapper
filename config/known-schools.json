@@ -5,6 +5,62 @@
   "//fields": "name and country are required. city, website, via and note are optional. Set \"on\": false to keep an entry on file without using it.",
   "//adding": "npm run known -- checks every entry and reports which could not be verified.",
   "//sources-worth-mining": "EARCOS (East Asia), FOBISIA (British schools in Asia), ISAT (Thailand), ACAMIS (China), TAISI (India), AISA (Africa), and the accreditation bodies CIS, COBIS, NEASC and WASC — all publish member lists covering the configured countries.",
-
-  "schools": []
+  "schools": [
+    {
+      "name": "British International School Ho Chi Minh City",
+      "country": "Vietnam",
+      "city": "Ho Chi Minh City",
+      "via": "Nord Anglia group school, absent from both databases",
+      "website": "https://www.nordangliaeducation.com/bis-hcmc",
+      "note": "checked 2026-09-28: bishcmc.com does not respond; the group page title reads \"British International School Ho Chi Minh City | Nord Anglia\""
+    },
+    {
+      "name": "British International School Hanoi",
+      "country": "Vietnam",
+      "city": "Hanoi",
+      "via": "Nord Anglia group school, absent from both databases",
+      "website": "https://www.bishanoi.com",
+      "note": "checked 2026-09-28: page title reads \"British International School Hanoi | BIS Hanoi | Nord Anglia\""
+    },
+    {
+      "name": "International School Ho Chi Minh City",
+      "country": "Vietnam",
+      "city": "Ho Chi Minh City",
+      "via": "Cognita group; the database held only the separate American Academy school of a similar name",
+      "website": "https://ishcmc.com"
+    },
+    {
+      "name": "Singapore International School Da Nang",
+      "country": "Vietnam",
+      "city": "Da Nang",
+      "via": "KinderWorld group; Da Nang is thinly covered"
+    },
+    {
+      "name": "Nguyen Sieu School",
+      "country": "Vietnam",
+      "city": "Hanoi",
+      "via": "Cambridge bilingual school, hires overseas staff",
+      "website": "https://nguyensieu.edu.vn"
+    },
+    {
+      "name": "Archimedes Academy",
+      "country": "Vietnam",
+      "city": "Hanoi",
+      "via": "bilingual school, hires overseas staff",
+      "website": "https://archimedes.edu.vn"
+    },
+    {
+      "name": "Newton Grammar School",
+      "country": "Vietnam",
+      "city": "Hanoi",
+      "via": "bilingual school, hires overseas staff",
+      "website": "https://ngs.edu.vn"
+    },
+    {
+      "name": "Sunshine Maple Bear",
+      "country": "Vietnam",
+      "city": "Hanoi",
+      "via": "Maple Bear group"
+    }
+  ]
 }
