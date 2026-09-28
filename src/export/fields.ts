@@ -68,6 +68,8 @@ const SOURCE_LABELS: Record<string, string> = {
   tes: "TES",
   teachaway: "Teach Away",
   teacherhorizons: "Teacher Horizons",
+  seekteachers: "SeekTeachers",
+  teachingnomad: "Teaching Nomad",
   nordanglia: "Nord Anglia",
   inspired: "Inspired Education",
   schoolsite: "School website",

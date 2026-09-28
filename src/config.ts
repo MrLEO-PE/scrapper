@@ -86,6 +86,8 @@ export const DEFAULT_TARGETS: Targets = {
     "tes",
     "teachaway",
     "teacherhorizons",
+    "seekteachers",
+    "teachingnomad",
     "nordanglia",
     "inspired",
     "isp",

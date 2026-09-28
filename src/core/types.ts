@@ -18,6 +18,9 @@ export type SourceId =
   // Job alerts received by email (the paid services' sanctioned feed).
   | "mailalert"
   | "europeanchamber"
+  // General boards, added so no single board carries the feed.
+  | "seekteachers"
+  | "teachingnomad"
   // School groups running their own Workday career site.
   | "isp";
 
