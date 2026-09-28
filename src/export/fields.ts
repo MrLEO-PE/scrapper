@@ -674,10 +674,14 @@ export const FIELDS: FieldDef[] = [
   },
   {
     key: "days_left", label: "Days Left", group: "job", scope: "job",
-    help: "Days until the deadline — sort by this to see what is urgent. Blank when no closing date is published.",
+    help: "How long is left to apply, in words. Blank when no closing date is published — half of adverts give none, and those close once the right person turns up.",
     get: (c) => {
       const d = daysUntil(c.job?.deadline_at);
-      return d === null ? "" : d < 0 ? "closed" : String(d);
+      if (d === null) return "";
+      if (d < 0) return "closed";
+      if (d === 0) return "today";
+      if (d === 1) return "tomorrow";
+      return `${d} days`;
     },
   },
   {

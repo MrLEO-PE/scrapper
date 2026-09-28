@@ -1,6 +1,7 @@
 {
   "//": "Tick the columns you want in the sheet. true = included, false = left out.",
   "//order": "Columns appear in the order listed here. Run `npm run fields` to see every option.",
+  "days_left": true,
   "applied": true,
   "country": true,
   "city": true,
@@ -45,7 +46,6 @@
   "job_url": true,
   "last_day": true,
   "deadline": false,
-  "days_left": false,
   "source": true,
   "application_form": true,
   "form_link": true,

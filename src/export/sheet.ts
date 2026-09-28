@@ -159,16 +159,6 @@ export function writeHtml(
   const freshCount = rows.filter(isFresh).length;
   const markFresh = rows.length > 0 && freshCount / rows.length < 0.4;
 
-  /*
-   * The badge said "soon" on every closing role, which tells you to hurry but
-   * not how much. Four days left and tomorrow are different decisions, so it
-   * keeps the word and adds the count beside it. The CSS reads the text off
-   * the row, because the deadline is known there and the badge hangs off a
-   * cell.
-   */
-  const soonBadge = (left: number): string =>
-    left === 0 ? "soon · today" : left === 1 ? "soon · tomorrow" : `soon · ${left} days`;
-
   const rowAttrs = (r: string[], row: SheetRow) => {
     const classes: string[] = [];
     if (statusIndex >= 0) {
@@ -184,11 +174,15 @@ export function writeHtml(
 
     if (markFresh && isFresh(row)) classes.push("fresh");
 
-    if (!classes.length) return "";
-    const attrs = ` class="${classes.join(" ")}"`;
-    // A custom property, because attr() on a pseudo-element resolves against
-    // the cell it hangs off, not the row that knows the deadline.
-    return urgent ? `${attrs} style="--soon:'${esc(soonBadge(left!))}'"` : attrs;
+    /*
+     * The job id travels with the row so the page can remember, in this
+     * browser, which roles you have marked as applied for. It is the advert's
+     * own id, so the mark survives a rebuild: the row is rewritten every run,
+     * but it keeps the same identity.
+     */
+    const id = row.job?.id ? ` data-job="${esc(row.job.id)}"` : "";
+    if (!classes.length) return id;
+    return ` class="${classes.join(" ")}"${id}`;
   };
 
   const leadershipCount = body.filter((r) =>
@@ -218,8 +212,20 @@ export function writeHtml(
   tr.lead { background: color-mix(in srgb, dodgerblue 10%, transparent); }
   tr.lead td:first-child { box-shadow: inset 3px 0 0 dodgerblue; }
   tr.lead.stale { background: color-mix(in srgb, orange 12%, transparent); }
-  tr.urgent td:nth-child(2) { position: relative; }
-  tr.urgent td:first-child::after { content: var(--soon, "soon"); margin-left: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #d1242f; color: #fff; vertical-align: middle; }
+  /* The count is in the cell, so it is coloured rather than badged — a badge
+     beside a number that already says "3 days" only repeated it. */
+  tr.urgent td.col-days-left { color: #d1242f; font-weight: 700; white-space: nowrap; }
+  tr.closed td.col-days-left { font-weight: 400; }
+
+  /* A role you have already applied for should be recognisable without
+     reading it, and should stop competing for attention with the live ones. */
+  tr.applied { background: color-mix(in srgb, #1f883d 13%, transparent); }
+  tr.applied td:first-child { box-shadow: inset 3px 0 0 #1f883d; }
+  tr.applied.lead { background: color-mix(in srgb, #1f883d 16%, transparent); }
+  td.col-applied { white-space: nowrap; }
+  button.mark { font: inherit; font-size: 12px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--muted); cursor: pointer; }
+  button.mark:hover { border-color: #1f883d; color: #1f883d; }
+  button.mark.done { border-color: #1f883d; background: color-mix(in srgb, #1f883d 18%, transparent); color: inherit; font-weight: 600; }
   tr.fresh td:first-child::before { content: "new"; margin-right: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #1f883d; color: #fff; vertical-align: middle; }
   label.only { margin-left: 14px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
   a { color: inherit; }
@@ -245,12 +251,64 @@ ${leadershipCount ? '<label class="only"><input type="checkbox" id="leadOnly"> l
 <div class="wrap"><table>
 <thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
 <tbody>
-${body.map((r, i) => `<tr${rowAttrs(r, rows[i]!)}>${r.map((v, i) => `<td>${cell(v, fields[i]!)}</td>`).join("")}</tr>`).join("\n")}
+${body.map((r, i) => `<tr${rowAttrs(r, rows[i]!)}>${r.map((v, j) => `<td class="col-${esc(fields[j]!.key.replace(/_/g, "-"))}">${cell(v, fields[j]!)}</td>`).join("")}</tr>`).join("\n")}
 </tbody></table></div>
 <script>
 const rows = [...document.querySelectorAll("tbody tr")];
 const q = document.getElementById("q");
 const leadOnly = document.getElementById("leadOnly");
+
+/*
+ * Marking a role as applied for.
+ *
+ * This page is a static file on GitHub Pages — there is nothing to post to —
+ * so the date is kept in this browser. That has a real limit worth knowing:
+ * it does not reach the database, another device or another browser, and
+ * clearing site data clears it. "npm run track" is the permanent record, and
+ * anything already marked there arrives with the tick already in the cell.
+ */
+const STORE = "applied-dates";
+const readMarks = () => { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch { return {}; } };
+const writeMarks = (m) => { try { localStorage.setItem(STORE, JSON.stringify(m)); } catch { /* private window */ } };
+const niceDate = (iso) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+function setupApplied() {
+  const headers = [...document.querySelectorAll("thead th")].map((th) => th.textContent.trim());
+  const col = headers.indexOf("Applied");
+  if (col < 0) return;
+
+  const marks = readMarks();
+  for (const row of rows) {
+    const id = row.dataset.job;
+    const td = row.children[col];
+    if (!id || !td) continue;
+
+    // A tick already in the cell came from the database, where it was set by
+    // "npm run track". That is the stronger record, so it is left alone.
+    const fromDb = td.textContent.trim();
+    if (fromDb) { row.classList.add("applied"); continue; }
+
+    const button = document.createElement("button");
+    button.className = "mark";
+    const paint = () => {
+      const on = marks[id];
+      button.textContent = on ? "✅ " + niceDate(on) : "mark applied";
+      button.classList.toggle("done", !!on);
+      button.title = on ? "Applied on " + niceDate(on) + " — click to undo" : "Record that you applied today";
+      row.classList.toggle("applied", !!on);
+    };
+    button.addEventListener("click", () => {
+      if (marks[id]) delete marks[id];
+      else marks[id] = new Date().toISOString();
+      writeMarks(marks);
+      paint();
+    });
+    td.textContent = "";
+    td.appendChild(button);
+    paint();
+  }
+}
+setupApplied();
 
 function applyFilters() {
   const needle = q.value.toLowerCase();
@@ -267,9 +325,15 @@ document.querySelectorAll("th").forEach((th, i) => {
   let asc = true;
   th.addEventListener("click", () => {
     const tbody = document.querySelector("tbody");
+    // "today" and "tomorrow" are counts written as words, and sorting them
+    // alphabetically would file the two most urgent rows under T.
+    const WORDS = { closed: -1, today: 0, tomorrow: 1 };
+    const num = (s) => (s.toLowerCase() in WORDS ? WORDS[s.toLowerCase()] : parseFloat(s));
     const sorted = [...tbody.querySelectorAll("tr")].sort((a, b) => {
       const x = a.children[i].textContent.trim(), y = b.children[i].textContent.trim();
-      const nx = parseFloat(x), ny = parseFloat(y);
+      // A blank sorts last either way: no deadline is not "very urgent".
+      if (!x !== !y) return !x ? 1 : -1;
+      const nx = num(x), ny = num(y);
       if (!isNaN(nx) && !isNaN(ny)) return asc ? nx - ny : ny - nx;
       return asc ? x.localeCompare(y) : y.localeCompare(x);
     });
