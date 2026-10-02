@@ -867,6 +867,9 @@ export interface OpenRoles {
   url: string;
   /** Soonest deadline among them, ISO, when any is known. */
   deadline?: string;
+  /** Whether any of them makes you fill in a form, and where it is. */
+  form?: string;
+  formUrl?: string;
 }
 
 /**
@@ -880,12 +883,12 @@ export interface OpenRoles {
 export function openRolesBySchool(): Map<string, OpenRoles> {
   const rows = getDb()
     .prepare(
-      `SELECT school_key, title, url, deadline_at
+      `SELECT school_key, title, url, deadline_at, app_form, app_form_url
          FROM jobs
         WHERE is_pe = 1 AND status = 'open' AND school_key IS NOT NULL
         ORDER BY COALESCE(deadline_at, '9999') ASC`,
     )
-    .all() as { school_key: string; title: string; url: string; deadline_at: string | null }[];
+    .all() as { school_key: string; title: string; url: string; deadline_at: string | null; app_form: string | null; app_form_url: string | null }[];
 
   const out = new Map<string, OpenRoles>();
   for (const r of rows) {
@@ -893,6 +896,12 @@ export function openRolesBySchool(): Map<string, OpenRoles> {
     found.count++;
     found.titles.push(r.title);
     found.deadline ??= r.deadline_at ?? undefined;
+    // A form at any one of a school's open roles is worth flagging on the
+    // school, and a role that links its form beats one that only mentions it.
+    if (r.app_form && r.app_form !== "none" && (!found.form || (!found.formUrl && r.app_form_url))) {
+      found.form = r.app_form;
+      found.formUrl = r.app_form_url ?? found.formUrl;
+    }
     out.set(r.school_key, found);
   }
   return out;

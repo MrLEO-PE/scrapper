@@ -40,6 +40,17 @@ const TEXT_DOWNLOAD =
 const TEXT_ANY_FORM =
   /\b(?:application\s+form|application\s+pack|standard\s+application|complete\s+the\s+form)\b/i;
 
+/**
+ * Form services, which are what "apply online" usually means in practice.
+ *
+ * These carry the form itself and have no file extension to recognise, so the
+ * attachment check above walks straight past a Google Form. Catching them by
+ * host is the difference between telling you a form exists and handing you
+ * the link to it — and a link you cannot find is close to no answer at all.
+ */
+const FORM_HOST =
+  /(?:docs\.google\.com\/forms|forms\.gle|forms\.office\.com|^https?:\/\/[^/]*\.?(?:jotform|typeform|surveymonkey|wufoo|formstack|cognitoforms|smartsheet|airtable)\.(?:com|co|io)|tally\.so|fillout\.com)/i;
+
 const fileName = (url: string): string => {
   try {
     return decodeURIComponent(new URL(url).pathname.split("/").pop() ?? "");
@@ -82,13 +93,23 @@ export function detectApplicationForm(input: DetectInput): ApplicationForm {
     if (hit) return hit;
   }
 
-  // 2. A form link on the page.
+  // 2. A hosted form — a Google Form and the like. Checked before the
+  // document rules, because these have no extension for those to match and
+  // they are the one case where the exact link can be handed over.
+  for (const link of [...(input.links ?? []), ...(input.attachments ?? []).map((a) => ({ url: a.url, text: a.caption }))]) {
+    if (!FORM_HOST.test(link.url)) continue;
+    return { kind: "online", url: link.url, evidence: (link.text || link.url).trim().slice(0, 160) };
+  }
+
+  // 3. A form document linked rather than attached.
   for (const link of input.links ?? []) {
     const hit = scoreAttachment({ url: link.url, caption: link.text });
     if (hit) return hit;
   }
 
-  // 3. The advert's own wording.
+  // 4. The advert's own wording. This yields no link, only the knowledge
+  // that a form exists somewhere — which the sheet has to say plainly, or it
+  // reads as "there is a form here" when there is nothing to click.
   const text = input.text ?? "";
   if (text) {
     if (TEXT_DOWNLOAD.test(text)) {
@@ -115,12 +136,20 @@ function firstMatch(text: string, re: RegExp): string {
   return text.slice(start, m.index + m[0].length + 60).replace(/\s+/g, " ").trim();
 }
 
-/** How the column reads in the sheet. */
+/**
+ * How the column reads in the sheet.
+ *
+ * Says when the form could not be linked. Most "online" findings come from
+ * the advert's wording rather than from a link, so the cell would otherwise
+ * promise a form and leave the Form Link column beside it empty, which reads
+ * as a broken column rather than as a fact about the advert.
+ */
 export function formLabel(f: ApplicationForm | null | undefined): string {
+  const unlinked = f?.url ? "" : " · link not found";
   switch (f?.kind) {
-    case "pdf": return "Yes — PDF";
-    case "word": return "Yes — Word";
-    case "online": return "Yes — online";
+    case "pdf": return "Yes — PDF" + unlinked;
+    case "word": return "Yes — Word" + unlinked;
+    case "online": return "Yes — online" + unlinked;
     default: return "No";
   }
 }

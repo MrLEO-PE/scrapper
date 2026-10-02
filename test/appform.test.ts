@@ -73,8 +73,40 @@ test("recognises an online form as different from a download", () => {
   ]) {
     const f = detectApplicationForm({ text });
     assert.equal(f.kind, "online", text);
+    // Found from the wording alone, so there is nothing to click. The label
+    // has to say so: eleven of the thirteen forms in the database were found
+    // this way, and a bare "Yes — online" beside an empty Form Link column
+    // reads as a broken column rather than as a fact about the advert.
+    assert.equal(formLabel(f), "Yes — online · link not found");
+  }
+});
+
+test("hands over the link to a hosted form", () => {
+  // A Google Form has no file extension, so the document rules walk straight
+  // past it — and it is the one case where the exact form can be linked.
+  for (const url of [
+    "https://docs.google.com/forms/d/e/1FAIpQL/viewform",
+    "https://forms.gle/abc123",
+    "https://forms.office.com/r/abc123",
+    "https://school.jotform.com/2431",
+  ]) {
+    const f = detectApplicationForm({ links: [{ url, text: "Application form" }] });
+    assert.equal(f.kind, "online", url);
+    assert.equal(f.url, url);
     assert.equal(formLabel(f), "Yes — online");
   }
+
+  // Also when the advert attaches it rather than linking it in the body.
+  const attached = detectApplicationForm({
+    attachments: [{ url: "https://forms.gle/xyz", caption: "Apply here" }],
+  });
+  assert.equal(attached.url, "https://forms.gle/xyz");
+});
+
+test("an ordinary school page is not a form", () => {
+  // The host check must not claim every link on the advert.
+  const f = detectApplicationForm({ links: [{ url: "https://school.ac.th/about", text: "About us" }] });
+  assert.equal(f.kind, "none");
 });
 
 test("says none when nothing mentions a form", () => {

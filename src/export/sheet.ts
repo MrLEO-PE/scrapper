@@ -242,10 +242,14 @@ export function writeHtml(
   button.mark:hover { border-color: #1f883d; color: #1f883d; }
   button.mark.done { border-color: #1f883d; background: color-mix(in srgb, #1f883d 18%, transparent); color: inherit; font-weight: 600; }
 
-  /* A form to fill in is work to do before applying, so the row is underlined
-     end to end. Drawn inside the cell rather than as a border, which would
-     fight with the row rule already there. */
+  /* A form to fill in is work to do before applying — an afternoon, not a
+     click — so the whole row is tinted rather than marked at one edge. The
+     underline stays as well: the tint is easy to miss once several row
+     colours are in play, and this is the one that costs you time. */
+  tr.hasform { background: color-mix(in srgb, #d29922 16%, transparent); }
   tr.hasform td { box-shadow: inset 0 -2px 0 #d29922; }
+  tr.hasform.lead { background: color-mix(in srgb, #d29922 22%, transparent); }
+  tr.hasform.applied { background: color-mix(in srgb, #d29922 12%, transparent); }
 
   p.empty { color: var(--muted); padding: 18px 2px; margin: 0; }
   tr.fresh td:first-child::before { content: "new"; margin-right: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #1f883d; color: #fff; vertical-align: middle; }

@@ -93,6 +93,23 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 /**
+ * The form standing between you and this application.
+ *
+ * A job row knows its own advert. A school row has no advert, so it answers
+ * for the school's open roles instead, which is the useful reading on that
+ * page: will applying here cost me an afternoon?
+ */
+function formOf(c: FieldContext): ApplicationForm | null {
+  if (c.job) {
+    return c.job.app_form
+      ? ({ kind: c.job.app_form, url: c.job.app_form_url ?? undefined } as ApplicationForm)
+      : null;
+  }
+  const open = openRolesFor(c.school?.school_key);
+  return open?.form ? ({ kind: open.form, url: open.formUrl ?? undefined } as ApplicationForm) : null;
+}
+
+/**
  * Statuses that mean an application went out.
  *
  * "Interested" is a bookmark and "Not for me" is a decision not to apply, so
@@ -692,14 +709,14 @@ export const FIELDS: FieldDef[] = [
     get: (c) => c.job?.application_url ?? "",
   },
   {
-    key: "application_form", label: "Form to Fill?", group: "job", scope: "job",
-    help: "Whether the school makes you complete an application form — 'Yes — PDF' or 'Yes — Word' means a document to download, 'Yes — online' is filled in on the site. 'No' means none was mentioned, not that none exists.",
-    get: (c) => formLabel(c.job?.app_form ? ({ kind: c.job.app_form } as ApplicationForm) : null),
+    key: "application_form", label: "Form to Fill?", group: "job", scope: "both",
+    help: "Whether the school makes you complete an application form — 'Yes — PDF' or 'Yes — Word' means a document to download, 'Yes — online' is filled in on the site, and a Google Form counts as online. 'link not found' means the advert says there is a form but never linked it, so look on the careers page. 'No' means none was mentioned, not that none exists. On the schools list this reflects the school's open roles.",
+    get: (c) => formLabel(formOf(c)),
   },
   {
-    key: "form_link", label: "Form Link", group: "job", scope: "job",
-    help: "Direct link to the downloadable application form, when one was found.",
-    get: (c) => c.job?.app_form_url ?? "",
+    key: "form_link", label: "Form Link", group: "job", scope: "both",
+    help: "The application form itself, when the advert linked it — a downloadable document, or a hosted form such as a Google Form. Blank means no link was found, not that there is no form; the Form to Fill? column beside it says which.",
+    get: (c) => formOf(c)?.url ?? "",
   },
   {
     key: "pe_score", label: "PE Match", group: "job", scope: "job",
