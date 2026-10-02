@@ -109,6 +109,16 @@ export interface HtmlOptions {
   nav?: { label: string; href: string; current?: boolean; cta?: boolean }[];
   /** Extra line under the heading. */
   note?: string;
+  /**
+   * Which half of the applied split this page shows.
+   *
+   * "applied" lists only the roles you have marked, and every other page
+   * hides them. The two pages are built from the same rows and sort
+   * themselves in the browser, because which roles you have applied for is
+   * known only there — the mark is kept in local storage, and a static page
+   * has nowhere else to put it.
+   */
+  view?: "default" | "applied";
 }
 
 /** Standalone HTML report — sortable, with the links clickable. */
@@ -142,6 +152,7 @@ export function writeHtml(
 
   const statusIndex = fields.findIndex((f) => f.key === "status");
   const seniorityIndex = fields.findIndex((f) => f.key === "seniority");
+  const formIndex = fields.findIndex((f) => f.key === "application_form");
   /** Leadership roles are the point of the search, so they are marked. */
   const LEADERSHIP = new Set(["Director of Sport", "Head of Department", "2nd in Department"]);
 
@@ -173,6 +184,10 @@ export function writeHtml(
     if (urgent) classes.push("urgent");
 
     if (markFresh && isFresh(row)) classes.push("fresh");
+
+    // A form to fill in is work to do before you can apply, so it is marked
+    // on the row rather than left in a column you have to scroll to.
+    if (formIndex >= 0 && r[formIndex]?.startsWith("Yes")) classes.push("hasform");
 
     /*
      * The job id travels with the row so the page can remember, in this
@@ -226,6 +241,13 @@ export function writeHtml(
   button.mark { font: inherit; font-size: 12px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--muted); cursor: pointer; }
   button.mark:hover { border-color: #1f883d; color: #1f883d; }
   button.mark.done { border-color: #1f883d; background: color-mix(in srgb, #1f883d 18%, transparent); color: inherit; font-weight: 600; }
+
+  /* A form to fill in is work to do before applying, so the row is underlined
+     end to end. Drawn inside the cell rather than as a border, which would
+     fight with the row rule already there. */
+  tr.hasform td { box-shadow: inset 0 -2px 0 #d29922; }
+
+  p.empty { color: var(--muted); padding: 18px 2px; margin: 0; }
   tr.fresh td:first-child::before { content: "new"; margin-right: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #1f883d; color: #fff; vertical-align: middle; }
   label.only { margin-left: 14px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
   a { color: inherit; }
@@ -253,7 +275,9 @@ ${leadershipCount ? '<label class="only"><input type="checkbox" id="leadOnly"> l
 <tbody>
 ${body.map((r, i) => `<tr${rowAttrs(r, rows[i]!)}>${r.map((v, j) => `<td class="col-${esc(fields[j]!.key.replace(/_/g, "-"))}">${cell(v, fields[j]!)}</td>`).join("")}</tr>`).join("\n")}
 </tbody></table></div>
+<p class="empty" id="empty" style="display:none">${esc(opts.view === "applied" ? "Nothing here yet. Mark a role as applied on the Open roles page and it moves to this tab." : "No rows match.")}</p>
 <script>
+const VIEW = "${opts.view ?? "default"}";
 const rows = [...document.querySelectorAll("tbody tr")];
 const q = document.getElementById("q");
 const leadOnly = document.getElementById("leadOnly");
@@ -272,21 +296,30 @@ const readMarks = () => { try { return JSON.parse(localStorage.getItem(STORE) ||
 const writeMarks = (m) => { try { localStorage.setItem(STORE, JSON.stringify(m)); } catch { /* private window */ } };
 const niceDate = (iso) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
+const marks = readMarks();
+
+/**
+ * A role counts as applied for if the database already says so — set by
+ * "npm run track", and rendered into the cell before the page was sent — or
+ * if it has been marked in this browser.
+ */
+function isApplied(row) {
+  return row.dataset.appliedDb === "1" || !!marks[row.dataset.job];
+}
+
 function setupApplied() {
   const headers = [...document.querySelectorAll("thead th")].map((th) => th.textContent.trim());
   const col = headers.indexOf("Applied");
   if (col < 0) return;
 
-  const marks = readMarks();
   for (const row of rows) {
     const id = row.dataset.job;
     const td = row.children[col];
     if (!id || !td) continue;
 
-    // A tick already in the cell came from the database, where it was set by
-    // "npm run track". That is the stronger record, so it is left alone.
-    const fromDb = td.textContent.trim();
-    if (fromDb) { row.classList.add("applied"); continue; }
+    // A tick already in the cell is the database's, and the stronger record:
+    // it was typed deliberately and survives a cleared browser. Left alone.
+    if (td.textContent.trim()) { row.dataset.appliedDb = "1"; continue; }
 
     const button = document.createElement("button");
     button.className = "mark";
@@ -302,6 +335,8 @@ function setupApplied() {
       else marks[id] = new Date().toISOString();
       writeMarks(marks);
       paint();
+      // The row now belongs to the other page, so take it off this one.
+      applyFilters();
     });
     td.textContent = "";
     td.appendChild(button);
@@ -309,15 +344,28 @@ function setupApplied() {
   }
 }
 setupApplied();
+// The split is decided in the browser, so the first pass happens here
+// rather than in the markup that was written before the marks existed.
+applyFilters();
 
 function applyFilters() {
   const needle = q.value.toLowerCase();
   const onlyLead = leadOnly && leadOnly.checked;
+  let shown = 0;
   for (const r of rows) {
     const matchesText = r.textContent.toLowerCase().includes(needle);
     const matchesLead = !onlyLead || r.classList.contains("lead");
-    r.style.display = matchesText && matchesLead ? "" : "none";
+    // The applied split. Both pages are built from the same rows and decide
+    // here which half they are showing, because the mark lives in this
+    // browser and the page was written before it existed.
+    const applied = isApplied(r);
+    const matchesView = VIEW === "applied" ? applied : !applied;
+    const show = matchesText && matchesLead && matchesView;
+    r.style.display = show ? "" : "none";
+    if (show) shown++;
   }
+  const empty = document.getElementById("empty");
+  if (empty) empty.style.display = shown ? "none" : "";
 }
 q.addEventListener("input", applyFilters);
 if (leadOnly) leadOnly.addEventListener("change", applyFilters);

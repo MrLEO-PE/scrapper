@@ -52,6 +52,7 @@ interface NavItem {
 function buildNav(): NavItem[] {
   const nav: NavItem[] = [
     { label: "Open roles", href: "index.html" },
+    { label: "Applied", href: "applied.html" },
     { label: "Schools", href: "schools.html" },
     { label: "Closed", href: "closed.html" },
     { label: "Download CSV", href: "pe-jobs.csv" },
@@ -116,6 +117,23 @@ export function buildSite(opts: SiteOptions): { dir: string; jobs: number; schoo
   writeHtml(join(dir, "closed.html"), closed, opts.fields, "job", "Closed / filled roles", {
     nav: navFor("closed.html"),
     note: "kept for reference — these are no longer listed",
+  });
+
+  /*
+   * The roles you have applied for.
+   *
+   * Built from the open roles and the closed ones together, so an application
+   * does not disappear from your own record the week the advert comes down —
+   * that is exactly when you are still waiting to hear back.
+   *
+   * It carries every row, and the page itself keeps only the marked ones;
+   * Open roles does the reverse. Neither can be decided here, because the
+   * marks live in your browser and this file is written long before it.
+   */
+  writeHtml(join(dir, "applied.html"), [...open, ...closed], opts.fields, "job", "Roles you have applied for", {
+    nav: navFor("applied.html"),
+    note: "marked in this browser, so this list is per-device — `npm run track` is the permanent record",
+    view: "applied",
   });
 
   writeCsv(join(dir, "pe-jobs.csv"), open, opts.fields, "job");
