@@ -61,6 +61,695 @@
       "country": "Vietnam",
       "city": "Hanoi",
       "via": "Maple Bear group"
+    },
+    {
+      "name": "Barker College",
+      "country": "Australia",
+      "city": "Sydney",
+      "website": "https://barker.college",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Knox Grammar School",
+      "country": "Australia",
+      "city": "Sydney",
+      "website": "https://knox.nsw.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Canberra Grammar School",
+      "country": "Australia",
+      "city": "Canberra",
+      "website": "https://cgs.act.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Scotch College Perth",
+      "country": "Australia",
+      "city": "Perth",
+      "website": "https://scotch.wa.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Ascham School",
+      "country": "Australia",
+      "city": "Sydney",
+      "website": "https://ascham.nsw.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Perth College Anglican School for Girls",
+      "country": "Australia",
+      "city": "Perth",
+      "website": "https://perthcollege.wa.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Newington College",
+      "country": "Australia",
+      "city": "Sydney",
+      "website": "https://newington.nsw.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Brisbane Grammar School",
+      "country": "Australia",
+      "city": "Brisbane",
+      "website": "https://brisbanegrammar.com",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Lauriston Girls' School",
+      "country": "Australia",
+      "city": "Melbourne",
+      "website": "https://lauriston.vic.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Ivanhoe Grammar School",
+      "country": "Australia",
+      "city": "Melbourne",
+      "website": "https://ivanhoe.com.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Kincoppal-Rose Bay School",
+      "country": "Australia",
+      "city": "Sydney",
+      "website": "https://krb.nsw.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Mount Zaagkam School (Highlands Campus)",
+      "country": "Indonesia",
+      "city": "Tembagapura",
+      "website": "https://mzs.sch.id",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "St John's Anglican College",
+      "country": "Australia",
+      "city": "Brisbane",
+      "website": "https://stjohnsanglicancollege.com.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "The Toowoomba Anglican School",
+      "country": "Australia",
+      "city": "Toowoomba",
+      "website": "https://taschool.qld.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Mount Zaagkam School (Lowlands Campus)",
+      "country": "Indonesia",
+      "city": "Kuala Kencana",
+      "website": "https://mzs.sch.id",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Prince Alfred College",
+      "country": "Australia",
+      "city": "Adelaide",
+      "website": "https://pac.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Presbyterian Ladies' College (PLC)",
+      "country": "Australia",
+      "city": "Melbourne",
+      "website": "https://plc.vic.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Matthew Flinders Anglican College",
+      "country": "Australia",
+      "city": "Sunshine Coast",
+      "website": "https://mfac.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "The Southport School (TSS)",
+      "country": "Australia",
+      "city": "Gold Coast",
+      "website": "https://tss.qld.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Anglican Church Grammar School (Churchie)",
+      "country": "Australia",
+      "city": "Brisbane",
+      "website": "https://churchie.com.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Redland (Sydney Church of England Co-Ed)",
+      "country": "Australia",
+      "city": "Sydney",
+      "website": "https://redlands.nsw.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Adelaide International School",
+      "country": "Australia",
+      "city": "Adelaide",
+      "website": "https://ais.edu.au",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Seoul International School (SIS)",
+      "country": "South Korea",
+      "city": "Gyeonggi (Seongnam)",
+      "website": "https://siskorea.org",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "King's College",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "website": "https://kingscollege.school.nz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Western Academy of Beijing (WAB)",
+      "country": "China",
+      "city": "Beijing",
+      "website": "https://wab.edu",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "American International School of Mozambique (AISM)",
+      "country": "Mozambique",
+      "city": "Maputo",
+      "website": "https://aism.co.mz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "St Cuthbert's College",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "website": "https://stcuthberts.school.nz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Saint Kentigern College",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "website": "https://saintkentigern.com",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Nanjing International School (NIS)",
+      "country": "China",
+      "city": "Nanjing",
+      "website": "https://nanjing-school.com",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "International School of Tianjin (IST)",
+      "country": "China",
+      "city": "Tianjin",
+      "website": "https://istianjin.org",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Pinehurst School",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "website": "https://pinehurst.school.nz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "St Margaret's College",
+      "country": "New Zealand",
+      "city": "Christchurch",
+      "website": "https://stmargarets.school.nz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Diocesan School for Girls",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "website": "https://diocesan.school.nz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "International School Yangon (ISY)",
+      "country": "Myanmar",
+      "city": "Yangon",
+      "website": "https://isyedu.org",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "The British School (TBS)",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "website": "https://tbskathmandu.org",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Colegio Maya - The American International School",
+      "country": "Guatemala",
+      "city": "Guatemala City",
+      "website": "https://cm.edu.gt",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Colegio Maya (The American Int'l School)",
+      "country": "Guatemala",
+      "city": "Guatemala City",
+      "website": "https://cm.edu.gt",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "International School of Phnom Penh (ISPP)",
+      "country": "Cambodia",
+      "city": "Phnom Penh",
+      "website": "https://ispp.edu.kh",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Yangon International School (YIS)",
+      "country": "Myanmar",
+      "city": "Yangon",
+      "website": "https://yis.edu.mm",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "The British School Caracas (BSC)",
+      "country": "Venezuela",
+      "city": "Caracas",
+      "website": "https://tbscaracas.com",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Verso International School",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "website": "https://verso.ac.th",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "The British International School Istanbul (BISI)",
+      "country": "Turkey",
+      "city": "Istanbul",
+      "website": "https://bis.k12.tr",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Westlake Boys High School Int'l",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "website": "https://westlake.school.nz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Macleans College",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "website": "https://macleans.school.nz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Nelson College for Boys International",
+      "country": "New Zealand",
+      "city": "Nelson",
+      "website": "https://nelson.school.nz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Westlake Girls High School Int'l",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "website": "https://westlakegirls.school.nz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Epsom Girls Grammar School Int'l Section",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "website": "https://eggs.school.nz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Deutsche Schule Jakarta (DSJ)",
+      "country": "Indonesia",
+      "city": "Jakarta",
+      "website": "https://dsjakarta.de",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Takapuna Normal Intermediate",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "website": "https://tnis.school.nz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Tauranga Girls' College Int'l Track",
+      "country": "New Zealand",
+      "city": "Tauranga",
+      "website": "https://tgc.school.nz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Long Bay College International",
+      "country": "New Zealand",
+      "city": "Auckland",
+      "website": "https://longbaycollege.com",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "International School Suva (ISS Fiji)",
+      "country": "Fiji",
+      "city": "Suva",
+      "website": "https://iss.school.fj",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "American Nicaraguan School (ANS)",
+      "country": "Nicaragua",
+      "city": "Managua",
+      "website": "https://ans.edu.ni",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Global Indian International School (SMART Campus)",
+      "country": "Singapore",
+      "city": "Singapore",
+      "website": "https://singapore.globalindianschool.org",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Ullens School",
+      "country": "Nepal",
+      "city": "Khumaltar",
+      "website": "https://ullens.edu.np",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "British Embassy School Ankara (BESA)",
+      "country": "Turkey",
+      "city": "Ankara",
+      "website": "https://besaturkey.org",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Singapore School Cebu",
+      "country": "Philippines",
+      "city": "Cebu",
+      "website": "https://singaporeschoolcebu.com",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Saint Paul American School (Clark)",
+      "country": "Philippines",
+      "city": "Pampanga",
+      "website": "https://stpaulclark.com",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "International School Suva (ISS)",
+      "country": "Fiji",
+      "city": "Suva (Viti Levu)",
+      "website": "https://iss.school.fj",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Westfields International School",
+      "country": "Philippines",
+      "city": "Pampanga",
+      "website": "https://westfields.edu.ph",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "HighScope Indonesia (TB Simatupang / EST)",
+      "country": "Indonesia",
+      "city": "Jakarta",
+      "website": "https://highscope.or.id",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Yayasan Sarawak International Secondary School (Petra Jaya)",
+      "country": "Malaysia",
+      "city": "Kuching",
+      "website": "https://ysiss.edu.my",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Antigua International School (AIS)",
+      "country": "Guatemala",
+      "city": "Antigua",
+      "website": "https://antiguais.org",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "HighScope Indonesia Bali Campus",
+      "country": "Indonesia",
+      "city": "Bali",
+      "website": "https://highscope.or.id",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Myanmar International School (MIS)",
+      "country": "Myanmar",
+      "city": "Yangon",
+      "website": "https://mis-edu.com",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Rato Bangala School",
+      "country": "Nepal",
+      "city": "Patan",
+      "website": "https://ratobangala.edu.np",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Colegio Cambridge Cali",
+      "country": "Colombia",
+      "city": "Cali",
+      "website": "https://cambridgecali.edu.co",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Nicaragua Christian Academy International",
+      "country": "Nicaragua",
+      "city": "Managua",
+      "website": "https://nca.edu.ni",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Vijay International School Praslin (VISP)",
+      "country": "Seychelles",
+      "city": "Praslin",
+      "website": "https://visp-sey.com",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Alfred Nobel School (ANS Hanoi)",
+      "country": "Vietnam",
+      "city": "Hanoi",
+      "website": "https://ans.edu.vn",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Rupy's International",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "website": "https://rupys.edu.np",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "TreeTop House International Penang",
+      "country": "Malaysia",
+      "city": "Penang",
+      "website": "https://treetophouse.edu.my",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Christian American School of Guatemala (CAS)",
+      "country": "Guatemala",
+      "city": "Guatemala City",
+      "website": "https://cas.edu.gt",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "La Salle Green Hills (International Stream)",
+      "country": "Philippines",
+      "city": "Metro Manila",
+      "website": "https://lsgh.edu.ph",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Lodge Private Primary & Secondary School",
+      "country": "Malaysia",
+      "city": "Kuching",
+      "website": "https://lodgeschool.edu.my",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Haven of Peace Academy (HOPAC)",
+      "country": "Tanzania",
+      "city": "Dar es Salaam",
+      "website": "https://hopac.sc.tz",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Faith Academy Philippines",
+      "country": "Philippines",
+      "city": "Metro Manila",
+      "website": "https://faith.edu.ph",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Colegio Vermont Medellín",
+      "country": "Colombia",
+      "city": "Medellín",
+      "website": "https://vermontmedellin.edu.co",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Saint Pedro Poveda College (International)",
+      "country": "Philippines",
+      "city": "Metro Manila",
+      "website": "https://poveda.edu.ph",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Little Angels' School",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "website": "https://las.edu.np",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Nicaragua Christian Academy International (NCA)",
+      "country": "Nicaragua",
+      "city": "Managua",
+      "website": "https://international.nca.edu.ni",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "D'Monte Child Care & Development (George Town)",
+      "country": "Malaysia",
+      "city": "Penang",
+      "website": "https://dmonte.com.my",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Bohol International Learning Center",
+      "country": "Philippines",
+      "city": "Tagbilaran",
+      "website": "https://bilc.edu.ph",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Colegio Shakespeare School",
+      "country": "Ecuador",
+      "city": "Cumbayá",
+      "website": "https://shakespeare.edu.ec",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Nicaragua Christian Academy Matagalpa",
+      "country": "Nicaragua",
+      "city": "Matagalpa",
+      "website": "https://nca.edu.ni",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Al Muntazir International School",
+      "country": "Tanzania",
+      "city": "Dar es Salaam",
+      "website": "https://almuntazir.org",
+      "via": "personal spreadsheet \"school database x hunterio\"",
+      "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
     }
-  ]
+  ],
+  "//imported": "The entries marked \"personal spreadsheet\" come from four Google Sheets supplied on 2026-10-03. Of 2,007 rows, 599 matched schools already held and 849 were new. Each of those 849 was checked by fetching its website: 86 confirmed, 87 served a page that did not name the school, and 676 did not resolve at all. A control group of 30 already-verified schools scored 27/30 by the same test on the same day, so the failures are the data, not the check. The unresolving entries follow a pattern — names ending \"Track\", \"Tracks\", \"Modules\", \"Dept\" with domains built from their initials, e.g. Yushu International Academy Tracks at ysia.cn — and the salary column descends monotonically across all 2,007 rows with only 349 distinct values. Those columns were not imported."
 }
