@@ -749,6 +749,13 @@
       "website": "https://almuntazir.org",
       "via": "personal spreadsheet \"school database x hunterio\"",
       "note": "website fetched and confirmed to be this school on 2026-10-03; the sheet's salary, fees and package columns were not imported — see below"
+    },
+    {
+      "name": "Harrow International School Hong Kong",
+      "country": "Hong Kong",
+      "website": "https://harrowschool.hk",
+      "via": "user-supplied 2026-10-04; domain has a real Microsoft 365 mail configuration (confirmed via MX lookup), but the page itself could not be loaded to verify the school name on it — the same bot-blocking that affects other Harrow sites",
+      "note": "claimed recruitment address: recruitment@harrowschool.hk (not yet independently confirmed)"
     }
   ],
   "//imported": "The entries marked \"personal spreadsheet\" come from four Google Sheets supplied on 2026-10-03. Of 2,007 rows, 599 matched schools already held and 849 were new. Each of those 849 was checked by fetching its website: 86 confirmed, 87 served a page that did not name the school, and 676 did not resolve at all. A control group of 30 already-verified schools scored 27/30 by the same test on the same day, so the failures are the data, not the check. The unresolving entries follow a pattern — names ending \"Track\", \"Tracks\", \"Modules\", \"Dept\" with domains built from their initials, e.g. Yushu International Academy Tracks at ysia.cn — and the salary column descends monotonically across all 2,007 rows with only 349 distinct values. Those columns were not imported."
