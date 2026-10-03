@@ -3,37 +3,212 @@
   "//match": "Case-insensitive regular expression, tested against the school name and its website. Keep it tight — a loose pattern will claim schools the group does not own.",
   "//note": "Cognia is deliberately absent: it is an accreditation agency, not an owner. Cognita, one letter away, is a group.",
   "groups": [
-    { "name": "Nord Anglia", "match": "nordanglia|nord ?anglia" },
-    { "name": "Cognita", "match": "cognita" },
-    { "name": "GEMS Education", "match": "\\bgems\\b" },
-    { "name": "Dulwich College International", "match": "dulwich" },
-    { "name": "Harrow International", "match": "harrow" },
-    { "name": "Wellington College International", "match": "wellington college" },
-    { "name": "Shrewsbury International", "match": "shrewsbury" },
-    { "name": "Brighton College International", "match": "brighton college" },
-    { "name": "Malvern College International", "match": "malvern college" },
-    { "name": "Repton International", "match": "repton" },
-    { "name": "Yew Chung / Yew Wah", "match": "yew ?chung|yew ?wah|ycis|ywies" },
-    { "name": "EtonHouse", "match": "etonhouse|eton ?house" },
-    { "name": "Invictus Education", "match": "invictus" },
-    { "name": "Maple Bear", "match": "maple ?bear" },
-    { "name": "SABIS", "match": "sabis" },
-    { "name": "KinderWorld / SIS", "match": "kinderworld" },
-    { "name": "Inspired Education", "match": "inspired education" },
-    { "name": "International Schools Partnership", "match": "internationalschoolspartnership" },
-    { "name": "BASIS International", "match": "basis ?international|basisinternational" },
-    { "name": "Global Indian International", "match": "global indian international" },
-    { "name": "Aga Khan Academies", "match": "aga ?khan" },
-    { "name": "United World Colleges", "match": "\\buwc\\b|united world college" },
-    { "name": "Nobel Education", "match": "nobel ?education" },
-    { "name": "Esol Education", "match": "esol education" },
-    { "name": "Taaleem", "match": "taaleem" },
-    { "name": "Beacon Education", "match": "beacon ?education" },
-    { "name": "ISP China / Yago", "match": "yago ?school" },
-    { "name": "Raffles Education", "match": "raffles ?(?:education|institution|american)" },
-    { "name": "Stamford American", "match": "stamford american" },
-    { "name": "ACG Education", "match": "\\bacg\\b" },
-    { "name": "Fairview International", "match": "fairview international" },
-    { "name": "Regent International", "match": "regents? international" }
-  ]
+    {
+      "name": "Nord Anglia",
+      "match": "nordanglia|nord ?anglia",
+      "portal": "https://careers.nordanglia.com",
+      "portalKind": "SAP SuccessFactors",
+      "portalNote": "Already scraped — jobs reach your sheet automatically. Register anyway: the portal holds your profile for roles across all campuses.",
+      "scraped": true
+    },
+    {
+      "name": "Cognita",
+      "match": "cognita",
+      "portal": "https://www.cognita.com/careers",
+      "portalKind": "own page",
+      "portalNote": "Not to be confused with Cognia, which is an accreditation body, not an owner."
+    },
+    {
+      "name": "GEMS Education",
+      "match": "\\bgems\\b",
+      "portal": "https://www.gemseducation.com/careers",
+      "portalKind": "own page",
+      "portalNote": "Only one school in your countries (Nepal) — most of GEMS is in the Gulf."
+    },
+    {
+      "name": "Dulwich College International",
+      "match": "dulwich",
+      "portal": "https://www.dulwich.org/careers",
+      "portalKind": "JS portal",
+      "portalNote": "Renders in the browser, so nothing is scrapable. Registration is the only route."
+    },
+    {
+      "name": "Harrow International",
+      "match": "harrow",
+      "portal": "https://www.harrowschools.com",
+      "portalKind": "robots-blocked",
+      "portalNote": "Their robots.txt refuses crawlers, so I cannot read or confirm the careers path — browse from the homepage. Six of your top-twenty schools."
+    },
+    {
+      "name": "Wellington College International",
+      "match": "wellington college",
+      "portal": "https://www.wellingtoncollege.org.uk/vacancies",
+      "portalKind": "own page",
+      "portalNote": "The UK page carries the international campuses too."
+    },
+    {
+      "name": "Shrewsbury International",
+      "match": "shrewsbury",
+      "portal": "https://www.shrewsbury.ac.th/recruitment/introduction/",
+      "portalKind": "own page",
+      "portalNote": "Two of three are top-twenty. Bangkok runs its own recruitment section."
+    },
+    {
+      "name": "Brighton College International",
+      "match": "brighton college",
+      "portal": "https://www.brightoncollege.net/vacancies",
+      "portalKind": "own page",
+      "portalNote": "All three are top-twenty."
+    },
+    {
+      "name": "Malvern College International",
+      "match": "malvern college",
+      "portal": "https://www.malverncollege.org.uk/about-us/work-with-us/",
+      "portalKind": "own page",
+      "portalNote": "The UK page lists the international campuses."
+    },
+    {
+      "name": "Repton International",
+      "match": "repton",
+      "portal": "https://www.reptonschools.com/careers",
+      "portalKind": "JS portal",
+      "portalNote": "Renders in the browser."
+    },
+    {
+      "name": "Yew Chung / Yew Wah",
+      "match": "yew ?chung|yew ?wah|ycis|ywies",
+      "portal": "https://www.ycyw-edu.com/en/join-us",
+      "portalKind": "own page",
+      "portalNote": "Twelve schools, all in China."
+    },
+    {
+      "name": "EtonHouse",
+      "match": "etonhouse|eton ?house",
+      "portal": "https://www.etonhouse.com.sg",
+      "portalKind": "robots-blocked",
+      "portalNote": "robots.txt unreadable, so I never reach it — browse from the homepage."
+    },
+    {
+      "name": "Invictus Education",
+      "match": "invictus",
+      "portal": "https://invictus.education/page/?title=Careers&pid=9",
+      "portalKind": "own page",
+      "portalNote": "Five schools across Thailand, Malaysia, Cambodia, Singapore and India."
+    },
+    {
+      "name": "Maple Bear",
+      "match": "maple ?bear",
+      "portal": "https://maplebearglobal.com",
+      "portalKind": "robots-blocked",
+      "portalNote": "robots.txt unreadable to me — browse from the homepage."
+    },
+    {
+      "name": "SABIS",
+      "match": "sabis",
+      "portal": "https://careers.sabis.net/",
+      "portalKind": "own portal",
+      "portalNote": "A global network; one school in your countries."
+    },
+    {
+      "name": "KinderWorld / SIS",
+      "match": "kinderworld",
+      "portal": "https://www.kinderworld.net/careers",
+      "portalKind": "own page",
+      "portalNote": "Singapore International School campuses in Vietnam."
+    },
+    {
+      "name": "Inspired Education",
+      "match": "inspired education",
+      "portal": "https://jobs.inspirededu.com",
+      "portalKind": "SAP SuccessFactors",
+      "portalNote": "Already scraped. One school in your countries (Peru).",
+      "scraped": true
+    },
+    {
+      "name": "International Schools Partnership",
+      "match": "internationalschoolspartnership",
+      "portal": "https://internationalschools.wd3.myworkdayjobs.com/ISPCareers",
+      "portalKind": "Workday",
+      "portalNote": "Already scraped through Workday's API. Registering keeps a profile on file between postings.",
+      "scraped": true
+    },
+    {
+      "name": "BASIS International",
+      "match": "basis ?international|basisinternational",
+      "portal": "https://jobs.basisinternationalschools.com",
+      "portalKind": "JS portal",
+      "portalNote": "One jobs domain serves every BASIS school, so the scraper cannot tell campuses apart from it. Register once."
+    },
+    {
+      "name": "Global Indian International",
+      "match": "global indian international",
+      "portal": "https://careers.smartlearn.com/gsg",
+      "portalKind": "own portal",
+      "portalNote": "Six schools across Malaysia, Singapore, Japan and India."
+    },
+    {
+      "name": "Aga Khan Academies",
+      "match": "aga ?khan",
+      "portal": "https://www.agakhanacademies.org/general/employment-opportunities/",
+      "portalKind": "own page",
+      "portalNote": "Hyderabad is the one in your countries; strong IB reputation."
+    },
+    {
+      "name": "United World Colleges",
+      "match": "\\buwc\\b|united world college",
+      "portal": "https://www.uwc.org/careers",
+      "portalKind": "own page",
+      "portalNote": "Five of seven are top-twenty — the strongest ratio of any group here."
+    },
+    {
+      "name": "Nobel Education",
+      "match": "nobel ?education"
+    },
+    {
+      "name": "Esol Education",
+      "match": "esol education"
+    },
+    {
+      "name": "Taaleem",
+      "match": "taaleem"
+    },
+    {
+      "name": "Beacon Education",
+      "match": "beacon ?education"
+    },
+    {
+      "name": "ISP China / Yago",
+      "match": "yago ?school"
+    },
+    {
+      "name": "Raffles Education",
+      "match": "raffles ?(?:education|institution|american)"
+    },
+    {
+      "name": "Stamford American",
+      "match": "stamford american",
+      "portal": "https://www.sais.edu.sg/contact-us/careers-opportunities/",
+      "portalKind": "own page",
+      "portalNote": "Singapore; part of Cognita."
+    },
+    {
+      "name": "ACG Education",
+      "match": "\\bacg\\b",
+      "portal": "https://www.acgedu.com/careers",
+      "portalKind": "own page",
+      "portalNote": "New Zealand and Indonesia."
+    },
+    {
+      "name": "Fairview International",
+      "match": "fairview international",
+      "portal": "https://fairview.edu.my/work-with-us/",
+      "portalKind": "own page",
+      "portalNote": "Six schools, all Malaysia, all IB."
+    },
+    {
+      "name": "Regent International",
+      "match": "regents? international"
+    }
+  ],
+  "//portal": "portal is the group's own recruitment page, each one fetched and confirmed rather than guessed. portalKind says why the scraper cannot read it: a JS portal renders in the browser, robots-blocked means their robots.txt refuses crawlers — which stops this scraper, not a person with a browser. scraped:true means the group is already read automatically and registering only keeps a profile on file."
 }

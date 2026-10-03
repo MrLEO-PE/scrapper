@@ -121,6 +121,157 @@ export interface HtmlOptions {
   view?: "default" | "applied";
 }
 
+/**
+ * The site's stylesheet, shared by every page it publishes.
+ *
+ * Extracted so a page that is not a table — the one listing what has to be
+ * done by hand — sits in the same shell as the rest rather than a lookalike
+ * that drifts from it at the next change.
+ */
+const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3f5f8; --muted:#6b7480; --bg:#fff; --fg:#14181d; }
+  @media (prefers-color-scheme: dark) {
+    :root { --line:#333a44; --head:#1b2027; --muted:#98a2b0; --bg:#0f1319; --fg:#e6eaf0; }
+  }
+  body { font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 24px; background: var(--bg); color: var(--fg); }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p.meta { color: var(--muted); margin: 0 0 18px; }
+  input { padding: 8px 10px; width: min(340px, 100%); margin-bottom: 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--fg); }
+  .wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 9px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; max-width: 380px; }
+  th { background: var(--head); position: sticky; top: 0; cursor: pointer; white-space: nowrap; }
+  th:hover { text-decoration: underline; }
+  tr.closed { opacity: .45; }
+  tr.stale { background: color-mix(in srgb, orange 9%, transparent); }
+  tr.lead { background: color-mix(in srgb, dodgerblue 10%, transparent); }
+  tr.lead td:first-child { box-shadow: inset 3px 0 0 dodgerblue; }
+  tr.lead.stale { background: color-mix(in srgb, orange 12%, transparent); }
+  /* The count is in the cell, so it is coloured rather than badged — a badge
+     beside a number that already says "3 days" only repeated it. */
+  tr.urgent td.col-days-left { color: #d1242f; font-weight: 700; white-space: nowrap; }
+  tr.closed td.col-days-left { font-weight: 400; }
+
+  /* A role you have already applied for should be recognisable without
+     reading it, and should stop competing for attention with the live ones. */
+  tr.applied { background: color-mix(in srgb, #1f883d 13%, transparent); }
+  tr.applied td:first-child { box-shadow: inset 3px 0 0 #1f883d; }
+  tr.applied.lead { background: color-mix(in srgb, #1f883d 16%, transparent); }
+  td.col-applied { white-space: nowrap; }
+  button.mark { font: inherit; font-size: 12px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--muted); cursor: pointer; }
+  button.mark:hover { border-color: #1f883d; color: #1f883d; }
+  button.mark.done { border-color: #1f883d; background: color-mix(in srgb, #1f883d 18%, transparent); color: inherit; font-weight: 600; }
+
+  /* A form to fill in is work to do before applying — an afternoon, not a
+     click — so the whole row is tinted rather than marked at one edge. The
+     underline stays as well: the tint is easy to miss once several row
+     colours are in play, and this is the one that costs you time. */
+  tr.hasform { background: color-mix(in srgb, #d29922 16%, transparent); }
+  tr.hasform td { box-shadow: inset 0 -2px 0 #d29922; }
+  tr.hasform.lead { background: color-mix(in srgb, #d29922 22%, transparent); }
+  tr.hasform.applied { background: color-mix(in srgb, #d29922 12%, transparent); }
+
+  p.empty { color: var(--muted); padding: 18px 2px; margin: 0; }
+  tr.fresh td:first-child::before { content: "new"; margin-right: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #1f883d; color: #fff; vertical-align: middle; }
+  label.only { margin-left: 14px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+  a { color: inherit; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+  nav a { padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; font-size: 13px; }
+  nav a.current { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  nav a:hover { border-color: var(--fg); }
+  nav a.cta { margin-left: auto; background: #1f883d; color: #fff; border-color: #1f883d; font-weight: 600; }
+  nav a.cta:hover { background: #1a7f37; }
+  @media (max-width: 640px) { body { padding: 16px; } th, td { max-width: 220px; } }
+`;
+
+/** The nav strip across the top of every page. */
+function navStrip(nav: HtmlOptions["nav"], esc: (s: string) => string): string {
+  if (!nav?.length) return "";
+  return `<nav>${nav
+    .map((n) => `<a href="${esc(n.href)}"${n.cta ? ' class="cta" target="_blank" rel="noopener"' : n.current ? ' class="current"' : ""}>${esc(n.label)}</a>`)
+    .join("")}</nav>`;
+}
+
+/**
+ * A page of prose and lists rather than a table.
+ *
+ * Shares the stylesheet, the nav and the tick-persistence of the table pages,
+ * so it reads as part of the site and not a document that wandered in.
+ */
+export function writePage(
+  path: string,
+  title: string,
+  body: string,
+  opts: HtmlOptions = {},
+): void {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  const html = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(title)}</title>
+<style>
+${PAGE_CSS}
+  h2.nr-h { font-size: 17px; margin: 34px 0 6px; }
+  p.nr-lead { color: var(--muted); max-width: 72ch; margin: 0 0 14px; }
+  h3.nr-c { font-size: 14px; margin: 22px 0 6px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .nr-n { font-weight: 400; opacity: .7; }
+  ul.nr-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  li.nr-item {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 4px 11px; align-items: start;
+    border: 1px solid var(--line); border-radius: 7px; padding: 10px 12px;
+  }
+  li.nr-item.scraped { border-left: 3px solid #1f883d; }
+  li.nr-item.ticked { opacity: .5; }
+  li.nr-item.ticked .nr-name { text-decoration: line-through; }
+  .nr-name { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+  .nr-meta { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+  .nr-note { margin: 5px 0 0; font-size: 12.5px; color: var(--muted); max-width: 72ch; }
+  .nr-rank { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; margin-right: 4px; }
+  .nr-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; background: color-mix(in srgb, #1f883d 18%, transparent); color: #1f883d; padding: 2px 6px; border-radius: 4px; }
+  .nr-links { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; }
+  .nr-btn { font-size: 12px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; color: inherit; white-space: nowrap; }
+  a.nr-btn:hover { border-color: var(--fg); }
+  a.nr-btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); font-weight: 600; }
+  .nr-btn.kind, .nr-btn.warn { color: var(--muted); }
+  .nr-btn.warn { border-style: dashed; }
+  .tick { cursor: pointer; padding-top: 2px; }
+  .tick input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .tick .box { width: 16px; height: 16px; border: 1.5px solid var(--muted); border-radius: 4px; display: block; }
+  .tick input:checked + .box { background: #1f883d; border-color: #1f883d; }
+  .tick input:checked + .box::after { content: "✓"; color: #fff; font-size: 11px; line-height: 14px; display: block; text-align: center; }
+  .tick input:focus-visible + .box { outline: 2px solid #1f883d; outline-offset: 2px; }
+  @media (max-width: 620px) {
+    li.nr-item { grid-template-columns: auto 1fr; }
+    .nr-links { grid-column: 1 / -1; justify-content: flex-start; margin-top: 6px; }
+  }
+</style></head><body>
+${navStrip(opts.nav, esc)}
+<h1>${esc(title)}</h1>
+${body}
+<script>
+  var KEY = "norobot-ticked";
+  function read() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  var ticked = read();
+  Array.prototype.forEach.call(document.querySelectorAll("input[data-mark]"), function (box) {
+    var id = box.dataset.mark;
+    var item = box.closest("li");
+    box.checked = !!ticked[id];
+    item.classList.toggle("ticked", box.checked);
+    box.addEventListener("change", function () {
+      if (box.checked) ticked[id] = 1; else delete ticked[id];
+      try { localStorage.setItem(KEY, JSON.stringify(ticked)); } catch (e) { /* private window */ }
+      item.classList.toggle("ticked", box.checked);
+    });
+  });
+</script>
+</body></html>`;
+
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, html, "utf8");
+  log.ok(`HTML → ${path}`);
+}
+
 /** Standalone HTML report — sortable, with the links clickable. */
 export function writeHtml(
   path: string,
@@ -209,60 +360,7 @@ export function writeHtml(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <style>
-  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3f5f8; --muted:#6b7480; --bg:#fff; --fg:#14181d; }
-  @media (prefers-color-scheme: dark) {
-    :root { --line:#333a44; --head:#1b2027; --muted:#98a2b0; --bg:#0f1319; --fg:#e6eaf0; }
-  }
-  body { font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 24px; background: var(--bg); color: var(--fg); }
-  h1 { font-size: 20px; margin: 0 0 4px; }
-  p.meta { color: var(--muted); margin: 0 0 18px; }
-  input { padding: 8px 10px; width: min(340px, 100%); margin-bottom: 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--fg); }
-  .wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 9px; }
-  table { border-collapse: collapse; width: 100%; font-size: 13px; }
-  th, td { border-bottom: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; max-width: 380px; }
-  th { background: var(--head); position: sticky; top: 0; cursor: pointer; white-space: nowrap; }
-  th:hover { text-decoration: underline; }
-  tr.closed { opacity: .45; }
-  tr.stale { background: color-mix(in srgb, orange 9%, transparent); }
-  tr.lead { background: color-mix(in srgb, dodgerblue 10%, transparent); }
-  tr.lead td:first-child { box-shadow: inset 3px 0 0 dodgerblue; }
-  tr.lead.stale { background: color-mix(in srgb, orange 12%, transparent); }
-  /* The count is in the cell, so it is coloured rather than badged — a badge
-     beside a number that already says "3 days" only repeated it. */
-  tr.urgent td.col-days-left { color: #d1242f; font-weight: 700; white-space: nowrap; }
-  tr.closed td.col-days-left { font-weight: 400; }
-
-  /* A role you have already applied for should be recognisable without
-     reading it, and should stop competing for attention with the live ones. */
-  tr.applied { background: color-mix(in srgb, #1f883d 13%, transparent); }
-  tr.applied td:first-child { box-shadow: inset 3px 0 0 #1f883d; }
-  tr.applied.lead { background: color-mix(in srgb, #1f883d 16%, transparent); }
-  td.col-applied { white-space: nowrap; }
-  button.mark { font: inherit; font-size: 12px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--muted); cursor: pointer; }
-  button.mark:hover { border-color: #1f883d; color: #1f883d; }
-  button.mark.done { border-color: #1f883d; background: color-mix(in srgb, #1f883d 18%, transparent); color: inherit; font-weight: 600; }
-
-  /* A form to fill in is work to do before applying — an afternoon, not a
-     click — so the whole row is tinted rather than marked at one edge. The
-     underline stays as well: the tint is easy to miss once several row
-     colours are in play, and this is the one that costs you time. */
-  tr.hasform { background: color-mix(in srgb, #d29922 16%, transparent); }
-  tr.hasform td { box-shadow: inset 0 -2px 0 #d29922; }
-  tr.hasform.lead { background: color-mix(in srgb, #d29922 22%, transparent); }
-  tr.hasform.applied { background: color-mix(in srgb, #d29922 12%, transparent); }
-
-  p.empty { color: var(--muted); padding: 18px 2px; margin: 0; }
-  tr.fresh td:first-child::before { content: "new"; margin-right: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #1f883d; color: #fff; vertical-align: middle; }
-  label.only { margin-left: 14px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
-  a { color: inherit; }
-  nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
-  nav a { padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; font-size: 13px; }
-  nav a.current { background: var(--fg); color: var(--bg); border-color: var(--fg); }
-  nav a:hover { border-color: var(--fg); }
-  nav a.cta { margin-left: auto; background: #1f883d; color: #fff; border-color: #1f883d; font-weight: 600; }
-  nav a.cta:hover { background: #1a7f37; }
-  @media (max-width: 640px) { body { padding: 16px; } th, td { max-width: 220px; } }
-</style></head><body>
+${PAGE_CSS}</style></head><body>
 ${
   opts.nav?.length
     ? `<nav>${opts.nav

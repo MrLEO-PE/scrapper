@@ -714,6 +714,16 @@ export const FIELDS: FieldDef[] = [
     get: (c) => formLabel(formOf(c)),
   },
   {
+    key: "write_to", label: "Who to Write To", group: "contact", scope: "both",
+    help: "A named human for a speculative application, found on the school's leadership or contact pages, with their address where the page gave one. Only filled where no careers address exists — where one does, that is the better route. The Director of Sport ranks above the Head on purpose: they are the person who knows whether they need another PE teacher, and they answer their own email. Where only a name was found, send it to the School Email marked for their attention.",
+    get: (c) => {
+      const s = c.school;
+      if (!s?.contact_name) return "";
+      const who = s.contact_role ? `${s.contact_name} — ${s.contact_role}` : s.contact_name;
+      return s.contact_email ? `${who} · ${s.contact_email}` : `${who} (no address — send to the school inbox, FAO them)`;
+    },
+  },
+  {
     key: "form_link", label: "Form Link", group: "job", scope: "both",
     help: "The application form itself, when the advert linked it — a downloadable document, or a hosted form such as a Google Form. Blank means no link was found, not that there is no form; the Form to Fill? column beside it says which.",
     get: (c) => formOf(c)?.url ?? "",

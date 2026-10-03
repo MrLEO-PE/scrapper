@@ -31,6 +31,7 @@ import { crawlSchoolSite } from "./website.ts";
 import { knownWebsite } from "./websites.ts";
 import { bestSocial, extractSocial, type SocialLink } from "./social.ts";
 import { findPeHook, findPrincipal, findSchoolHook } from "./hooks.ts";
+import { bestPerson, type Person } from "./people.ts";
 
 /** One school's worth of vacancy data, as gathered from the boards. */
 export interface SchoolInput {
@@ -182,6 +183,8 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
   // site. For a school with no website this is the only place left to look —
   // by hand, since those platforms forbid automated collection.
   const socialLinks: SocialLink[] = extractSocial(jobCorpus);
+  /** Named staff the crawl meets, for the schools with no careers address. */
+  const people: Person[] = [];
   // A page recorded by hand for a school that has no website at all.
   const lookedUp = knownWebsite(input.schoolKey)?.social;
   if (lookedUp) socialLinks.unshift(...extractSocial(lookedUp));
@@ -230,6 +233,8 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
 
         siteSalary ??= found.salary;
         if (found.principal) profile.principal = sourced(found.principal.text, found.principal.source, 0.8);
+
+        people.push(...found.people);
         if (found.schoolHook) profile.schoolHook = sourced(found.schoolHook.text, found.schoolHook.source, 0.8);
         if (found.peHook) profile.peHook = sourced(found.peHook.text, found.peHook.source, 0.8);
 
@@ -333,6 +338,21 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
   );
   if (general) {
     profile.schoolEmail = sourced(general.email, general.foundAt, general.score, `via ${general.via}, ${general.kind}`);
+  }
+
+  /*
+   * Somebody to address the letter to.
+   *
+   * Only set when no careers address was found. Where one exists it is the
+   * right route and a named individual is a worse one; where none exists —
+   * which is most top schools — this is the difference between a
+   * speculative application and no application at all.
+   */
+  const who = career ? undefined : bestPerson(people);
+  if (who) {
+    profile.contactName = sourced(who.name, who.foundAt, who.score);
+    profile.contactRole = who.role;
+    if (who.email) profile.contactEmail = sourced(who.email, who.foundAt, who.score);
   }
 
   /*

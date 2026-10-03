@@ -20,6 +20,13 @@ import { log } from "../core/logger.ts";
 export interface SchoolGroup {
   name: string;
   re: RegExp;
+  /** The group's own recruitment page, where one has been confirmed. */
+  portal?: string;
+  /** Why the scraper cannot read it: "JS portal", "robots-blocked", … */
+  portalKind?: string;
+  portalNote?: string;
+  /** True when the group's vacancies already reach the sheet automatically. */
+  scraped?: boolean;
 }
 
 const PATH = join(process.cwd(), "config", "school-groups.json");
@@ -32,11 +39,23 @@ export function loadGroups(): SchoolGroup[] {
   if (!existsSync(PATH)) return cache;
 
   try {
-    const raw = JSON.parse(readFileSync(PATH, "utf8")) as { groups?: { name?: string; match?: string }[] };
+    const raw = JSON.parse(readFileSync(PATH, "utf8")) as {
+      groups?: {
+        name?: string; match?: string; portal?: string;
+        portalKind?: string; portalNote?: string; scraped?: boolean;
+      }[];
+    };
     for (const g of raw.groups ?? []) {
       if (!g.name || !g.match) continue;
       try {
-        cache.push({ name: g.name, re: new RegExp(g.match, "i") });
+        cache.push({
+          name: g.name,
+          re: new RegExp(g.match, "i"),
+          ...(g.portal ? { portal: g.portal } : {}),
+          ...(g.portalKind ? { portalKind: g.portalKind } : {}),
+          ...(g.portalNote ? { portalNote: g.portalNote } : {}),
+          ...(g.scraped ? { scraped: true } : {}),
+        });
       } catch {
         // A bad pattern is the editor's mistake to see, not a reason to lose
         // every other group.

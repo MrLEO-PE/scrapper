@@ -87,6 +87,9 @@ CREATE TABLE IF NOT EXISTS schools (
   career_email    TEXT,
   careers_url     TEXT,
   principal       TEXT,
+  contact_name    TEXT,
+  contact_role    TEXT,
+  contact_email   TEXT,
   school_hook     TEXT,
   pe_hook         TEXT,
   emails_json     TEXT,
@@ -144,6 +147,12 @@ const MIGRATIONS: { table: string; column: string; ddl: string }[] = [
   { table: "schools", column: "principal", ddl: "ALTER TABLE schools ADD COLUMN principal TEXT" },
   { table: "schools", column: "school_hook", ddl: "ALTER TABLE schools ADD COLUMN school_hook TEXT" },
   { table: "schools", column: "pe_hook", ddl: "ALTER TABLE schools ADD COLUMN pe_hook TEXT" },
+  // A named human to write to when the school publishes no careers address:
+  // the Director of Sport, the HR manager, the Head. 447 of the top twenty
+  // schools in each country have no careers address but do name their staff.
+  { table: "schools", column: "contact_name", ddl: "ALTER TABLE schools ADD COLUMN contact_name TEXT" },
+  { table: "schools", column: "contact_role", ddl: "ALTER TABLE schools ADD COLUMN contact_role TEXT" },
+  { table: "schools", column: "contact_email", ddl: "ALTER TABLE schools ADD COLUMN contact_email TEXT" },
   // Your own pipeline state. Written only by you, never by a scrape.
   { table: "jobs", column: "my_status", ddl: "ALTER TABLE jobs ADD COLUMN my_status TEXT" },
   { table: "jobs", column: "my_status_at", ddl: "ALTER TABLE jobs ADD COLUMN my_status_at TEXT" },
@@ -656,11 +665,12 @@ export function upsertSchool(
       `INSERT INTO schools (
         school_key, name, country, city, website, curriculum_json, pe_team_size,
         student_count, school_type, salary_json, package_json, school_email,
-        career_email, careers_url, principal, school_hook, pe_hook, salary_basis,
+        career_email, careers_url, principal, contact_name, contact_role, contact_email,
+        school_hook, pe_hook, salary_basis,
         emails_json, provenance_json, notes_json,
         origin, country_rank, accreditation, prominence, social, phone,
         fee_low, fee_high, fee_currency, enriched_at, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(school_key) DO UPDATE SET
         name = excluded.name,
         country = COALESCE(excluded.country, schools.country),
@@ -692,6 +702,9 @@ export function upsertSchool(
                             ELSE COALESCE(schools.career_email, excluded.career_email) END,
         careers_url = COALESCE(excluded.careers_url, schools.careers_url),
         principal = COALESCE(excluded.principal, schools.principal),
+        contact_name = COALESCE(excluded.contact_name, schools.contact_name),
+        contact_role = COALESCE(excluded.contact_role, schools.contact_role),
+        contact_email = COALESCE(excluded.contact_email, schools.contact_email),
         school_hook = COALESCE(excluded.school_hook, schools.school_hook),
         pe_hook = COALESCE(excluded.pe_hook, schools.pe_hook),
         salary_basis = COALESCE(excluded.salary_basis, schools.salary_basis),
@@ -716,7 +729,9 @@ export function upsertSchool(
       p.studentCount?.value ?? null, p.schoolType?.value ?? null, j(p.salaryEstimate?.value),
       j(p.packageNotes?.value), p.schoolEmail?.value ?? null, p.careerEmail?.value ?? null,
       p.careersPageUrl?.value ?? null,
-      p.principal?.value ?? null, p.schoolHook?.value ?? null, p.peHook?.value ?? null,
+      p.principal?.value ?? null,
+      p.contactName?.value ?? null, p.contactRole ?? null, p.contactEmail?.value ?? null,
+      p.schoolHook?.value ?? null, p.peHook?.value ?? null,
       p.salaryBasis ?? null,
       j(p.allEmails), j(provenance), j(p.notes),
       origin, countryRank ?? null, p.accreditation ?? null, p.prominence ?? null,
@@ -743,6 +758,9 @@ export interface SchoolRow {
   career_email: string | null;
   careers_url: string | null;
   principal: string | null;
+  contact_name: string | null;
+  contact_role: string | null;
+  contact_email: string | null;
   school_hook: string | null;
   pe_hook: string | null;
   emails_json: string | null;

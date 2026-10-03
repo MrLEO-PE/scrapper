@@ -28,6 +28,7 @@
   "rank_basis": true,
   "school_email": true,
   "career_email": true,
+  "write_to": true,
   "reputation": true,
   "best_contact": false,
   "contact_type": false,

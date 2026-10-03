@@ -19,7 +19,8 @@ import { join } from "node:path";
 import { log } from "../core/logger.ts";
 import { byCountryRank, getSchools, queryJobs, stats as dbStats } from "../store/db.ts";
 import { isTargetCountry, targetCountries, vacancyInScope } from "../directoryconfig.ts";
-import { writeCsv, writeHtml, type SheetRow } from "./sheet.ts";
+import { writeCsv, writeHtml, writePage, type SheetRow } from "./sheet.ts";
+import { norobotBody } from "./norobot.ts";
 
 /**
  * Work out `owner/repo` so the pages can link back to the Actions tab.
@@ -56,6 +57,8 @@ function buildNav(): NavItem[] {
     { label: "Schools", href: "schools.html" },
     { label: "Closed", href: "closed.html" },
     { label: "Download CSV", href: "pe-jobs.csv" },
+    // Last of the ordinary tabs: the work no crawler can do for you.
+    { label: "No robot school", href: "norobot.html" },
   ];
 
   // A published page is static and cannot scrape anything itself, so the
@@ -134,6 +137,16 @@ export function buildSite(opts: SiteOptions): { dir: string; jobs: number; schoo
     nav: navFor("applied.html"),
     note: "marked in this browser, so this list is per-device — `npm run track` is the permanent record",
     view: "applied",
+  });
+
+  /*
+   * Everything a crawler cannot reach: the group portals that render in the
+   * browser or refuse robots, and the top schools that name nobody on any
+   * page this can read. Both are jobs for a person, so they get a page that
+   * can be worked through and ticked off rather than a line in a log.
+   */
+  writePage(join(dir, "norobot.html"), "No robot school", norobotBody([...schools.values()]), {
+    nav: navFor("norobot.html"),
   });
 
   writeCsv(join(dir, "pe-jobs.csv"), open, opts.fields, "job");

@@ -212,6 +212,10 @@ export interface SchoolProfile {
   careersPageUrl?: Sourced<string>;
   /** Details the prepared application email needs, from the school's site. */
   principal?: Sourced<string>;
+  /** A named human to write to, when no careers address exists. */
+  contactName?: Sourced<string>;
+  contactRole?: string;
+  contactEmail?: Sourced<string>;
   schoolHook?: Sourced<string>;
   peHook?: Sourced<string>;
   enrichedAt?: string;

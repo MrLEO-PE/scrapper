@@ -28,6 +28,7 @@ import {
 } from "./facts.ts";
 import { pdfToText } from "./pdf.ts";
 import { findPeHook, findPrincipal, findSchoolHook, type Hook } from "./hooks.ts";
+import { findPeople, type Person } from "./people.ts";
 import { extractSalaryFromText, type SourcedSalary } from "./salary.ts";
 
 /** Link scoring: higher = crawl sooner. */
@@ -97,6 +98,14 @@ export interface SiteFindings {
   social: SocialLink[];
   /** A pay figure published on the school site or in a job pack. */
   salary?: SourcedSalary;
+  /**
+   * Named staff worth writing to, from every page visited.
+   *
+   * Most schools publish no careers address but nearly all publish a
+   * leadership page, so for a speculative application this is the route to a
+   * human at the schools that would otherwise be a dead end.
+   */
+  people: Person[];
 }
 
 interface Candidate {
@@ -217,12 +226,12 @@ export async function crawlSchoolSite(
    */
   if (isNeverFetch(start)) {
     return {
-      emails: [], social: [], pagesVisited: 0, pdfsRead: 0,
+      emails: [], social: [], people: [], pagesVisited: 0, pdfsRead: 0,
       notes: ["social page, not crawled — open it yourself; automated collection there is not permitted"],
     };
   }
 
-  const findings: SiteFindings = { emails: [], social: [], pagesVisited: 0, pdfsRead: 0, notes: [] };
+  const findings: SiteFindings = { emails: [], social: [], people: [], pagesVisited: 0, pdfsRead: 0, notes: [] };
   const origin = new URL(start).origin;
   const visited = new Set<string>();
   const pdfQueue: Candidate[] = [];
@@ -259,6 +268,9 @@ export async function crawlSchoolSite(
     // the page it actually came from, and first confident hit wins.
     findings.salary ??= extractSalaryFromText(text, "school-site") ?? undefined;
     findings.principal ??= findPrincipal(html, next.url, schoolName) ?? undefined;
+    // Whoever this page names. Free: the page is already fetched, and a
+    // leadership page is high in the frontier anyway.
+    findings.people.push(...findPeople(html, next.url, schoolName));
     findings.schoolHook ??= findSchoolHook(html, next.url) ?? undefined;
     // Sport facilities are as often on the homepage or "about" page as on a
     // dedicated PE page, and the hook must name something concrete anyway, so
