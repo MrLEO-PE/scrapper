@@ -104,3 +104,52 @@ test("states what a figure is, and on what evidence", () => {
   assert.match(describeBasis({ basis: "benchmark", samples: 5, schools: 4 }), /benchmark.*4 schools/);
   assert.equal(describeBasis(null), "");
 });
+
+import { annualMultiplier, salaryToUsd, salaryToUsdAverage } from "../src/enrich/salary.ts";
+import { resetFxForTests } from "../src/enrich/fx.ts";
+
+test.beforeEach(() => resetFxForTests());
+
+test("annualises an undated figure and a monthly one, refuses the rest", () => {
+  // Undated is the common case in this data and is treated as already annual.
+  assert.equal(annualMultiplier(undefined), 1);
+  assert.equal(annualMultiplier("ANNUALLY"), 1);
+  assert.equal(annualMultiplier("annual"), 1);
+  assert.equal(annualMultiplier("MONTHLY"), 12);
+  // A weekly, daily or hourly rate could mean a 5-day week or a 6-day one,
+  // term-time or year-round — guessing a multiplier would put a confidently
+  // wrong annual figure next to a real one.
+  assert.equal(annualMultiplier("WEEKLY"), null);
+  assert.equal(annualMultiplier("DAILY"), null);
+  assert.equal(annualMultiplier("HOURLY"), null);
+});
+
+test("converts a monthly salary to an annual USD figure", () => {
+  const usd = salaryToUsd({ min: 15000, max: 18000, currency: "AED", period: "MONTHLY" });
+  assert.ok(usd, "should convert");
+  // 15,000 AED/month * 12 ≈ 49,000 USD/year, give or take the day's rate.
+  assert.ok(usd!.min! > 40_000 && usd!.min! < 60_000, `min -> ${usd!.min}`);
+  assert.ok(usd!.max! > usd!.min!, "max should exceed min");
+});
+
+test("refuses to convert a salary with no safely annualisable period", () => {
+  assert.equal(salaryToUsd({ min: 500, currency: "USD", period: "WEEKLY" }), null);
+});
+
+test("refuses to convert when the currency is not recognised", () => {
+  assert.equal(salaryToUsd({ min: 40000, currency: "ZZZ" }), null);
+});
+
+test("a figure with no numbers at all has nothing to convert", () => {
+  assert.equal(salaryToUsd({ text: "competitive" }), null);
+  assert.equal(salaryToUsd(null), null);
+  assert.equal(salaryToUsd(undefined), null);
+});
+
+test("averages min and max into one comparable figure", () => {
+  const avg = salaryToUsdAverage({ min: 40000, max: 60000, currency: "USD" });
+  assert.equal(avg, 50000);
+  // A single-ended figure still gives a usable average.
+  assert.equal(salaryToUsdAverage({ min: 40000, currency: "USD" }), 40000);
+  assert.equal(salaryToUsdAverage(null), null);
+});

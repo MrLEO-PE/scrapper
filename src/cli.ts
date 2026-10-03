@@ -677,7 +677,7 @@ async function main(): Promise<void> {
     }
 
     case "site": {
-      const r = runSite(str(args, "out"), csv(args, "fields"));
+      const r = await runSite(str(args, "out"), csv(args, "fields"));
       log.plain(`  open ${join(r.dir, "index.html")}`);
       break;
     }

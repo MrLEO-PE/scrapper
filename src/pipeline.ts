@@ -33,6 +33,7 @@ import {
 } from "./directoryconfig.ts";
 import { buildTable, writeCsv, writeHtml, writeJson, writeTsv, type SheetRow } from "./export/sheet.ts";
 import { resetHiring } from "./export/fields.ts";
+import { loadFxRates } from "./enrich/fx.ts";
 import { syncToSheet } from "./export/gsheets.ts";
 import { buildSite } from "./export/site.ts";
 import { tesSource } from "./sources/tes.ts";
@@ -186,6 +187,9 @@ export interface EnrichRunOptions extends EnrichOptions {
 }
 
 export async function runEnrich(opts: EnrichRunOptions = {}): Promise<{ enriched: number; withCareerEmail: number }> {
+  // The enrichment queue is ordered partly by estimated USD pay (see
+  // schoolsNeedingEnrichment), so today's rates should be live where possible.
+  await loadFxRates();
   const pending = schoolsNeedingEnrichment(opts.maxAgeDays ?? 30, opts.limit ?? 0);
   if (!pending.length) {
     log.info("every school is already enriched and fresh — nothing to do");
@@ -805,6 +809,9 @@ export interface ExportOptions {
 }
 
 export async function runExport(opts: ExportOptions = {}): Promise<{ rows: number; files: string[] }> {
+  // Salary and fee columns are reported in USD; today's rate is as close to
+  // live as a short-lived CLI invocation can get.
+  await loadFxRates();
   // The watch loop stays up across cycles; re-read the hiring counts.
   resetHiring();
   const fields = loadFields(opts.fields);
@@ -880,7 +887,8 @@ export async function runExport(opts: ExportOptions = {}): Promise<{ rows: numbe
   return { rows: rows.length, files };
 }
 
-export function runSite(outDir?: string, fields?: string[]): { dir: string; jobs: number; schools: number } {
+export async function runSite(outDir?: string, fields?: string[]): Promise<{ dir: string; jobs: number; schools: number }> {
+  await loadFxRates();
   resetHiring();
   return buildSite({ outDir, fields: loadFields(fields) });
 }

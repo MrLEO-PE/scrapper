@@ -12,6 +12,7 @@
  */
 
 import type { Salary } from "../core/types.ts";
+import { toUsd } from "./fx.ts";
 
 /** Where a figure came from, strongest evidence first. */
 export type SalaryBasis =
@@ -252,4 +253,48 @@ export function describeBasis(s: SourcedSalary | null | undefined): string {
   if (s.samples && s.samples > 1) bits.push(`${s.samples} adverts`);
   if (s.schools && s.schools > 1) bits.push(`${s.schools} schools`);
   return bits.length ? `${label} (${bits.join(", ")})` : label;
+}
+
+/**
+ * How many of these make a year, when it is safe to say so.
+ *
+ * Returns null rather than a guess for anything beyond the two periods
+ * actually seen in this data. A daily or hourly rate could mean a 5-day week
+ * or a 6-day one, term-time only or year-round — inventing a multiplier would
+ * put a confidently wrong annual figure next to a real one, which is worse
+ * than leaving it unconverted and visibly so.
+ */
+export function annualMultiplier(period: string | undefined): number | null {
+  if (!period) return 1; // undated figures are the common case and are annual
+  const p = period.toUpperCase();
+  if (p === "ANNUAL" || p === "ANNUALLY" || p === "YEAR" || p === "YEARLY") return 1;
+  if (p === "MONTHLY" || p === "MONTH") return 12;
+  return null;
+}
+
+/**
+ * A salary's min/max, annualised and converted to USD, so one school can be
+ * weighed against another regardless of currency or pay period.
+ *
+ * Null means "could not safely convert" — an unannualisable period or a
+ * currency the rate table has never heard of — not zero. Callers that need a
+ * number to sort or compare by should treat null as "unknown", never as the
+ * lowest value.
+ */
+export function salaryToUsd(s: Salary | null | undefined): { min: number | null; max: number | null } | null {
+  if (!s || (s.min == null && s.max == null)) return null;
+  const mult = annualMultiplier(s.period);
+  if (mult == null) return null;
+  const min = s.min != null ? toUsd(s.min * mult, s.currency) : null;
+  const max = s.max != null ? toUsd(s.max * mult, s.currency) : null;
+  if (min == null && max == null) return null;
+  return { min, max };
+}
+
+/** A single representative USD figure from a salary, for sorting and ranking. */
+export function salaryToUsdAverage(s: Salary | null | undefined): number | null {
+  const usd = salaryToUsd(s);
+  if (!usd) return null;
+  const values = [usd.min, usd.max].filter((v): v is number => v != null);
+  return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
 }

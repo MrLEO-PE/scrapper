@@ -17,6 +17,8 @@ import { log } from "../core/logger.ts";
 import { hostOf, schoolCore } from "../core/text.ts";
 import { findMatch, preferred, sameSchool, type SchoolIdentity } from "./identity.ts";
 import { rankByValue } from "../match/packagevalue.ts";
+import { salaryToUsdAverage } from "../enrich/salary.ts";
+import { benchmarkAverage } from "../enrich/benchmarks.ts";
 import type { Job, Provenance, Salary, SchoolProfile, SourceId } from "../core/types.ts";
 
 export type JobStatus = "open" | "stale" | "closed";
@@ -486,19 +488,25 @@ export function queryJobs(opts: QueryOptions = {}): JobRow[] {
  * before it advertises — so a query over the jobs table alone would never
  * reach them.
  *
- * Vacancy-backed schools come first: a live role is more urgent than a survey.
+ * Vacancy-backed schools come first: a live role is more urgent than a
+ * survey. Within each of those two tiers, schools likely to pay well come
+ * first too — a school's own quoted figure where one is known, the country
+ * benchmark otherwise — so the slow, manual-feeling work of finding a careers
+ * contact, an HR address or a name on the leadership page lands on the
+ * schools worth it before it reaches the long tail that pays far less.
  */
 export function schoolsNeedingEnrichment(maxAgeDays = 30, limit = 0): { school_key: string; name: string; country: string | null; city: string | null; website: string | null }[] {
   const cutoff = new Date(Date.now() - maxAgeDays * 86400_000).toISOString();
   const sql = `
-    SELECT school_key, name, country, city, website, priority FROM (
+    SELECT school_key, name, country, city, website, priority, salary_json FROM (
       SELECT j.school_key            AS school_key,
              MAX(j.school_name)      AS name,
              MAX(j.country)          AS country,
              MAX(j.city)             AS city,
              MAX(j.school_website)   AS website,
              0                       AS priority,
-             MAX(j.pe_score)         AS rank_score
+             MAX(j.pe_score)         AS rank_score,
+             MAX(j.salary_json)      AS salary_json
         FROM jobs j
         LEFT JOIN schools s ON s.school_key = j.school_key
        WHERE j.school_key IS NOT NULL AND j.is_pe = 1
@@ -510,7 +518,8 @@ export function schoolsNeedingEnrichment(maxAgeDays = 30, limit = 0): { school_k
       -- Directory schools, best-ranked in their country first.
       SELECT s.school_key, s.name, s.country, s.city, s.website,
              1 AS priority,
-             -COALESCE(s.country_rank, 9999) AS rank_score
+             -COALESCE(s.country_rank, 9999) AS rank_score,
+             s.salary_json
         FROM schools s
        WHERE s.origin = 'directory'
          AND (s.enriched_at IS NULL OR s.enriched_at < ?)
@@ -519,9 +528,31 @@ export function schoolsNeedingEnrichment(maxAgeDays = 30, limit = 0): { school_k
                 WHERE school_key IS NOT NULL AND is_pe = 1
              )
     )
-    ORDER BY priority ASC, rank_score DESC
-    ${limit ? `LIMIT ${Number(limit)}` : ""}`;
-  return getDb().prepare(sql).all(cutoff, cutoff) as any;
+    ORDER BY priority ASC, rank_score DESC`;
+
+  const rows = getDb().prepare(sql).all(cutoff, cutoff) as {
+    school_key: string; name: string; country: string | null; city: string | null;
+    website: string | null; priority: number; salary_json: string | null;
+  }[];
+
+  // The SQL above already orders vacancy-backed before directory-only, and
+  // best country rank first within the directory tier — both kept exactly.
+  // Pay is a second sort within each, not a replacement for either: a live
+  // vacancy stays urgent whatever it pays, and a top-ranked school with no
+  // salary signal yet still beats one further down the same list.
+  const usdOf = (r: (typeof rows)[number]): number => {
+    let salary: Salary | null = null;
+    try { salary = r.salary_json ? (JSON.parse(r.salary_json) as Salary) : null; } catch { /* unreadable */ }
+    return salaryToUsdAverage(salary) ?? benchmarkAverage(r.country) ?? -1;
+  };
+
+  const withUsd = rows.map((r, i) => ({ r, usd: usdOf(r), i }));
+  withUsd.sort((a, b) => a.r.priority - b.r.priority || b.usd - a.usd || a.i - b.i);
+
+  const ordered = withUsd.map(({ r }) => ({
+    school_key: r.school_key, name: r.name, country: r.country, city: r.city, website: r.website,
+  }));
+  return limit ? ordered.slice(0, limit) : ordered;
 }
 
 /*

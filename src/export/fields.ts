@@ -34,6 +34,8 @@ import { benchmarkAverage, benchmarkSavings, countryBenchmark } from "../enrich/
 import { RANK_BASIS_LABEL } from "../match/packagevalue.ts";
 import { STATUS_LABEL as MY_STATUS_LABEL } from "../track.ts";
 import { schoolGroup } from "./groups.ts";
+import { toUsd } from "../enrich/fx.ts";
+import { annualMultiplier, salaryToUsd, salaryToUsdAverage } from "../enrich/salary.ts";
 
 export interface FieldContext {
   job?: JobRow;
@@ -130,6 +132,43 @@ function formatSalary(s: Salary | null | undefined): string {
     ? "/" + s.period.toLowerCase().replace("ly", "").replace("annual", "year").replace("month", "month")
     : "";
   return `${cur}${range}${period}`.trim();
+}
+
+/**
+ * A salary, annualised and converted to USD so one school can be compared
+ * against another regardless of what currency or pay period each quotes.
+ *
+ * Falls back to the original figure, visibly flagged, rather than dropping it
+ * silently: a period this cannot safely annualise (weekly, daily, hourly) or
+ * a currency the rate table has never heard of both leave the row honest
+ * about what it could not do, instead of empty or wrong.
+ */
+function formatSalaryUsd(s: Salary | null | undefined): string {
+  if (!s) return "";
+  if (s.min == null && s.max == null) return s.text ?? "";
+
+  const usd = salaryToUsd(s);
+  if (!usd) {
+    const unclear = annualMultiplier(s.period) == null ? "pay period" : "currency";
+    return `${formatSalary(s)} (not converted — ${unclear} unclear)`;
+  }
+  const n = (v: number) => Math.round(v).toLocaleString("en-GB");
+  const range = usd.min != null && usd.max != null && usd.min !== usd.max
+    ? `${n(usd.min)}–${n(usd.max)}`
+    : n((usd.max ?? usd.min)!);
+  // A school already quoting USD annually converts to itself — repeating the
+  // identical figure in brackets is noise, not evidence.
+  const alreadyUsd = (s.currency ?? "").toUpperCase() === "USD" && annualMultiplier(s.period) === 1;
+  return alreadyUsd ? `USD ${range}/year` : `USD ${range}/year (${formatSalary(s)})`;
+}
+
+/**
+ * The best available annual USD estimate for a school — its own figure where
+ * one exists, the country benchmark otherwise — used to decide which schools
+ * are worth enriching first, not only how the sheet displays them.
+ */
+export function estimatedAnnualUsd(salary: Salary | null | undefined, country: string | null | undefined): number | null {
+  return salaryToUsdAverage(salary) ?? benchmarkAverage(country);
 }
 
 /**
@@ -553,28 +592,49 @@ export const FIELDS: FieldDef[] = [
 
   // ---- package --------------------------------------------------------
   {
-    key: "fees", label: "Yearly Fees (student tuition)", group: "package", scope: "both",
-    help: "What the school charges a pupil for a year, as published in the two international school databases. This is not your salary — but it is the only per-school money signal that exists, and a school charging three times its neighbour is not paying its teachers the same. A country salary average cannot tell schools apart; this can.",
+    key: "fees", label: "Yearly Fees (student tuition, USD)", group: "package", scope: "both",
+    help: "What the school charges a pupil for a year, converted to USD so one school can be compared against another regardless of local currency — the original figure follows in brackets. This is not your salary, but it is the only per-school money signal that exists, and a school charging three times its neighbour is not paying its teachers the same. A country salary average cannot tell schools apart; this can. A figure flagged 'implausible' converted to an amount no real school charges — almost always a scraping error in the original number — and should not be trusted for comparison until checked.",
     get: (c) => {
       const s = c.school;
       if (!s?.fee_low && !s?.fee_high) return "";
-      const n = (v: number | null) => (v == null ? "?" : v.toLocaleString("en-GB"));
+      const rawN = (v: number | null) => (v == null ? "?" : v.toLocaleString("en-GB"));
       const cur = s.fee_currency ? s.fee_currency + " " : "";
-      return s.fee_low && s.fee_high ? `${cur}${n(s.fee_low)}–${n(s.fee_high)}` : `${cur}${n(s.fee_high ?? s.fee_low)}`;
+      const original = s.fee_low && s.fee_high
+        ? `${cur}${rawN(s.fee_low)}–${rawN(s.fee_high)}`
+        : `${cur}${rawN(s.fee_high ?? s.fee_low)}`;
+
+      const lo = s.fee_low != null ? toUsd(s.fee_low, s.fee_currency) : null;
+      const hi = s.fee_high != null ? toUsd(s.fee_high, s.fee_currency) : null;
+      if (lo == null && hi == null) return `${original} (not converted — currency unclear)`;
+
+      const n = (v: number) => Math.round(v).toLocaleString("en-GB");
+      const range = lo != null && hi != null && lo !== hi ? `${n(lo)}–${n(hi)}` : n((hi ?? lo)!);
+      /*
+       * The most expensive international schools anywhere charge in the
+       * region of USD 50-60k a year. Converting exposed six stored figures
+       * well past that — one over USD 26 million — which is almost
+       * certainly a scraping error in the original number (a units slip, or
+       * the wrong figure on the page entirely), not a real fee. Flagging it
+       * keeps the row visible rather than hiding a defect, while saying
+       * plainly that it should not be trusted for comparison as it stands.
+       */
+      const highest = Math.max(lo ?? 0, hi ?? 0);
+      const flag = highest > 100_000 ? " — implausible, needs checking" : "";
+      return `USD ${range} (${original})${flag}`;
     },
   },
   {
-    key: "salary_estimate", label: "Approx. Salary (PE expat)", group: "package", scope: "both",
-    help: "What this school pays, when it or its adverts say so. Otherwise the country average — always read the Salary Basis column beside it.",
+    key: "salary_estimate", label: "Approx. Salary (PE expat, USD)", group: "package", scope: "both",
+    help: "What this school pays, when it or its adverts say so, otherwise the country average — always read the Salary Basis column beside it. Converted to USD and annualised so every row is on the same footing; the original currency and pay period follow in brackets. A figure that could not be safely annualised (a weekly, daily or hourly rate) or whose currency is not recognised says so rather than guessing.",
     get: (c) => {
       const own =
-        formatSalary(parseJsonColumn<Salary | null>(c.school?.salary_json ?? null, null)) ||
-        formatSalary(parseJsonColumn<Salary | null>(c.job?.salary_json ?? null, null));
+        formatSalaryUsd(parseJsonColumn<Salary | null>(c.school?.salary_json ?? null, null)) ||
+        formatSalaryUsd(parseJsonColumn<Salary | null>(c.job?.salary_json ?? null, null));
       if (own) return own;
       // Nobody publishes this school's pay. The country average is what is
       // actually knowable, and the basis column says that is what it is.
       const avg = benchmarkAverage(c.school?.country ?? c.job?.country);
-      return avg ? `~USD ${avg.toLocaleString("en-GB")}/year` : "";
+      return avg ? `~USD ${Math.round(avg).toLocaleString("en-GB")}/year` : "";
     },
   },
   {
