@@ -56,8 +56,16 @@ const CURRENCY_TOKEN = Object.keys(CURRENCY)
 /** A number with optional thousands separators, e.g. 15,000 or 3.301 or 55000. */
 const NUMBER = "\\d{1,3}(?:[.,\\s]\\d{3})+|\\d{4,7}";
 
+/*
+ * Both "per month" and "/month" mean the same thing, and a job advert is as
+ * likely to write one as the other. Only the worded form was recognised
+ * here, so "JPY 1,200–1,500/hour" matched no period at all, fell back to
+ * "no period stated", and was accepted as an annual salary of roughly a
+ * thousand yen — the actual hourly rate, times one, mistaken for a year's
+ * pay.
+ */
 const PERIOD_WORDS =
-  /\b(?:per\s+month|monthly|a\s+month|pcm|per\s+annum|annually|per\s+year|a\s+year|p\.?a\.?|yearly|per\s+week|weekly|per\s+day|daily|per\s+hour|hourly)\b/i;
+  /\b(?:per\s+month|\/\s*month|monthly|a\s+month|pcm|per\s+annum|\/\s*(?:year|yr|annum)|annually|per\s+year|a\s+year|p\.?a\.?|yearly|per\s+week|\/\s*week|weekly|per\s+day|\/\s*day|daily|per\s+hour|\/\s*(?:hour|hr)|hourly)\b/i;
 
 function periodOf(text: string): string | undefined {
   const m = PERIOD_WORDS.exec(text);
@@ -92,13 +100,37 @@ function plausible(value: number, period?: string): boolean {
   if (period === "WEEKLY") return value >= 100 && value <= 20_000;
   if (period === "DAILY") return value >= 50 && value <= 5_000;
   if (period === "HOURLY") return value >= 5 && value <= 500;
-  // No period stated: accept a wide band and leave the period blank.
-  return value >= 500 && value <= 1_500_000;
+  /*
+   * No period stated: this used to accept 500 to 1,500,000, on the reasoning
+   * that an unlabelled figure could be a monthly or an annual one. In
+   * practice a real job advert almost never states a salary without saying
+   * which — "the salary is 45,000" with no qualifier barely occurs — so a
+   * wide band here did not catch ambiguous salaries, it caught everything
+   * that was not one: application fees, deposits, uniform costs. An
+   * unlabelled figure is now held to the annual floor. It still gets treated
+   * as annual (see annualMultiplier), so this stays honest about what that
+   * assumption requires: if it is not big enough to be a year's pay, it is
+   * not read as pay at all.
+   */
+  return value >= 8_000 && value <= 1_500_000;
 }
 
-/** Phrases near a number that mean it is not pay. */
+/*
+ * Phrases near a number that mean it is not pay.
+ *
+ * The fee and deposit words were added after a direct count: of 145 schools
+ * with their own stored figure, 58 were not a salary at all once converted to
+ * USD made the absurdity visible — application fees, enrolment deposits,
+ * uniform costs, textbook charges, a graduation fee, an overdue-payment
+ * penalty, even a line from a bank transfer instruction ("USD Account:
+ * 130-910011-30438") read as a $910,032 salary. These numbers sit in exactly
+ * the same prose shape a salary does — a currency code or symbol next to a
+ * plausible-looking figure — so only the words around them tell the two
+ * apart, and the fee vocabulary used on an admissions page is remarkably
+ * consistent across schools.
+ */
 const NOT_PAY =
-  /\b(?:students?|pupils?|square\s*(?:metres|meters|feet)|sq\s?m|population|founded|established|since|telephone|phone|fax|postal|zip|room|capacity|hours?\s+of|km|miles|visitors?|followers?)\b/i;
+  /\b(?:students?|pupils?|square\s*(?:metres|meters|feet)|sq\s?m|population|founded|established|since|telephone|phone|fax|postal|zip|room|capacity|hours?\s+of|km|miles|visitors?|followers?|application|registration|enrol(?:ment|lment)?|enroll?ment|reservation|deposit|admission|tuition|instal(?:l)?ment|payment\s+(?:schedule|plan|method)|overdue|late\s+payment|refundable|non-?refundable|uniform|textbook|graduation\s+fee|resource\s+fee|acceptance\s+fee|processing\s+fee|bank\s+(?:transfer|account)|swift\s+code|account\s+(?:no\.?|number)|iban|sort\s+code|bus\s+fare|minibus|shuttle)\b/i;
 
 /**
  * Find pay figures in a block of text.

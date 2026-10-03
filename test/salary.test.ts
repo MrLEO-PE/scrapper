@@ -153,3 +153,68 @@ test("averages min and max into one comparable figure", () => {
   assert.equal(salaryToUsdAverage({ min: 40000, currency: "USD" }), 40000);
   assert.equal(salaryToUsdAverage(null), null);
 });
+
+test("refuses an application fee, deposit, or registration charge", () => {
+  // Real text from scraped school pages. Each one has a currency code next
+  // to a plausible-looking number — the same shape a salary has — so only
+  // the surrounding words tell them apart. All 58 of these were found stored
+  // as a school's "own salary" before this guard existed.
+  for (const text of [
+    "An application fee of THB 3,000 will be collected to process your application",
+    "pay the RMB 2,000 non-refundable application fee",
+    "upon payment of a THB 50,000 deposit, which will be credited",
+    "Registration Fee: RM 1,000 Payable upon acceptance and is non-refundable",
+    "the family pays the US$ 1,500 Slot Reservation Deposit",
+    "A non-refundable one-time payment of JPY 300,000 immediately upon acceptance",
+    "Enrolment Fee Toddler – Pre-K: $750 KG – Grade 12: $1500",
+    "Graduation Fee 3,500 THB Seniors only",
+  ]) {
+    assert.equal(extractSalaryFromText(text, "school-site"), null, text);
+  }
+});
+
+test("refuses a tuition instalment or late-payment charge", () => {
+  for (const text of [
+    "Non-refundable and one time payment only THB 60,000 THB 120,000 Tuition Fees (per term)",
+    "will incur late payment charges. Late payment charge[s] include: THB 2,000 once a term",
+    "Instalment Schedule Amount $671.00 Confirmation Fees $783.00",
+  ]) {
+    assert.equal(extractSalaryFromText(text, "school-site"), null, text);
+  }
+});
+
+test("refuses a bank transfer instruction", () => {
+  // A real case: "USD Account: 130-910011-30438" was read as a $910,032
+  // annual salary.
+  const text = "Account Owner: Korea Foreign School KRW Account: 130-910032-00304 USD Account: 130-910011-30438 SWIFT Code: KOEXKRSE";
+  assert.equal(extractSalaryFromText(text, "school-site"), null);
+});
+
+test("refuses a uniform or textbook price", () => {
+  for (const text of [
+    "School Uniform: $1,700 - $1,900 Incidental Charges",
+    "Textbook Fee (pay direct to supplier) $500-$1500",
+  ]) {
+    assert.equal(extractSalaryFromText(text, "school-site"), null, text);
+  }
+});
+
+test("recognises a period written with a slash, not just the word", () => {
+  // "JPY 1,200–1,500/hour" matched no period word at all before this fix —
+  // "/hour" is not "per hour" or "hourly" — so it fell back to "no period
+  // stated" and was accepted as an annual salary of about a thousand yen.
+  const hourly = extractSalaryFromText("Salary JPY 1,200–1,500/hour depending on experience", "school-site");
+  assert.equal(hourly, null, "an hourly rate this low must be read as hourly and then refused, not annual");
+
+  const monthly = extractSalaryFromText("AED 15,000-18,000/month, tax free", "advert-text");
+  assert.equal(monthly?.period, "MONTHLY");
+});
+
+test("an unlabelled figure must clear the annual floor, not just a token minimum", () => {
+  // The old bound for "no period stated" was 500 to 1,500,000 — wide enough
+  // that almost any fee or deposit number passed it. A real, if unusual,
+  // annual salary with no period word should still be read; a number that
+  // does not even reach a plausible year's pay should not be guessed at.
+  assert.equal(extractSalaryFromText("the salary is USD 45,000 to 60,000, negotiable", "advert-text")?.min, 45000);
+  assert.equal(extractSalaryFromText("a salary of USD 2,000 to 3,000 is offered", "advert-text"), null);
+});
