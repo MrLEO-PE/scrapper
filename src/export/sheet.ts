@@ -227,6 +227,12 @@ ${PAGE_CSS}
   .nr-name { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
   .nr-meta { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
   .nr-note { margin: 5px 0 0; font-size: 12.5px; color: var(--muted); max-width: 72ch; }
+  /* The name is the link: one click from reading the row to the portal. */
+  a.nr-go { color: inherit; text-decoration: none; border-bottom: 1.5px solid var(--line); }
+  a.nr-go:hover { border-bottom-color: currentColor; }
+  a.nr-go:focus-visible { outline: 2px solid #1f883d; outline-offset: 2px; border-radius: 2px; }
+  .nr-arrow { font-size: 10px; opacity: .45; margin-left: 3px; vertical-align: 1px; }
+  a.nr-go:hover .nr-arrow { opacity: 1; }
   .nr-rank { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; margin-right: 4px; }
   .nr-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; background: color-mix(in srgb, #1f883d 18%, transparent); color: #1f883d; padding: 2px 6px; border-radius: 4px; }
   .nr-links { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; }

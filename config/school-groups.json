@@ -37,7 +37,7 @@
       "match": "harrow",
       "portal": "https://www.harrowschools.com",
       "portalKind": "robots-blocked",
-      "portalNote": "Their robots.txt refuses crawlers, so I cannot read or confirm the careers path — browse from the homepage. Six of your top-twenty schools."
+      "portalNote": "Checked 2026-10-04: this blocks automated requests AND a real browser (confirmed — a direct visit returned 403 Forbidden). I cannot find a working alternative URL. Try searching \"Harrow International School careers\" or look for the specific campus on LinkedIn instead."
     },
     {
       "name": "Wellington College International",
@@ -86,7 +86,7 @@
       "match": "etonhouse|eton ?house",
       "portal": "https://www.etonhouse.com.sg",
       "portalKind": "robots-blocked",
-      "portalNote": "robots.txt unreadable, so I never reach it — browse from the homepage."
+      "portalNote": "Checked 2026-10-04: this times out for automated requests; I could not confirm whether it loads in a real browser. If it does not load for you either, search \"EtonHouse careers\" or find the specific campus on LinkedIn."
     },
     {
       "name": "Invictus Education",
@@ -98,9 +98,9 @@
     {
       "name": "Maple Bear",
       "match": "maple ?bear",
-      "portal": "https://maplebearglobal.com",
-      "portalKind": "robots-blocked",
-      "portalNote": "robots.txt unreadable to me — browse from the homepage."
+      "portal": "https://www.maplebear.ca/careers/",
+      "portalKind": "own page",
+      "portalNote": "maplebearglobal.com, used before, does not exist — fixed 2026-10-04. Maple Bear is a franchise network with no single worldwide portal; this is the Canadian parent company's careers page. Each country branch (maplebear.cn, maplebear.uz, maplebear.co.kr, etc.) also runs its own hiring."
     },
     {
       "name": "SABIS",

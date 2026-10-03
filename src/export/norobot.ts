@@ -113,13 +113,16 @@ export function norobotBody(schools: SchoolRow[]): string {
 ${portals.map((g) => `  <li class="nr-item${g.scraped ? " scraped" : ""}">
     ${tick("grp|" + g.name)}
     <div>
-      <p class="nr-name">${esc(g.name)}${g.scraped ? ' <span class="nr-tag">already scraped</span>' : ""}</p>
+      <p class="nr-name">
+        <a class="nr-go" href="${esc(g.portal)}" target="_blank" rel="noopener"
+           title="${esc(g.kind === "robots-blocked" ? "Their homepage — robots.txt hides the careers path from me" : "Straight to the group's recruitment portal")}"
+        >${esc(g.name)}<span class="nr-arrow" aria-hidden="true">↗</span></a>${g.scraped ? ' <span class="nr-tag">already scraped</span>' : ""}
+      </p>
       <p class="nr-meta">${g.schools} school${g.schools === 1 ? "" : "s"}${g.top ? ` · <strong>${g.top} top-twenty</strong>` : ""}${g.countries.length ? ` · ${esc(g.countries.join(", "))}` : ""}</p>
       ${g.note ? `<p class="nr-note">${esc(g.note)}</p>` : ""}
     </div>
     <span class="nr-links">
-      <a class="nr-btn primary" href="${esc(g.portal)}" target="_blank" rel="noopener">${g.kind === "robots-blocked" ? "Homepage" : "Register"}</a>
-      <span class="nr-btn kind">${esc(g.kind)}</span>
+      <span class="nr-btn kind">${esc(g.kind === "robots-blocked" ? "homepage only" : g.kind)}</span>
     </span>
   </li>`).join("\n")}
 </ul>
@@ -138,13 +141,14 @@ ${[...byCountry.entries()].map(([country, list]) => `
 ${list.map((s) => `  <li class="nr-item">
     ${tick("sch|" + s.school_key)}
     <div>
-      <p class="nr-name"><span class="nr-rank">${s.country_rank}</span> ${esc(s.name)}</p>
+      <p class="nr-name"><span class="nr-rank">${s.country_rank}</span> ${s.website
+        ? `<a class="nr-go" href="${esc(s.website)}" target="_blank" rel="noopener" title="Open the school's site and look for its leadership page"
+           >${esc(s.name)}<span class="nr-arrow" aria-hidden="true">↗</span></a>`
+        : esc(s.name)}</p>
       <p class="nr-meta">${esc([s.city, s.student_count ? `${s.student_count.toLocaleString("en-GB")} pupils` : ""].filter(Boolean).join(" · "))}</p>
     </div>
     <span class="nr-links">
-      ${s.website
-        ? `<a class="nr-btn primary" href="${esc(s.website)}" target="_blank" rel="noopener">Website</a>`
-        : `<span class="nr-btn warn">no website yet</span>`}
+      ${s.website ? "" : `<span class="nr-btn warn">no website yet</span>`}
       ${s.careers_url ? `<a class="nr-btn" href="${esc(s.careers_url)}" target="_blank" rel="noopener">Careers</a>` : ""}
       ${s.school_email ? `<a class="nr-btn" href="mailto:${esc(s.school_email)}">${esc(s.school_email)}</a>` : ""}
     </span>
