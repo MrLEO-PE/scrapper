@@ -106,6 +106,13 @@ export function emailTabBody(recipients: Recipient[]): string {
   <label class="em-check"><input type="checkbox" id="emHideSent"> hide already sent</label>
 </div>
 
+<div class="em-bar">
+  <button type="button" class="em-btn" id="emSelectAll">select all visible</button>
+  <button type="button" class="em-btn" id="emSelectNone">clear selection</button>
+  <button type="button" class="em-btn primary" id="emCopyAll">copy visible addresses</button>
+  <span class="em-check" style="margin-left:4px">one address per line, for a BCC or a mail-merge list — your call whether they get one shared body or the pre-rendered one each</span>
+</div>
+
 <p class="em-counter" id="emCounter"></p>
 
 <ul class="nr-list" id="emList">
@@ -197,16 +204,49 @@ export const EMAIL_TAB_SCRIPT = `
   [readyOnly, hideSent].forEach(function (el) { el.addEventListener("change", applyFilters); });
   applyFilters();
 
-  list.addEventListener("click", function (e) {
-    var btn = e.target.closest(".em-copy");
-    if (!btn) return;
-    var text = btn.dataset.body;
+  function visibleItems() {
+    return items.filter(function (li) { return li.style.display !== "none"; });
+  }
+
+  function copyText(btn, text) {
     navigator.clipboard.writeText(text).then(function () {
       var original = btn.textContent;
       btn.textContent = "copied!";
       btn.classList.add("copied");
       setTimeout(function () { btn.textContent = original; btn.classList.remove("copied"); }, 1400);
     }).catch(function () { /* clipboard unavailable — mailto/select-all still work */ });
+  }
+
+  list.addEventListener("click", function (e) {
+    var btn = e.target.closest(".em-copy");
+    if (!btn) return;
+    copyText(btn, btn.dataset.body);
+  });
+
+  // Ticking every visible row at once — filtered to, say, Vietnam — is for
+  // when you've decided to send one shared body to all of them rather than
+  // the pre-rendered letter each. That is a real, legitimate choice some of
+  // the time; the page's job is to make the filtered list easy to grab, not
+  // to forbid the choice.
+  var selectAll = document.getElementById("emSelectAll");
+  var selectNone = document.getElementById("emSelectNone");
+  var copyAll = document.getElementById("emCopyAll");
+
+  if (selectAll) selectAll.addEventListener("click", function () {
+    visibleItems().forEach(function (li) {
+      var box = li.querySelector(".em-pick");
+      if (!box.checked) { box.checked = true; box.dispatchEvent(new Event("change")); }
+    });
+  });
+  if (selectNone) selectNone.addEventListener("click", function () {
+    items.forEach(function (li) {
+      var box = li.querySelector(".em-pick");
+      if (box.checked) { box.checked = false; box.dispatchEvent(new Event("change")); }
+    });
+  });
+  if (copyAll) copyAll.addEventListener("click", function () {
+    var addresses = visibleItems().map(function (li) { return li.dataset.email; });
+    copyText(copyAll, addresses.join("\\n"));
   });
 })();
 `;
