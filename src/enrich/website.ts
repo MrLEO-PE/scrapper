@@ -50,7 +50,7 @@ import { extractSalaryFromText, type SourcedSalary } from "./salary.ts";
  * reshuffle the whole frontier for no established gain.
  */
 const LINK_PRIORITIES: { re: RegExp; score: number; tag: string }[] = [
-  { re: /(?<![A-Za-z0-9])(?:careers?|vacanc(?:y|ies)|recruit(?:ment)?|employment|job-?opportunities|jobs?|work-?(?:with|for)-?us|join-?(?:us|our-?team)|hiring|opportunities)(?![A-Za-z0-9])/i, score: 100, tag: "careers" },
+  { re: /(?<![A-Za-z0-9])(?:careers?|vacanc(?:y|ies)|recruit(?:ment)?|employment(?:-?opportunities)?|job-?opportunities|jobs?|work(?:ing)?-?(?:with|for)-?us|join-?(?:us|our-?team)|hiring|opportunities)(?![A-Za-z0-9])/i, score: 100, tag: "careers" },
   { re: /(?<![A-Za-z0-9])(?:work-?here|staff-?vacancies|teaching-?vacancies|current-?vacancies|apply)(?![A-Za-z0-9])/i, score: 95, tag: "careers" },
   { re: /(?:^|[\/\-_])(?:contact|contact-?us|get-?in-?touch|enquir)/i, score: 75, tag: "contact" },
   // Staff directories and PE department pages are the only places a PE team
@@ -236,8 +236,33 @@ export async function crawlSchoolSite(
   const visited = new Set<string>();
   const pdfQueue: Candidate[] = [];
 
-  // Homepage first, then whatever the frontier ranks highest.
-  const frontier: Candidate[] = [{ url: start, score: 1000, tag: "home" }];
+  /*
+   * Homepage first, then a handful of guessed careers/contact paths.
+   *
+   * The crawl otherwise only reaches these pages by finding a link to them,
+   * and plenty of sites — JS-built ones especially — don't put "Careers" or
+   * "Contact" in HTML the link-text scanner can see, even though the page
+   * exists at exactly the URL you'd expect. Guessing costs one fetch each,
+   * most of which 404 harmlessly, so it is worth doing unconditionally rather
+   * than only when discovery comes up empty.
+   */
+  const GUESSED_PATHS = [
+    // Careers, in every phrasing a school site actually uses — kept in sync
+    // with the LINK_PRIORITIES "careers" regex above, since a page worth
+    // guessing at is a page worth recognising if discovery finds it instead.
+    "/careers", "/career", "/careers-opportunities", "/career-opportunities",
+    "/vacancies", "/current-vacancies", "/staff-vacancies", "/teaching-vacancies",
+    "/jobs", "/job-opportunities", "/employment", "/employment-opportunities",
+    "/opportunities", "/recruitment", "/hiring",
+    "/work-with-us", "/work-for-us", "/working-with-us", "/working-for-us", "/work-here",
+    "/join-us", "/join-our-team", "/joinourteam",
+    "/apply", "/staff-openings",
+    "/contact", "/contact-us", "/about/contact", "/about-us/contact",
+  ];
+  const frontier: Candidate[] = [
+    { url: start, score: 1000, tag: "home" },
+    ...GUESSED_PATHS.map((path) => ({ url: origin + path, score: 90, tag: /contact/.test(path) ? "contact" : "careers" })),
+  ];
   // Text gathered across the whole site, for facts that may appear anywhere.
   let corpus = "";
   let careersText = "";

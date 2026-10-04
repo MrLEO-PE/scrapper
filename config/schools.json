@@ -80,9 +80,19 @@
     {
       "name": "Shrewsbury International School Bangkok",
       "website": "https://www.shrewsbury.ac.th",
+      "careers": "https://www.shrewsbury.ac.th/recruitment/introduction/",
       "country": "Thailand",
       "city": "Bangkok",
       "on": true
+    },
+    {
+      "name": "Shrewsbury International School Bangkok City Campus",
+      "website": "https://www.shrewsbury.ac.th/city/",
+      "careers": "https://www.shrewsbury.ac.th/recruitment/introduction/",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true,
+      "note": "User-supplied 2026-10-04 — recruitment queries go to jobs@shrewsbury.ac.th, shared across both Bangkok campuses."
     },
     {
       "name": "Harrow International School Bangkok",
@@ -198,6 +208,15 @@
       "on": true
     },
     {
+      "name": "Dubai National School Al Barsha",
+      "website": "https://dnsalbarsha.com",
+      "careers": "https://dnsalbarsha.com/job-vacancies/",
+      "country": "United Arab Emirates",
+      "city": "Dubai",
+      "on": true,
+      "note": "Exceptionally added 2026-10-04 — user-reported as a top PE school with very high salary and package."
+    },
+    {
       "name": "Jumeirah English Speaking School",
       "website": "https://www.jess.sch.ae",
       "country": "United Arab Emirates",
@@ -235,6 +254,7 @@
     {
       "name": "Brighton College Abu Dhabi",
       "website": "https://www.brightoncollege.ae",
+      "careers": "https://careers.brightoncollegeinternational.com/job-vacancies",
       "country": "United Arab Emirates",
       "city": "Abu Dhabi",
       "on": true

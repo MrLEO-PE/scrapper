@@ -715,20 +715,30 @@ export function upsertSchool(
         package_json = COALESCE(excluded.package_json, schools.package_json),
         -- Two kinds of write reach these columns, and they get opposite rules.
         --
-        -- A crawl of the school's own site sets emails_json, meaning it saw
-        -- every candidate and recomputed both columns from all of them. It
-        -- replaces outright, blanks included: if the recruitment page is gone,
-        -- continuing to offer the old address sends an application nowhere.
+        -- A crawl of the school's own site that actually found at least one
+        -- candidate address sets a non-empty emails_json, meaning it saw every
+        -- candidate and recomputed both columns from all of them — it replaces
+        -- outright, blanks included, so a removed recruitment page clears a
+        -- stale address rather than keeps pointing at it.
         --
-        -- Everything else knows a fragment — a directory listing with one
-        -- admissions address — and only fills a gap. Letting a fragment
-        -- replace cost 168 schools their careers address in one run, and
-        -- quietly swapped info@ for admissions@ at 283 more, against this
-        -- codebase's own ranking of which desk to write to.
-        school_email = CASE WHEN excluded.emails_json IS NOT NULL
+        -- But emails_json is set on every enrich call, including one where the
+        -- crawl failed outright (timeout, robots block, transient network
+        -- error) and found nothing — that is not the same as the page being
+        -- confirmed gone, and treating it as such wiped a known-good address
+        -- (e.g. Tenby Setia Eco Park International losing its school_email to
+        -- a single flaky run). So the wipe-on-replace behaviour only applies
+        -- when emails_json actually has entries; an empty result from this run
+        -- falls through to the fragment rule below and just fills a gap.
+        --
+        -- Everything else (a directory listing with one admissions address)
+        -- only fills a gap too. Letting a fragment replace cost 168 schools
+        -- their careers address in one run, and quietly swapped info@ for
+        -- admissions@ at 283 more, against this codebase's own ranking of
+        -- which desk to write to.
+        school_email = CASE WHEN json_array_length(excluded.emails_json) > 0
                             THEN excluded.school_email
                             ELSE COALESCE(schools.school_email, excluded.school_email) END,
-        career_email = CASE WHEN excluded.emails_json IS NOT NULL
+        career_email = CASE WHEN json_array_length(excluded.emails_json) > 0
                             THEN excluded.career_email
                             ELSE COALESCE(schools.career_email, excluded.career_email) END,
         careers_url = COALESCE(excluded.careers_url, schools.careers_url),

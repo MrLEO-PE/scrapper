@@ -323,6 +323,61 @@ export function speculativeEmail(i: SpeculativeInputs): DraftEmail {
 }
 
 /**
+ * One letter to a shared inbox that covers several schools at once.
+ *
+ * A group recruiter — BASIS's careers@, a regional HR address covering five
+ * campuses — reads one letter per candidate, not one per campus. Writing as
+ * though each campus were the sole subject, from an address that visibly
+ * serves all of them, is the thing most likely to read as a form letter sent
+ * at scale — which is exactly what personalising was meant to avoid. So this
+ * is honest about the shape of the approach instead: one letter, about PE
+ * across the group, naming every school it actually covers.
+ */
+export interface GroupInputs {
+  schools: string[];
+  country?: string | null;
+  city?: string | null;
+}
+
+/** ["A","B","C"] -> "A, B and C"; two -> "A and B"; one -> "A". */
+function listed(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+export function groupSpeculativeEmail(i: GroupInputs): DraftEmail {
+  const profile = loadProfile();
+  if (!profile) return { body: "", subject: "", missing: ["config/profile.json is missing"] };
+  if (i.schools.length < 2) return { body: "", subject: "", missing: ["not a group address"] };
+
+  const where = i.country ? ` in ${i.country}` : "";
+  const subject = `Physical Education — speculative enquiry across your schools${where}, ${profile.name}`;
+  const schoolList = listed(i.schools);
+  const values = { school: schoolList, shortSchool: schoolList, role: "Physical Education" };
+
+  const body = [
+    "Dear HR Team,",
+    "",
+    `I am writing speculatively to introduce myself as a Physical Education teacher, about ` +
+      `opportunities across your group${where} — specifically ${schoolList}. Rather than write to ` +
+      `each campus in turn, I wanted to introduce myself once and ask whether any of them expect ` +
+      `a PE vacancy for the coming year.`,
+    "",
+    chooseStrength(profile, ""),
+    "",
+    `You can find my CV and examples of my work on ${profile.websiteLabel}: ${profile.website}`,
+    "",
+    fill(profile.speculativeClosing ?? profile.closing, values),
+    "",
+    `${profile.signOff},`,
+    profile.name,
+  ].join("\n");
+
+  return { body, subject, missing: [] };
+}
+
+/**
  * The cell for the Prepared Email column.
  *
  * When a detail is missing the email is not written, on purpose — a

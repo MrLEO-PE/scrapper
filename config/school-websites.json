@@ -44,6 +44,12 @@
     "found": "2026-09-25",
     "note": "Brent International School Manila — Philippines"
   },
+  "cedei-school|ecuador": {
+    "url": "https://cedei.org",
+    "via": "email domain",
+    "found": "2026-10-04",
+    "note": "CEDEI School — Ecuador"
+  },
   "cempaka|malaysia": {
     "url": "https://cempaka.edu.my",
     "via": "domain-guess, verified",
@@ -61,6 +67,12 @@
     "via": "domain-guess, verified",
     "found": "2026-09-25",
     "note": "Colegio Gran Bretaña — Colombia"
+  },
+  "colegio-humboldt-caracas|venezuela": {
+    "url": "https://chcaracas.com",
+    "via": "email domain",
+    "found": "2026-10-04",
+    "note": "Colegio Humboldt Caracas — Venezuela"
   },
   "colegio-menor|ecuador": {
     "url": "https://colegiomenor.edu.ec",
@@ -169,6 +181,12 @@
     "via": "domain-guess, verified",
     "found": "2026-09-25",
     "note": "ILBC — Myanmar"
+  },
+  "international-school-kyrgyzstan|kyrgyzstan": {
+    "url": "https://isk.edu.kg",
+    "via": "email domain",
+    "found": "2026-10-04",
+    "note": "International School of Kyrgyzstan — Kyrgyzstan"
   },
   "ise-eastern-seaboard|thailand": {
     "url": "https://ise.ac.th",

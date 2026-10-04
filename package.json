@@ -23,6 +23,7 @@
     "doris": "node --experimental-strip-types --no-warnings src/cli.ts doris",
     "known": "node --experimental-strip-types --no-warnings src/cli.ts known",
     "dedupe": "node --experimental-strip-types --no-warnings src/cli.ts dedupe",
+    "mark-sent": "node --experimental-strip-types --no-warnings src/cli.ts mark-sent",
     "watch": "node --experimental-strip-types --no-warnings src/cli.ts watch",
     "schedule": "node --experimental-strip-types --no-warnings src/cli.ts schedule",
     "test": "node --experimental-strip-types --no-warnings --test test/*.test.ts",

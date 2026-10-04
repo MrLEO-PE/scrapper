@@ -756,6 +756,71 @@
       "website": "https://harrowschool.hk",
       "via": "user-supplied 2026-10-04; domain has a real Microsoft 365 mail configuration (confirmed via MX lookup), but the page itself could not be loaded to verify the school name on it — the same bot-blocking that affects other Harrow sites",
       "note": "claimed recruitment address: recruitment@harrowschool.hk (not yet independently confirmed)"
+    },
+    {
+      "name": "Wellington College",
+      "country": "United Kingdom",
+      "city": "Crowthorne, Berkshire",
+      "address": "Wellington College, Crowthorne, Berkshire, RG45 7PU",
+      "website": "https://www.wellingtoncollege.org.uk",
+      "via": "user-supplied 2026-10-04",
+      "note": "recruitment address: recruitment@wellingtoncollege.org.uk (not yet independently confirmed)"
+    },
+    {
+      "name": "Wellington College International Lagos",
+      "country": "Nigeria",
+      "city": "Lagos",
+      "address": "Alaro City, Lagos, Nigeria",
+      "website": "https://www.wellingtoncollegelagos.com",
+      "via": "user-supplied 2026-10-04",
+      "note": "recruitment address: enquiries@wellingtoncollegelagos.com (not yet independently confirmed)"
+    },
+    {
+      "name": "Wellington College China",
+      "country": "China",
+      "website": "https://www.wellingtoncollege.cn",
+      "via": "user-supplied 2026-10-04",
+      "note": "recruitment address: hr-recruitment@wellingtoncollege.cn (not yet independently confirmed); user-supplied tag \"1043 habia\" alongside it, meaning unclear"
+    },
+    {
+      "name": "Wellington College Independent School Jakarta",
+      "country": "Indonesia",
+      "city": "Tangerang Selatan, Banten",
+      "address": "Taman Perkantoran 1 BSD City, Jl. Pahlawan Seribu, Lengkong Karya, Kec. Serpong Utara, Tangerang Selatan, Banten, Indonesia 15331",
+      "website": "https://www.wellingtoncollege.sch.id",
+      "via": "user-supplied 2026-10-04",
+      "note": "recruitment address: enquiry@wellingtoncollege.sch.id (not yet independently confirmed)"
+    },
+    {
+      "name": "Wellington College Bangkok",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "website": "https://www.wellingtoncollege.ac.th",
+      "via": "user-supplied 2026-10-04",
+      "note": "recruitment address: recruitment@wellingtoncollege.ac.th (not yet independently confirmed)"
+    },
+    {
+      "name": "Wellington College Pune",
+      "country": "India",
+      "city": "Pune",
+      "website": "https://www.wellingtoncollege.in",
+      "via": "user-supplied 2026-10-04",
+      "note": "recruitment address: careers@wellingtoncollege.in (not yet independently confirmed)"
+    },
+    {
+      "name": "International School of Tanganyika",
+      "country": "Tanzania",
+      "city": "Dar es Salaam",
+      "website": "https://www.istafrica.co.tz",
+      "via": "user-supplied PDF (benchmark compensation guide) 2026-10-04 — flagged as the highest-paying school in the country, missing from both directory databases",
+      "note": "IB World School (PYP/MYP/DP), two campuses (Upanga elementary, Masaki/Msasani secondary), ~1000 students"
+    },
+    {
+      "name": "Harrow LiDe School Nanning",
+      "country": "China",
+      "city": "Nanning",
+      "via": "user-supplied 2026-10-04",
+      "note": "recruitment address: recruitment@aisl-edu.com (not yet independently confirmed); AISL is the operating group's domain, not the school's own"
     }
   ],
   "//imported": "The entries marked \"personal spreadsheet\" come from four Google Sheets supplied on 2026-10-03. Of 2,007 rows, 599 matched schools already held and 849 were new. Each of those 849 was checked by fetching its website: 86 confirmed, 87 served a page that did not name the school, and 676 did not resolve at all. A control group of 30 already-verified schools scored 27/30 by the same test on the same day, so the failures are the data, not the check. The unresolving entries follow a pattern — names ending \"Track\", \"Tracks\", \"Modules\", \"Dept\" with domains built from their initials, e.g. Yushu International Academy Tracks at ysia.cn — and the salary column descends monotonically across all 2,007 rows with only 349 distinct values. Those columns were not imported."

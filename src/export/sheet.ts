@@ -119,6 +119,10 @@ export interface HtmlOptions {
    * has nowhere else to put it.
    */
   view?: "default" | "applied";
+  /** Appended inside the shared <style> block, for a page with its own widgets. */
+  extraCss?: string;
+  /** Appended after the shared tick-persistence <script>, for a page with its own behaviour. */
+  extraScript?: string;
 }
 
 /**
@@ -251,6 +255,7 @@ ${PAGE_CSS}
     li.nr-item { grid-template-columns: auto 1fr; }
     .nr-links { grid-column: 1 / -1; justify-content: flex-start; margin-top: 6px; }
   }
+${opts.extraCss ?? ""}
 </style></head><body>
 ${navStrip(opts.nav, esc)}
 <h1>${esc(title)}</h1>
@@ -271,6 +276,7 @@ ${body}
     });
   });
 </script>
+${opts.extraScript ? `<script>${opts.extraScript}</script>` : ""}
 </body></html>`;
 
   mkdirSync(dirname(path), { recursive: true });

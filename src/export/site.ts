@@ -21,6 +21,8 @@ import { byCountryRank, getSchools, queryJobs, stats as dbStats } from "../store
 import { isTargetCountry, targetCountries, vacancyInScope } from "../directoryconfig.ts";
 import { writeCsv, writeHtml, writePage, type SheetRow } from "./sheet.ts";
 import { norobotBody } from "./norobot.ts";
+import { buildRecipients } from "./recipients.ts";
+import { emailTabBody, EMAIL_TAB_CSS, EMAIL_TAB_SCRIPT } from "./emailtab.ts";
 
 /**
  * Work out `owner/repo` so the pages can link back to the Actions tab.
@@ -59,6 +61,7 @@ function buildNav(): NavItem[] {
     { label: "Download CSV", href: "pe-jobs.csv" },
     // Last of the ordinary tabs: the work no crawler can do for you.
     { label: "No robot school", href: "norobot.html" },
+    { label: "Email", href: "email.html" },
   ];
 
   // A published page is static and cannot scrape anything itself, so the
@@ -147,6 +150,20 @@ export function buildSite(opts: SiteOptions): { dir: string; jobs: number; schoo
    */
   writePage(join(dir, "norobot.html"), "No robot school", norobotBody([...schools.values()]), {
     nav: navFor("norobot.html"),
+  });
+
+  /*
+   * One recipient address per row, pre-rendered, ready to copy into a mail
+   * merge. See src/export/recipients.ts for why a row is an address and not
+   * a school — a shared inbox written to once per campus is the single
+   * mistake most likely to expose a bulk approach as a bulk approach.
+   */
+  const inScopeSchools = [...schools.values()].filter((s) => isTargetCountry(s.country, targets));
+  const recipients = buildRecipients(inScopeSchools);
+  writePage(join(dir, "email.html"), "Email", emailTabBody(recipients), {
+    nav: navFor("email.html"),
+    extraCss: EMAIL_TAB_CSS,
+    extraScript: EMAIL_TAB_SCRIPT,
   });
 
   writeCsv(join(dir, "pe-jobs.csv"), open, opts.fields, "job");

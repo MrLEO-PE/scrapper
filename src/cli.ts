@@ -11,8 +11,9 @@
  */
 
 import { execFile } from "node:child_process";
-import { readdirSync, statSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { recordSent } from "./sentlog.ts";
 import { OUT_DIR, loadFields, loadTargets, writeFieldsConfig } from "./config.ts";
 import { stats as httpStats } from "./core/http.ts";
 import { log, setLogLevel, type LogLevel } from "./core/logger.ts";
@@ -41,7 +42,7 @@ import {
   pipeline,
   setStatus,
 } from "./track.ts";
-import { closeDb, dedupeSchools, rerankCountries } from "./store/db.ts";
+import { closeDb, dedupeSchools, getSchools, rerankCountries } from "./store/db.ts";
 import {
   ALL_SOURCES,
   printStats,
@@ -320,8 +321,9 @@ USAGE
   npm run watch -- --every 24h       keep running on an interval
   npm run schedule -- --daily 07:00  install an OS scheduled task
   npm run track                      your pipeline + what closes soon
+  npm run mark-sent -- a@b.com       permanently record an address as emailed today
   npm run alerts                     list roles worth acting on now
-  npm run site                       build the publishable site/ folder
+  npm run site                       build the publishable site/ folder (includes the Email tab)
   npm run report                     open the latest HTML report
   npm run stats                      what's in the database
 
@@ -652,6 +654,40 @@ async function main(): Promise<void> {
 
     case "track": {
       trackCommand(args);
+      break;
+    }
+
+    case "mark-sent": {
+      const fromFile = str(args, "file");
+      const addresses = [
+        ...args.positional,
+        ...(fromFile
+          ? readFileSync(fromFile, "utf8").split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
+          : []),
+      ].map((a) => a.toLowerCase());
+
+      if (!addresses.length) {
+        log.error("say which addresses: npm run mark-sent -- a@b.com c@d.com, or --file sent.txt");
+        process.exitCode = 1;
+        break;
+      }
+
+      // Every school that resolves to this address, so the permanent record
+      // also says what the letter actually covered — useful for the 66
+      // shared inboxes, where "this address" and "this school" are not the same thing.
+      const schools = [...getSchools().values()];
+      const records = addresses.map((email) => ({
+        email,
+        schools: schools
+          .filter((s) => [s.career_email, s.contact_email, s.school_email].some((e) => e?.toLowerCase() === email))
+          .map((s) => s.school_key),
+      }));
+
+      recordSent(records);
+      log.ok(`recorded ${records.length} address${records.length === 1 ? "" : "es"} sent today`);
+      for (const r of records) {
+        log.plain(`  ${r.email}${r.schools.length ? `  (${r.schools.length} school${r.schools.length === 1 ? "" : "s"})` : "  (not found in the schools table — recorded anyway)"}`);
+      }
       break;
     }
 
