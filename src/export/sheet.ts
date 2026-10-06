@@ -132,9 +132,11 @@ export interface HtmlOptions {
  * done by hand — sits in the same shell as the rest rather than a lookalike
  * that drifts from it at the next change.
  */
-const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3f5f8; --muted:#6b7480; --bg:#fff; --fg:#14181d; }
+const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3f5f8; --muted:#6b7480; --bg:#fff; --fg:#14181d; --warn:#9a6700; }
   @media (prefers-color-scheme: dark) {
-    :root { --line:#333a44; --head:#1b2027; --muted:#98a2b0; --bg:#0f1319; --fg:#e6eaf0; }
+    /* A darker amber reads fine on white but goes muddy and low-contrast on
+       a near-black page, which was most of why the underline felt weak. */
+    :root { --line:#333a44; --head:#1b2027; --muted:#98a2b0; --bg:#0f1319; --fg:#e6eaf0; --warn:#e3b341; }
   }
   body { font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 24px; background: var(--bg); color: var(--fg); }
   h1 { font-size: 20px; margin: 0 0 4px; }
@@ -165,28 +167,36 @@ const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3
   button.mark:hover { border-color: #1f883d; color: #1f883d; }
   button.mark.done { border-color: #1f883d; background: color-mix(in srgb, #1f883d 18%, transparent); color: inherit; font-weight: 600; }
 
-  /* A form to fill in is work to do before applying — an afternoon, not a
-     click — so the whole row is tinted rather than marked at one edge. The
-     underline stays as well: the tint is easy to miss once several row
-     colours are in play, and this is the one that costs you time. */
-  tr.hasform { background: color-mix(in srgb, #d29922 16%, transparent); }
-  tr.hasform td { box-shadow: inset 0 -2px 0 #d29922; }
-  tr.hasform.lead { background: color-mix(in srgb, #d29922 22%, transparent); }
-  tr.hasform.applied { background: color-mix(in srgb, #d29922 12%, transparent); }
-  tr.hasform.applied td:first-child { box-shadow: inset 3px 0 0 #1f883d, inset 0 -2px 0 #d29922; }
+  /*
+   * A form to fill in is work to do before applying — an afternoon, not a
+   * click — so the whole row is tinted rather than marked at one edge.
+   *
+   * Colour alone was too easy to miss, and amber sits close enough to red and
+   * green on the red-green confusion line that it read as "nothing" to a
+   * colourblind eye against the urgent/applied rows already using those hues.
+   * Fixed three ways: a much darker, higher-contrast amber that stays
+   * distinct from both the red and the green under deuteranopia/protanopia
+   * simulation (--warn, themed separately for light/dark since one hex could
+   * not read well on both a white and a near-black page); a thicker
+   * underline; and a glyph (⬛) on the cell text itself, so the signal
+   * survives even with colour removed entirely.
+   */
+  tr.hasform { background: color-mix(in srgb, var(--warn) 18%, transparent); }
+  tr.hasform td { box-shadow: inset 0 -4px 0 var(--warn); }
+  tr.hasform.lead { background: color-mix(in srgb, var(--warn) 24%, transparent); }
+  tr.hasform.applied { background: color-mix(in srgb, var(--warn) 14%, transparent); }
+  tr.hasform.applied td:first-child { box-shadow: inset 3px 0 0 #1f883d, inset 0 -4px 0 var(--warn); }
 
   /* TES "Apply" (not Quick Apply) hands you off to the school's site, which
-     is the same kind of extra step a form is — so the same underline colour,
-     but lighter-weight than hasform's full tint since it is its own, weaker
-     signal: some "Apply" roles turn out to need no form at all. */
-  tr.extapply td { box-shadow: inset 0 -2px 0 #d29922; }
-  tr.extapply.hasform td { box-shadow: inset 0 -3px 0 #d29922; }
+     is the same kind of extra step a form is — same colour, same glyph. */
+  tr.extapply td { box-shadow: inset 0 -4px 0 var(--warn); }
+  tr.extapply.hasform td { box-shadow: inset 0 -6px 0 var(--warn); }
   /* Marking a row applied must not erase the "extra step" warning — the
      underline (and, for the first cell, the applied tick's own border) stay
      visible either way, same as hasform already does below. */
-  tr.extapply.applied { background: color-mix(in srgb, #d29922 12%, transparent); }
-  tr.extapply.applied td:first-child { box-shadow: inset 3px 0 0 #1f883d, inset 0 -2px 0 #d29922; }
-  .apply-ext { color: #d29922; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+  tr.extapply.applied { background: color-mix(in srgb, var(--warn) 14%, transparent); }
+  tr.extapply.applied td:first-child { box-shadow: inset 3px 0 0 #1f883d, inset 0 -4px 0 var(--warn); }
+  .extra-step { color: var(--warn); font-weight: 700; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px; white-space: nowrap; }
 
   p.empty { color: var(--muted); padding: 18px 2px; margin: 0; }
   tr.fresh td:first-child::before { content: "new"; margin-right: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #1f883d; color: #fff; vertical-align: middle; }
@@ -324,10 +334,17 @@ export function writeHtml(
     if (field.key === "career_email" || field.key === "school_email") {
       return `<a href="mailto:${esc(value)}">${esc(value)}</a>`;
     }
-    // Same colour as the form underline, so the two "extra step" signals
-    // read as related the moment you see them, not just on the row edge.
+    /*
+     * Same colour as the form underline, so the two "extra step" signals read
+     * as related the moment you see them, not just on the row edge — plus a
+     * glyph on the text itself, so the signal does not depend on telling that
+     * colour apart from the urgent/applied ones in the first place.
+     */
     if (field.key === "apply_type" && value === "Apply") {
-      return `<span class="apply-ext">${esc(value)}</span>`;
+      return `<span class="extra-step">⬛ ${esc(value)}</span>`;
+    }
+    if (field.key === "application_form" && value.startsWith("Yes")) {
+      return `<span class="extra-step">⬛ ${esc(value)}</span>`;
     }
     return esc(value);
   };
