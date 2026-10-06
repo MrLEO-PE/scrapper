@@ -138,6 +138,15 @@ export interface RawJob {
   attachments?: Attachment[];
   /** How this school wants the application submitted, if stated. */
   applicationForm?: ApplicationForm;
+  /**
+   * True when the board's own one-click apply handles it (TES's "Quick
+   * Apply" — your board profile goes straight to the school, nothing else to
+   * fill in). False means "Apply" instead: the board hands you off to the
+   * school's own site or contact, which is where `applicationForm` and
+   * `applicationUrl` come in. Undefined where the source does not say
+   * (only TES exposes this distinction today).
+   */
+  quickApply?: boolean;
   /** Untouched source payload, kept for debugging and re-parsing. */
   raw?: unknown;
 }

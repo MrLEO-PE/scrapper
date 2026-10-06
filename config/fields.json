@@ -49,6 +49,7 @@
   "deadline": false,
   "source": true,
   "application_form": true,
+  "apply_type": true,
   "form_link": true,
   "careers_page": true,
   "all_emails": false,

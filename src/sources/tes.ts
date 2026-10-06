@@ -177,6 +177,12 @@ async function fetchDetail(job: RawJob, fresh: boolean): Promise<void> {
       job.description = htmlToText(item.description);
     }
 
+    // "Quick Apply" (formType "electronicApplication") applies through TES
+    // itself with no further step; "Apply" (formType "applicationContactDetails")
+    // hands you off to the school's own site or contact, which is exactly
+    // where a form or an email address to write to comes in.
+    if (typeof item.quickApply === "boolean") job.quickApply = item.quickApply;
+
     const emails: string[] = [...(job.schoolEmails ?? [])];
 
     // The address the school actually wants applications sent to.

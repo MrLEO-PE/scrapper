@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS jobs (
   my_note         TEXT,
   app_form        TEXT,
   app_form_url    TEXT,
+  quick_apply     INTEGER,
   raw_json        TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_jobs_dedupe  ON jobs(dedupe_key);
@@ -189,6 +190,10 @@ const MIGRATIONS: { table: string; column: string; ddl: string }[] = [
   { table: "schools", column: "fee_low", ddl: "ALTER TABLE schools ADD COLUMN fee_low INTEGER" },
   { table: "schools", column: "fee_high", ddl: "ALTER TABLE schools ADD COLUMN fee_high INTEGER" },
   { table: "schools", column: "fee_currency", ddl: "ALTER TABLE schools ADD COLUMN fee_currency TEXT" },
+  // TES's own distinction: Quick Apply (through TES, nothing further to do)
+  // vs Apply (hands off to the school's site or contact). NULL on every
+  // other source, which does not expose this.
+  { table: "jobs", column: "quick_apply", ddl: "ALTER TABLE jobs ADD COLUMN quick_apply INTEGER" },
 ];
 
 function migrate(d: DatabaseSync): void {
@@ -250,9 +255,9 @@ export function upsertJobs(jobs: Job[], runId: number): UpsertResult {
       country, city, description, posted_at, deadline_at, start_date, salary_json,
       contract_type, contract_term, curriculum_json, grade_json, benefits_json,
       school_website, emails_json, application_url, pe_score, pe_seniority,
-      pe_matched_json, is_pe, attachments_json, app_form, app_form_url, status, first_seen_at, last_seen_at, last_checked_at, raw_json
+      pe_matched_json, is_pe, attachments_json, app_form, app_form_url, quick_apply, status, first_seen_at, last_seen_at, last_checked_at, raw_json
     ) VALUES (
-      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?
+      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?
     )`);
   const update = d.prepare(`
     UPDATE jobs SET
@@ -267,6 +272,7 @@ export function upsertJobs(jobs: Job[], runId: number): UpsertResult {
       pe_score = ?, pe_seniority = ?, pe_matched_json = ?, is_pe = ?,
       attachments_json = COALESCE(?, attachments_json),
       app_form = COALESCE(?, app_form), app_form_url = COALESCE(?, app_form_url),
+      quick_apply = COALESCE(?, quick_apply),
       status = 'open', closed_at = NULL, last_seen_at = ?, last_checked_at = ?
     WHERE id = ?`);
   const sight = d.prepare("INSERT OR IGNORE INTO sightings (run_id, job_id, seen_at) VALUES (?, ?, ?)");
@@ -288,6 +294,7 @@ export function upsertJobs(jobs: Job[], runId: number): UpsertResult {
           job.applicationUrl ?? null, job.pe.score, job.pe.seniority,
           j(job.pe.matched), job.pe.isPe ? 1 : 0, j(job.attachments),
           job.applicationForm?.kind ?? null, job.applicationForm?.url ?? null,
+          job.quickApply == null ? null : job.quickApply ? 1 : 0,
           job.firstSeenAt, now, now, j(job.raw),
         );
         res.inserted++;
@@ -303,6 +310,7 @@ export function upsertJobs(jobs: Job[], runId: number): UpsertResult {
           job.pe.score, job.pe.seniority, j(job.pe.matched), job.pe.isPe ? 1 : 0,
           j(job.attachments),
           job.applicationForm?.kind ?? null, job.applicationForm?.url ?? null,
+          job.quickApply == null ? null : job.quickApply ? 1 : 0,
           now, now, job.id,
         );
         res.updated++;
@@ -430,6 +438,8 @@ export interface JobRow {
   my_note: string | null;
   app_form: string | null;
   app_form_url: string | null;
+  /** 1 = TES Quick Apply, 0 = TES "Apply" (hands off to the school), null = source doesn't say. */
+  quick_apply: number | null;
 }
 
 export interface QueryOptions {

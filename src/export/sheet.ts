@@ -173,6 +173,20 @@ const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3
   tr.hasform td { box-shadow: inset 0 -2px 0 #d29922; }
   tr.hasform.lead { background: color-mix(in srgb, #d29922 22%, transparent); }
   tr.hasform.applied { background: color-mix(in srgb, #d29922 12%, transparent); }
+  tr.hasform.applied td:first-child { box-shadow: inset 3px 0 0 #1f883d, inset 0 -2px 0 #d29922; }
+
+  /* TES "Apply" (not Quick Apply) hands you off to the school's site, which
+     is the same kind of extra step a form is — so the same underline colour,
+     but lighter-weight than hasform's full tint since it is its own, weaker
+     signal: some "Apply" roles turn out to need no form at all. */
+  tr.extapply td { box-shadow: inset 0 -2px 0 #d29922; }
+  tr.extapply.hasform td { box-shadow: inset 0 -3px 0 #d29922; }
+  /* Marking a row applied must not erase the "extra step" warning — the
+     underline (and, for the first cell, the applied tick's own border) stay
+     visible either way, same as hasform already does below. */
+  tr.extapply.applied { background: color-mix(in srgb, #d29922 12%, transparent); }
+  tr.extapply.applied td:first-child { box-shadow: inset 3px 0 0 #1f883d, inset 0 -2px 0 #d29922; }
+  .apply-ext { color: #d29922; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 
   p.empty { color: var(--muted); padding: 18px 2px; margin: 0; }
   tr.fresh td:first-child::before { content: "new"; margin-right: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #1f883d; color: #fff; vertical-align: middle; }
@@ -310,6 +324,11 @@ export function writeHtml(
     if (field.key === "career_email" || field.key === "school_email") {
       return `<a href="mailto:${esc(value)}">${esc(value)}</a>`;
     }
+    // Same colour as the form underline, so the two "extra step" signals
+    // read as related the moment you see them, not just on the row edge.
+    if (field.key === "apply_type" && value === "Apply") {
+      return `<span class="apply-ext">${esc(value)}</span>`;
+    }
     return esc(value);
   };
 
@@ -351,6 +370,16 @@ export function writeHtml(
     // A form to fill in is work to do before you can apply, so it is marked
     // on the row rather than left in a column you have to scroll to.
     if (formIndex >= 0 && r[formIndex]?.startsWith("Yes")) classes.push("hasform");
+
+    /*
+     * TES's "Apply" (as opposed to "Quick Apply") hands you off to the
+     * school's own site or contact instead of applying through TES directly —
+     * extra steps the same way a form is, so it gets the same underline
+     * colour as hasform. Read from the raw column rather than a rendered
+     * cell, so the mark shows up whether or not Apply Type is one of the
+     * ticked columns.
+     */
+    if (row.job?.quick_apply === 0) classes.push("extapply");
 
     /*
      * The job id travels with the row so the page can remember, in this

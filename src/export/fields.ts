@@ -774,6 +774,11 @@ export const FIELDS: FieldDef[] = [
     get: (c) => formLabel(formOf(c)),
   },
   {
+    key: "apply_type", label: "Apply Type", group: "job", scope: "job",
+    help: "TES only: 'Quick Apply' goes straight through TES with your board profile, nothing further to fill in. 'Apply' hands you off to the school's own site or contact instead — check Form to Fill? beside it, since that is usually where the extra step is. Blank on every other board, which does not expose this distinction.",
+    get: (c) => (c.job?.quick_apply == null ? "" : c.job.quick_apply ? "Quick Apply" : "Apply"),
+  },
+  {
     key: "write_to", label: "Who to Write To", group: "contact", scope: "both",
     help: "A named human for a speculative application, found on the school's leadership or contact pages, with their address where the page gave one. Only filled where no careers address exists — where one does, that is the better route. The Director of Sport ranks above the Head on purpose: they are the person who knows whether they need another PE teacher, and they answer their own email. Where only a name was found, send it to the School Email marked for their attention.",
     get: (c) => {
