@@ -9,7 +9,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { log } from "../core/logger.ts";
 import type { JobRow, SchoolRow } from "../store/db.ts";
-import { daysUntil, resolveFields, type FieldContext, type FieldDef } from "./fields.ts";
+import { daysUntil, ledger, resolveFields, type FieldContext, type FieldDef } from "./fields.ts";
 
 export interface SheetRow {
   job?: JobRow;
@@ -118,7 +118,7 @@ export interface HtmlOptions {
    * known only there — the mark is kept in local storage, and a static page
    * has nowhere else to put it.
    */
-  view?: "default" | "applied";
+  view?: "default" | "applied" | "skipped";
   /** Appended inside the shared <style> block, for a page with its own widgets. */
   extraCss?: string;
   /** Appended after the shared tick-persistence <script>, for a page with its own behaviour. */
@@ -166,6 +166,10 @@ const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3
   button.mark { font: inherit; font-size: 12px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--muted); cursor: pointer; }
   button.mark:hover { border-color: #1f883d; color: #1f883d; }
   button.mark.done { border-color: #1f883d; background: color-mix(in srgb, #1f883d 18%, transparent); color: inherit; font-weight: 600; }
+  td.col-applied button.mark + button.mark { margin-left: 4px; }
+  button.mark.skip:hover { border-color: var(--muted); color: var(--fg); }
+  button.mark.skip.done { border-color: var(--muted); background: color-mix(in srgb, var(--muted) 20%, transparent); }
+  tr.skipped { opacity: .55; }
 
   /*
    * A form to fill in is work to do before applying — an afternoon, not a
@@ -404,7 +408,8 @@ export function writeHtml(
      * own id, so the mark survives a rebuild: the row is rewritten every run,
      * but it keeps the same identity.
      */
-    const id = row.job?.id ? ` data-job="${esc(row.job.id)}"` : "";
+    const skippedRec = row.job ? ledger().skipped.get(row.job.dedupe_key) : undefined;
+    const id = (row.job?.id ? ` data-job="${esc(row.job.id)}"` : "") + (skippedRec ? ` data-skipped-db="${esc(skippedRec.at)}"` : "");
     if (!classes.length) return id;
     return ` class="${classes.join(" ")}"${id}`;
   };
@@ -429,13 +434,16 @@ ${
 <h1>${esc(title)}</h1>
 <p class="meta">${body.length} rows${leadershipCount ? ` · ${leadershipCount} leadership` : ""} · updated ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC · click a header to sort${opts.note ? ` · ${esc(opts.note)}` : ""}</p>
 <input id="q" placeholder="Filter rows…" autocomplete="off">
+<button type="button" class="mark" id="exportMarks" title="Download your applied / not-interested marks, then run: npm run import-marks -- marks.json">export marks</button>
 ${leadershipCount ? '<label class="only"><input type="checkbox" id="leadOnly"> leadership roles only</label>' : ""}
 <div class="wrap"><table>
 <thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
 <tbody>
 ${body.map((r, i) => `<tr${rowAttrs(r, rows[i]!)}>${r.map((v, j) => `<td class="col-${esc(fields[j]!.key.replace(/_/g, "-"))}">${cell(v, fields[j]!)}</td>`).join("")}</tr>`).join("\n")}
 </tbody></table></div>
-<p class="empty" id="empty" style="display:none">${esc(opts.view === "applied" ? "Nothing here yet. Mark a role as applied on the Open roles page and it moves to this tab." : "No rows match.")}</p>
+<p class="empty" id="empty" style="display:none">${esc(opts.view === "applied" ? "Nothing here yet. Mark a role as applied on the Open roles page and it moves to this tab."
+      : opts.view === "skipped" ? "Nothing here yet. Mark a role as not interested on the Open roles page and it moves to this tab, where you can undo it."
+      : "No rows match.")}</p>
 <script>
 const VIEW = "${opts.view ?? "default"}";
 const rows = [...document.querySelectorAll("tbody tr")];
@@ -457,6 +465,14 @@ const writeMarks = (m) => { try { localStorage.setItem(STORE, JSON.stringify(m))
 const niceDate = (iso) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
 const marks = readMarks();
+
+// "Not interested" is kept the same way, in its own store, so it can be
+// undone from its tab. Applying and skipping a role are mutually exclusive.
+const SKIP_STORE = "skipped-dates";
+const readSkips = () => { try { return JSON.parse(localStorage.getItem(SKIP_STORE) || "{}"); } catch { return {}; } };
+const writeSkips = (m) => { try { localStorage.setItem(SKIP_STORE, JSON.stringify(m)); } catch { /* private window */ } };
+const skips = readSkips();
+const isSkipped = (row) => !isApplied(row) && (!!row.dataset.skippedDb || !!skips[row.dataset.job]);
 
 /**
  * A role counts as applied for if the database already says so — set by
@@ -481,25 +497,48 @@ function setupApplied() {
     // it was typed deliberately and survives a cleared browser. Left alone.
     if (td.textContent.trim()) { row.dataset.appliedDb = "1"; continue; }
 
+    // A skip already in the permanent record is shown, and undone from the
+    // command line, the same as a recorded application.
+    if (row.dataset.skippedDb) {
+      td.textContent = "🚫 " + niceDate(row.dataset.skippedDb);
+      td.title = "Not interested — in the permanent record (npm run track)";
+      row.classList.add("skipped");
+      continue;
+    }
+
     const button = document.createElement("button");
     button.className = "mark";
+    const skip = document.createElement("button");
+    skip.className = "mark skip";
     const paint = () => {
       const on = marks[id];
+      const off = skips[id];
       button.textContent = on ? "✅ " + niceDate(on) : "mark applied";
       button.classList.toggle("done", !!on);
       button.title = on ? "Applied on " + niceDate(on) + " — click to undo" : "Record that you applied today";
+      skip.textContent = off ? "🚫 " + niceDate(off) : "not interested";
+      skip.classList.toggle("done", !!off);
+      skip.title = off ? "Marked not interested on " + niceDate(off) + " — click to undo" : "Hide this role from Open roles";
       row.classList.toggle("applied", !!on);
+      row.classList.toggle("skipped", !!off && !on);
     };
     button.addEventListener("click", () => {
       if (marks[id]) delete marks[id];
-      else marks[id] = new Date().toISOString();
+      else { marks[id] = new Date().toISOString(); delete skips[id]; writeSkips(skips); }
       writeMarks(marks);
       paint();
       // The row now belongs to the other page, so take it off this one.
       applyFilters();
     });
+    skip.addEventListener("click", () => {
+      if (skips[id]) delete skips[id];
+      else { skips[id] = new Date().toISOString(); delete marks[id]; writeMarks(marks); }
+      writeSkips(skips);
+      paint();
+      applyFilters();
+    });
     td.textContent = "";
-    td.appendChild(button);
+    td.append(button, skip);
     paint();
   }
 }
@@ -519,7 +558,8 @@ function applyFilters() {
     // here which half they are showing, because the mark lives in this
     // browser and the page was written before it existed.
     const applied = isApplied(r);
-    const matchesView = VIEW === "applied" ? applied : !applied;
+    const skipped = isSkipped(r);
+    const matchesView = VIEW === "applied" ? applied : VIEW === "skipped" ? skipped : !applied && !skipped;
     const show = matchesText && matchesLead && matchesView;
     r.style.display = show ? "" : "none";
     if (show) shown++;
@@ -528,6 +568,18 @@ function applyFilters() {
   if (empty) empty.style.display = shown ? "none" : "";
 }
 q.addEventListener("input", applyFilters);
+
+// The marks live in this browser. Exporting them is how they become part of
+// the permanent record: save the file, then run "npm run import-marks".
+const exportBtn = document.getElementById("exportMarks");
+if (exportBtn) exportBtn.addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), applied: marks, skipped: skips }, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "marks.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
 if (leadOnly) leadOnly.addEventListener("change", applyFilters);
 document.querySelectorAll("th").forEach((th, i) => {
   let asc = true;

@@ -3,6 +3,7 @@
   "//order": "Columns appear in the order listed here. Run `npm run fields` to see every option.",
   "days_left": true,
   "applied": true,
+  "application_history": true,
   "country": true,
   "city": true,
   "school_name": true,

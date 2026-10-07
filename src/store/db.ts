@@ -407,6 +407,7 @@ export function finishRun(runId: number, stats: unknown): void {
 
 export interface JobRow {
   id: string;
+  dedupe_key: string;
   source: SourceId;
   title: string;
   url: string;

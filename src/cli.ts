@@ -14,6 +14,7 @@ import { execFile } from "node:child_process";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { recordSent } from "./sentlog.ts";
+import { appendLedger, type LedgerEntry, type LedgerEvent } from "./ledger.ts";
 import { OUT_DIR, loadFields, loadTargets, writeFieldsConfig } from "./config.ts";
 import { stats as httpStats } from "./core/http.ts";
 import { log, setLogLevel, type LogLevel } from "./core/logger.ts";
@@ -42,7 +43,8 @@ import {
   pipeline,
   setStatus,
 } from "./track.ts";
-import { closeDb, dedupeSchools, getSchools, rerankCountries } from "./store/db.ts";
+import { closeDb, dedupeSchools, getSchools, queryJobs, rerankCountries } from "./store/db.ts";
+import { readLedger } from "./ledger.ts";
 import {
   ALL_SOURCES,
   printStats,
@@ -298,6 +300,10 @@ function trackCommand(args: Args): void {
 
   const job = chosen!.job;
   setStatus(job.id, verb, str(args, "note"));
+  // The permanent record. "Applied" and anything past it is an application;
+  // "skip" is a decision not to. Interested is a bookmark and is not recorded.
+  const event: LedgerEvent | null = ["applied", "interview", "offer", "rejected"].includes(verb) ? "applied" : verb === "skip" ? "skipped" : null;
+  if (event) appendLedger([{ at: new Date().toISOString(), event, job_id: job.id, dedupe_key: job.dedupe_key, school_key: job.school_key, school: job.school_name, title: job.title, url: job.url }]);
   log.ok(`${STATUS_LABEL[verb]}: ${job.title} — ${job.school_name ?? "unknown school"}`);
 }
 
@@ -322,6 +328,7 @@ USAGE
   npm run schedule -- --daily 07:00  install an OS scheduled task
   npm run track                      your pipeline + what closes soon
   npm run mark-sent -- a@b.com       permanently record an address as emailed today
+  npm run import-marks -- marks.json make the site's applied / not-interested marks permanent
   npm run alerts                     list roles worth acting on now
   npm run site                       build the publishable site/ folder (includes the Email tab)
   npm run report                     open the latest HTML report
@@ -653,6 +660,30 @@ async function main(): Promise<void> {
 
     case "track": {
       trackCommand(args);
+      break;
+    }
+
+    case "import-marks": {
+      // Takes the file the site's "Export marks" button downloads, and makes
+      // it permanent: {"applied": {jobId: iso}, "skipped": {jobId: iso}}.
+      const file = str(args, "file") ?? args.positional[0];
+      if (!file) { log.error("say which file: npm run import-marks -- marks.json"); process.exitCode = 1; break; }
+      const marks = JSON.parse(readFileSync(file, "utf8")) as { applied?: Record<string, string>; skipped?: Record<string, string> };
+      const jobs = new Map(queryJobs({ peOnly: false, status: "any" }).map((j) => [j.id, j]));
+      const have = new Set(readLedger().map((e) => `${e.event}|${e.dedupe_key}`));
+      const entries: LedgerEntry[] = [];
+      let unknown = 0;
+      for (const [event, set] of [["applied", marks.applied ?? {}], ["skipped", marks.skipped ?? {}]] as const) {
+        for (const [id, at] of Object.entries(set)) {
+          const j = jobs.get(id);
+          if (!j) { unknown++; continue; }
+          if (have.has(`${event}|${j.dedupe_key}`)) continue;
+          entries.push({ at, event, job_id: id, dedupe_key: j.dedupe_key, school_key: j.school_key, school: j.school_name, title: j.title, url: j.url });
+        }
+      }
+      appendLedger(entries);
+      log.ok(`recorded ${entries.length} marks permanently${unknown ? ` · ${unknown} not found in the database (an old advert that has left it)` : ""}`);
+      for (const e of entries) log.plain(`  ${e.event.padEnd(8)} ${(e.school ?? "?").slice(0, 30).padEnd(32)} ${e.title.slice(0, 50)}`);
       break;
     }
 

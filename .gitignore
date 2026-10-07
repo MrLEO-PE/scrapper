@@ -1,6 +1,7 @@
 data/*
 !data/jobs.db
 !data/sent-log.jsonl
+!data/applications.jsonl
 site/
 node_modules/
 *.log

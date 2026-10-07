@@ -56,6 +56,7 @@ function buildNav(): NavItem[] {
   const nav: NavItem[] = [
     { label: "Open roles", href: "index.html" },
     { label: "Applied", href: "applied.html" },
+    { label: "Not interested", href: "skipped.html" },
     { label: "Schools", href: "schools.html" },
     { label: "Closed", href: "closed.html" },
     { label: "Download CSV", href: "pe-jobs.csv" },
@@ -140,6 +141,13 @@ export function buildSite(opts: SiteOptions): { dir: string; jobs: number; schoo
     nav: navFor("applied.html"),
     note: "marked in this browser, so this list is per-device — `npm run track` is the permanent record",
     view: "applied",
+  });
+
+  // Roles you chose to hide. Built from the same rows, filtered in the browser.
+  writeHtml(join(dir, "skipped.html"), [...open, ...closed], opts.fields, "job", "Roles you are not interested in", {
+    nav: navFor("skipped.html"),
+    note: "marked in this browser — click the 🚫 button to bring a role back to Open roles",
+    view: "skipped",
   });
 
   /*

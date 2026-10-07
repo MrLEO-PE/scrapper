@@ -30,6 +30,7 @@ import {
   speculativeEmail,
 } from "./email.ts";
 import { trustedPeHook, trustedSchoolHook } from "./hooktrust.ts";
+import { historyFor, ledgerState } from "../ledger.ts";
 import { assessFit, fitSummary } from "../match/fit.ts";
 import { BASIS_LABEL } from "../enrich/salary.ts";
 import { benchmarkAverage, benchmarkSavings, countryBenchmark } from "../enrich/benchmarks.ts";
@@ -235,7 +236,12 @@ const openRolesFor = (key?: string | null): OpenRoles | undefined => {
   return key ? openRolesCache.get(key) : undefined;
 };
 
+/** The permanent application record, read once per process. */
+let ledgerCache: ReturnType<typeof ledgerState> | null = null;
+export const ledger = () => (ledgerCache ??= ledgerState());
+
 export const resetHiring = (): void => {
+  ledgerCache = null;
   hiringCache = null;
   openRolesCache = null;
 };
@@ -835,9 +841,20 @@ export const FIELDS: FieldDef[] = [
 
   // ---- tracking -------------------------------------------------------
   {
+    key: "application_history", label: "Past Applications", group: "tracking", scope: "both",
+    help: "Every position you have applied for at this school, from the permanent record (data/applications.jsonl), so a second application to the same school is a decision you make with the history in front of you. Starts with SAME ROLE when this very position — even if re-advertised under a new id — is one you already applied for.",
+    get: (c) => historyFor(ledger(), c.school?.school_key ?? c.job?.school_key, c.job?.dedupe_key),
+  },
+  {
     key: "applied", label: "Applied", group: "tracking", scope: "job",
     help: "A tick and the date once you have confirmed you applied, so a long list shows at a glance what is already dealt with. Set with 'npm run track'. Interested and Not-for-me are not applications and stay blank; a status past Applied names itself, because an interview is still an application you sent.",
     get: (c) => {
+      // The permanent record counts as well as the database status, and it
+      // recognises a re-posted role by position, not by advert id.
+      const rec = c.job ? ledger().applied.get(c.job.dedupe_key) : undefined;
+      if (rec && !APPLIED.has(c.job?.my_status ?? "")) {
+        return `✅ ${new Date(rec.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
+      }
       const status = c.job?.my_status ?? "";
       if (!APPLIED.has(status)) return "";
       const when = c.job?.my_status_at ? new Date(c.job.my_status_at) : null;
