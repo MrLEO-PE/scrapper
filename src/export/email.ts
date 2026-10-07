@@ -25,6 +25,8 @@ import { join } from "node:path";
 import { log } from "../core/logger.ts";
 import type { Qualification } from "../core/types.ts";
 import { assessFit } from "../match/fit.ts";
+import { pickDuty, type StrengthKey } from "../match/advertpick.ts";
+import { isStale, monthsAgo, type PrincipalSource } from "./factsource.ts";
 
 export interface Bullet {
   key: string;
@@ -42,6 +44,8 @@ export interface Profile {
   intro: string;
   /** Closes the hook: what I already do, then what I would add. */
   bridge: string;
+  /** What I answer a quoted advert line with, by which strength fits it. */
+  adBridges: Record<StrengthKey, string>;
   /** Used instead of the bridge when no fact about the school was found. */
   bulletsWhenNoHook: string;
   bullets: Bullet[];
@@ -165,6 +169,8 @@ export interface LetterInputs {
   schools: string[];
   /** Verified, and about this school alone — never a hook shared with another. */
   principal?: string | null;
+  /** Where the name was read. Without it the name is used but flagged. */
+  principalSource?: PrincipalSource;
   schoolHook?: string | null;
   peHook?: string | null;
   curriculum?: string[] | null;
@@ -197,8 +203,26 @@ export function buildLetter(i: LetterInputs): DraftEmail {
   // Greeting. A name only when we hold one; never a placeholder.
   let greeting = "Dear Principal and the HR Team,";
   if (!group && i.principal) {
-    greeting = `Dear Principal ${bareName(i.principal)} and the HR Team,`;
-    flags.push("check the principal's name on the school's own page");
+    const src = i.principalSource;
+    const name = bareName(i.principal);
+    if (src && src.kind !== "school-page") {
+      // Rule 2: the name comes from the school's own page. A name that was
+      // only found in an advert, or whose source was never recorded, is left
+      // out (rule 3) and said so, so it can be confirmed and used.
+      flags.push(
+        src.kind === "advert"
+          ? `a principal "${name}" appears only in a job advert, not on the school's own page — confirm it there to use the name`
+          : `a principal "${name}" is on file but its source was never recorded — confirm it on the school's own page to use the name`,
+      );
+    } else {
+      greeting = `Dear Principal ${name} and the HR Team,`;
+      if (!src) flags.push("check the principal's name on the school's own page");
+      else if (isStale(src)) {
+        flags.push(
+          `principal's name was last read ${monthsAgo(src.seenAt)} months ago — people change in July and August, so re-check it on the school's own page before sending`,
+        );
+      }
+    }
   } else if (group) {
     greeting = "Dear HR Team,";
   }
@@ -207,16 +231,34 @@ export function buildLetter(i: LetterInputs): DraftEmail {
     ? fill(profile.applyOpening, { role, school: schoolText })
     : fill(group ? profile.groupOpening : profile.speculativeOpening, { school: schoolText });
 
-  // The hook: one real fact, then the bridge. A school's PE fact comes first
-  // because it is what the bridge leads into; a group has no single school to
-  // say a fact about, so it gets none.
-  const hook = group ? null : i.peHook ? `I noticed ${i.peHook}.` : i.schoolHook ? `${i.schools[0]} ${i.schoolHook}.` : null;
+  const advert = i.advertText ?? "";
+
+  /*
+   * The hook: one real fact, then what I would add.
+   *
+   * For an application the best fact is a duty from the advert itself, quoted
+   * exactly — it is this job, in the school's own words, and it is answered
+   * with the strength that fits it. Failing that, a fact read off the school's
+   * own pages; failing that, no hook, and the flags say so. A group inbox has
+   * no single school to say a fact about, so it gets none.
+   */
+  const duty = !group && role ? pickDuty(advert) : null;
+  const hook = group
+    ? null
+    : duty
+      ? `One line in your advert stood out: "${duty.sentence}." ${profile.adBridges[duty.key]} ${profile.bulletsWhenNoHook}`
+      : i.peHook
+        ? `I noticed ${i.peHook}. ${profile.bridge}`
+        : i.schoolHook
+          ? `${i.schools[0]} ${i.schoolHook}. ${profile.bridge}`
+          : null;
   if (!hook && !group) flags.push("no specific fact found for this school — add one from their own site before sending");
 
-  const advert = i.advertText ?? "";
   const evidence = `${(i.curriculum ?? []).join(" ")} ${advert} ${i.peHook ?? ""}`;
   const bullets = profile.bullets
     .filter((b) => !b.when || new RegExp(b.when, "i").test(evidence))
+    // The strength that answers the advert's line goes first.
+    .sort((a, b) => Number(b.key === duty?.key) - Number(a.key === duty?.key))
     .map((b) => `• ${b.text}`);
 
   if (advert) {
@@ -231,7 +273,7 @@ export function buildLetter(i: LetterInputs): DraftEmail {
     "",
     `${opening} ${profile.intro}`,
     "",
-    ...(hook ? [`${hook} ${profile.bridge}`] : [profile.bulletsWhenNoHook]),
+    hook ?? profile.bulletsWhenNoHook,
     "",
     ...bullets,
     "",
@@ -252,6 +294,7 @@ export interface EmailInputs {
   role: string;
   school: string;
   principal?: string | null;
+  principalSource?: PrincipalSource;
   schoolHook?: string | null;
   peHook?: string | null;
   advertText?: string | null;
@@ -264,6 +307,7 @@ export function draftEmail(i: EmailInputs): DraftEmail {
     role: i.role,
     schools: [i.school],
     principal: i.principal,
+    principalSource: i.principalSource,
     schoolHook: i.schoolHook,
     peHook: i.peHook,
     advertText: i.advertText,
@@ -274,6 +318,7 @@ export function draftEmail(i: EmailInputs): DraftEmail {
 export interface SpeculativeInputs {
   school: string;
   principal?: string | null;
+  principalSource?: PrincipalSource;
   schoolHook?: string | null;
   peHook?: string | null;
   accreditation?: string | null;
@@ -286,6 +331,7 @@ export function speculativeEmail(i: SpeculativeInputs): DraftEmail {
   return buildLetter({
     schools: [i.school],
     principal: i.principal,
+    principalSource: i.principalSource,
     schoolHook: i.schoolHook,
     peHook: i.peHook,
     curriculum: i.curriculum,

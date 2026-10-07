@@ -25,6 +25,8 @@
 import type { SchoolRow } from "../store/db.ts";
 import { groupSpeculativeEmail, speculativeEmail } from "./email.ts";
 import { trustedPeHook, trustedSchoolHook } from "./hooktrust.ts";
+import { principalFor } from "./factsource.ts";
+import { ledgerState } from "../ledger.ts";
 import { loadSentLog, monthsSinceSent, type SentRecord } from "../sentlog.ts";
 
 export type RecipientTier = "careers" | "named" | "general";
@@ -47,6 +49,12 @@ export interface Recipient {
   missing: string[];
   /** Things to check before sending; never part of the body. */
   flags: string[];
+  /** Positions already applied for at these schools, from the permanent record. */
+  applications: { at: string; title: string; school: string }[];
+  /** Roles at these schools you decided against. */
+  skippedCount: number;
+  /** Applied within the last 60 days — a speculative email now would cross it. */
+  appliedRecently: boolean;
   lastSent: SentRecord | undefined;
   monthsSinceSent: number | null;
 }
@@ -66,6 +74,8 @@ function commonValue<T>(values: (T | null)[]): T | null {
 
 export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string): Recipient[] {
   const sentLog = loadSentLog(sentLogPath);
+  const decided = ledgerState();
+  const RECENT_DAYS = 60;
 
   const groups = new Map<string, { tier: RecipientTier; schools: SchoolRow[] }>();
   for (const s of allSchools) {
@@ -91,7 +101,15 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string): 
       null,
     );
     const rec = sentLog.get(email);
+    const keys = new Set(schools.map((s) => s.school_key));
+    const applications = [...decided.applied.values()]
+      .filter((e) => e.school_key && keys.has(e.school_key))
+      .map((e) => ({ at: e.at, title: e.title, school: e.school ?? "" }));
+    const skippedCount = [...decided.skipped.values()].filter((e) => e.school_key && keys.has(e.school_key)).length;
+    const appliedRecently = applications.some((a) => Date.now() - Date.parse(a.at) < RECENT_DAYS * 86_400_000);
+    const history = { applications, skippedCount, appliedRecently };
     const base = {
+      ...history,
       email,
       tier,
       schools,
@@ -127,7 +145,7 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string): 
       school: s.name,
       // Only the principal is greeted by name. A Director of Sport or an HR
       // contact is somebody to write TO, not somebody to call "Principal".
-      principal: s.principal,
+      ...principalFor(s),
       schoolHook,
       peHook,
       curriculum: s.curriculum_json ? (JSON.parse(s.curriculum_json) as string[]) : null,

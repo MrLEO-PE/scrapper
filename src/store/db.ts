@@ -816,6 +816,7 @@ export interface SchoolRow {
   school_hook: string | null;
   pe_hook: string | null;
   emails_json: string | null;
+  provenance_json: string | null;
   origin: string;
   country_rank: number | null;
   accreditation: string | null;

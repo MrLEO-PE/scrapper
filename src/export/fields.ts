@@ -31,6 +31,7 @@ import {
 } from "./email.ts";
 import { trustedPeHook, trustedSchoolHook } from "./hooktrust.ts";
 import { historyFor, ledgerState } from "../ledger.ts";
+import { principalFor } from "./factsource.ts";
 import { assessFit, fitSummary } from "../match/fit.ts";
 import { BASIS_LABEL } from "../enrich/salary.ts";
 import { benchmarkAverage, benchmarkSavings, countryBenchmark } from "../enrich/benchmarks.ts";
@@ -458,7 +459,7 @@ export const FIELDS: FieldDef[] = [
       if (!s) return "";
       const draft = speculativeEmail({
         school: s.name,
-        principal: s.principal,
+        ...principalFor(s),
         schoolHook: trustedSchoolHook(s.school_hook),
         peHook: trustedPeHook(s.pe_hook),
         accreditation: s.accreditation,
@@ -546,7 +547,7 @@ export const FIELDS: FieldDef[] = [
         return buildLetter({
           role: c.job.title,
           schools: [c.school?.name ?? c.job.school_name ?? ""],
-          principal: c.school?.principal,
+          ...(c.school ? principalFor(c.school) : {}),
           schoolHook: trustedSchoolHook(c.school?.school_hook),
           peHook: trustedPeHook(c.school?.pe_hook),
           advertText: c.job.description,
@@ -557,7 +558,7 @@ export const FIELDS: FieldDef[] = [
       if (!s) return "";
       return buildLetter({
         schools: [s.name],
-        principal: s.principal,
+        ...principalFor(s),
         schoolHook: trustedSchoolHook(s.school_hook),
         peHook: trustedPeHook(s.pe_hook),
         curriculum: parseJsonColumn<string[]>(s.curriculum_json, []),
@@ -573,7 +574,7 @@ export const FIELDS: FieldDef[] = [
         draftEmail({
           role: c.job.title,
           school: c.school?.name ?? c.job.school_name ?? "",
-          principal: c.school?.principal,
+          ...(c.school ? principalFor(c.school) : {}),
           schoolHook: trustedSchoolHook(c.school?.school_hook),
           peHook: trustedPeHook(c.school?.pe_hook),
           advertText: c.job.description,

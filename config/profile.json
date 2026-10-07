@@ -52,5 +52,10 @@
   ],
   "applyOpening": "I am applying for the {role} position at {school}.",
   "speculativeOpening": "I am writing speculatively to introduce myself as a Physical Education teacher, and to ask that you keep me in mind for future PE openings at {school}.",
-  "groupOpening": "I am writing speculatively to introduce myself as a Physical Education teacher, about opportunities across your schools: {school}."
+  "groupOpening": "I am writing speculatively to introduce myself as a Physical Education teacher, about opportunities across your schools: {school}.",
+  "adBridges": {
+    "assessment": "That is the system I have built: clear levels for each sport and year group, and a self-assessment app where students rate themselves and I record my own assessment.",
+    "events": "That is what I do now: I organise events in the JSAC and FOBISIA circuits, and at Saigon Star I led PE programming and introduced a House Team system.",
+    "igcse": "I teach Cambridge IGCSE PE, and I built an online IGCSE PE workbook and a gym training app for my students."
+  }
 }

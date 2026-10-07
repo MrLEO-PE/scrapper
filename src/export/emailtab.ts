@@ -61,7 +61,7 @@ export function emailTabBody(recipients: Recipient[]): string {
     <a class="em-btn" href="${esc(gmailComposeUrl(r.email, r.subject, r.body))}" target="_blank" rel="noopener">open in Gmail</a>`
       : `<span class="em-warn">NEEDS: ${esc(r.missing.join(", "))}</span>`;
 
-    return `  <li class="em-item" data-email="${esc(r.email)}" data-country="${esc(r.country ?? "")}" data-tier="${esc(r.tier)}" data-fact="${esc(r.factQuality)}" data-sent="${r.lastSent ? "1" : "0"}" data-idx="${idx}">
+    return `  <li class="em-item" data-email="${esc(r.email)}" data-country="${esc(r.country ?? "")}" data-tier="${esc(r.tier)}" data-fact="${esc(r.factQuality)}" data-sent="${r.lastSent ? "1" : "0"}" data-recent="${r.appliedRecently ? "1" : "0"}" data-idx="${idx}">
     <label class="tick"><input type="checkbox" class="em-pick" data-mark="rcpt|${esc(r.email)}"><span class="box" aria-hidden="true"></span></label>
     <div>
       <p class="nr-name"><a class="em-mailto" href="mailto:${esc(r.email)}">${esc(r.email)}</a>
@@ -71,6 +71,10 @@ export function emailTabBody(recipients: Recipient[]): string {
       </p>
       <p class="nr-meta">${schoolLine}</p>
       ${meta ? `<p class="nr-meta">${meta}</p>` : ""}
+      ${r.applications.length || r.skippedCount ? `<p class="nr-meta em-history${r.appliedRecently ? " em-recent" : ""}">${r.appliedRecently ? "⚠ you applied here recently — " : ""}${[
+        ...r.applications.map((a) => `applied ${new Date(a.at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}: ${esc(a.title)}`),
+        r.skippedCount ? `${r.skippedCount} role${r.skippedCount === 1 ? "" : "s"} marked not interested` : "",
+      ].filter(Boolean).join(" · ")}</p>` : ""}
       ${r.flags.length ? `<p class="nr-meta em-warn">check: ${esc(r.flags.join(" · "))}</p>` : ""}
       ${body}
     </div>
@@ -103,6 +107,7 @@ export function emailTabBody(recipients: Recipient[]): string {
   </select>
   <label class="em-check"><input type="checkbox" id="emReady" checked> specific fact only</label>
   <label class="em-check"><input type="checkbox" id="emHideSent"> hide already sent</label>
+  <label class="em-check"><input type="checkbox" id="emHideApplied" checked> hide schools I applied to in the last 60 days</label>
 </div>
 
 <div class="em-bar">
@@ -138,6 +143,8 @@ export const EMAIL_TAB_CSS = `
   .  .em-tag-fact-group { background: color-mix(in srgb, #d29922 18%, transparent); color: #d29922; }
   .em-tag-fact-none { background: color-mix(in srgb, #d1242f 16%, transparent); color: #d1242f; }
   .em-warn { color: #d29922; font-weight: 600; }
+  .em-history { color: var(--muted); }
+  .em-recent { color: var(--warn); font-weight: 600; }
   .em-sent { font-size: 11px; color: var(--muted); margin-left: 6px; }
   li.em-item.em-sent-row { opacity: .5; }
   .em-preview { margin: 6px 0; }
@@ -168,6 +175,7 @@ export const EMAIL_TAB_SCRIPT = `
   var tier = document.getElementById("emTier");
   var readyOnly = document.getElementById("emReady");
   var hideSent = document.getElementById("emHideSent");
+  var hideApplied = document.getElementById("emHideApplied");
   var counter = document.getElementById("emCounter");
 
   items.forEach(function (li) {
@@ -191,7 +199,8 @@ export const EMAIL_TAB_SCRIPT = `
       var matchesTier = !t || li.dataset.tier === t;
       var matchesReady = !readyOnly.checked || li.dataset.fact !== "none";
       var matchesSent = !hideSent.checked || li.dataset.sent !== "1";
-      var show = matchesText && matchesCountry && matchesTier && matchesReady && matchesSent;
+      var matchesApplied = !hideApplied.checked || li.dataset.recent !== "1";
+      var show = matchesText && matchesCountry && matchesTier && matchesReady && matchesSent && matchesApplied;
       li.style.display = show ? "" : "none";
       if (show) visible++;
     });
@@ -199,7 +208,7 @@ export const EMAIL_TAB_SCRIPT = `
   }
 
   [q, country, tier].forEach(function (el) { el.addEventListener("input", applyFilters); });
-  [readyOnly, hideSent].forEach(function (el) { el.addEventListener("change", applyFilters); });
+  [readyOnly, hideSent, hideApplied].forEach(function (el) { el.addEventListener("change", applyFilters); });
   applyFilters();
 
   function visibleItems() {
