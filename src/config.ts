@@ -88,6 +88,8 @@ export const DEFAULT_TARGETS: Targets = {
     "teacherhorizons",
     "seekteachers",
     "teachingnomad",
+    "wishlist",
+    "teast",
     "nordanglia",
     "inspired",
     "isp",

@@ -43,6 +43,8 @@ import { seekTeachersSource } from "./sources/seekteachers.ts";
 import { teachingNomadSource } from "./sources/teachingnomad.ts";
 import { successFactorsSources } from "./sources/successfactors.ts";
 import { workdaySources } from "./sources/workday.ts";
+import { wishlistSource } from "./sources/wishlist.ts";
+import { teastSource } from "./sources/teast.ts";
 import { schoolSitesSource } from "./sources/schoolsites.ts";
 import { mailboxSource } from "./sources/mailbox.ts";
 import { europeanChamberSource } from "./sources/europeanchamber.ts";
@@ -73,6 +75,8 @@ export const ALL_SOURCES: Source[] = [
   teacherHorizonsSource,
   seekTeachersSource,
   teachingNomadSource,
+  wishlistSource,
+  teastSource,
   ...successFactorsSources,
   ...workdaySources,
   schoolSitesSource,
@@ -93,7 +97,7 @@ export const ALL_SOURCES: Source[] = [
 // the walk stops at a page cap, so "not seen this run" can mean "past the
 // cap" rather than "taken down". Teaching Nomad shows a rolling twenty, where
 // absence means nothing at all.
-const ENUMERATED: SourceId[] = ["tes", "teachaway", "nordanglia", "inspired", "europeanchamber", "isp", "mailalert"];
+const ENUMERATED: SourceId[] = ["tes", "teachaway", "nordanglia", "inspired", "europeanchamber", "isp", "wishlist", "mailalert"];
 
 export interface ScrapeOptions {
   sources?: string[];

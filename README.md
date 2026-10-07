@@ -64,6 +64,8 @@ npm run run-all
 | **TES Jobs** | Public JSON API behind the jobs board, `International` filter | Strongest source. ~700 international vacancies scanned per run |
 | **Teach Away** | Job records embedded in the board page, `phys-ed` filter + sitemap sweep | Carries school profile, curriculum, salary, benefits and the recruitment email |
 | **Teacher Horizons** | Public "latest vacancies" feed | Limited by design — see [below](#a-note-on-teacher-horizons) |
+| **WISHlistjobs** | Public JSON behind its Physical Education listing (4 pages) | ~50 PE posts at named schools. Posts only — the advert itself is behind a login, so it is not read |
+| **Teast** | Server-rendered PE & sports page of each country it covers | Asia-focused. Only the newest few per country (the full list loads from the site's own database, which is not touched), but each carries the school's application email and expiry date |
 | **Nord Anglia Education** | Group careers site (SAP SuccessFactors) | ~195 vacancies across 80+ schools |
 | **Inspired Education** | Group careers site (SAP SuccessFactors) | ~270 vacancies across Europe, LatAm, Africa, Asia |
 | **School careers pages** | Target schools checked directly | They often post before the boards — see [below](#your-target-schools) |

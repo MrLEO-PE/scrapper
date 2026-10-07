@@ -22,7 +22,10 @@ export type SourceId =
   | "seekteachers"
   | "teachingnomad"
   // School groups running their own Workday career site.
-  | "isp";
+  | "isp"
+  // Smaller boards with a public listing.
+  | "wishlist"
+  | "teast";
 
 /** How sure we are about a single enriched value, and where it came from. */
 export interface Provenance {
