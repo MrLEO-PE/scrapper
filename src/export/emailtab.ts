@@ -20,10 +20,9 @@ const TIER_LABEL: Record<Recipient["tier"], string> = {
 };
 
 const FACT_LABEL: Record<Recipient["factQuality"], string> = {
-  unique: "unique fact",
-  structured: "structured fact",
+  unique: "specific fact",
   group: "group letter",
-  none: "no fact — not written",
+  none: "no fact found",
 };
 
 /** A Gmail compose link carrying recipient, subject and body in one click. */
@@ -33,7 +32,6 @@ function gmailComposeUrl(to: string, subject: string, body: string): string {
 }
 
 export function emailTabBody(recipients: Recipient[]): string {
-  const sendable = recipients.filter((r) => r.body);
   const countries = [...new Set(recipients.map((r) => r.country).filter((c): c is string => !!c))].sort();
 
   const card = (r: Recipient, idx: number): string => {
@@ -73,6 +71,7 @@ export function emailTabBody(recipients: Recipient[]): string {
       </p>
       <p class="nr-meta">${schoolLine}</p>
       ${meta ? `<p class="nr-meta">${meta}</p>` : ""}
+      ${r.flags.length ? `<p class="nr-meta em-warn">check: ${esc(r.flags.join(" · "))}</p>` : ""}
       ${body}
     </div>
   </li>`;
@@ -81,7 +80,7 @@ export function emailTabBody(recipients: Recipient[]): string {
   return `
 <p class="meta">
   ${recipients.length} recipient addresses (deduplicated from ${recipients.reduce((a, r) => a + r.schools.length, 0)} schools) ·
-  ${sendable.length} ready to send · ${recipients.length - sendable.length} missing a fact ·
+  ${recipients.filter((r) => r.factQuality === "unique").length} with a specific fact · ${recipients.filter((r) => r.factQuality === "none").length} without one ·
   ticks and the batch counter are saved in this browser only
 </p>
 
@@ -102,7 +101,7 @@ export function emailTabBody(recipients: Recipient[]): string {
     <option value="named">Named contact</option>
     <option value="general">General inbox</option>
   </select>
-  <label class="em-check"><input type="checkbox" id="emReady" checked> ready to send only</label>
+  <label class="em-check"><input type="checkbox" id="emReady" checked> specific fact only</label>
   <label class="em-check"><input type="checkbox" id="emHideSent"> hide already sent</label>
 </div>
 
@@ -136,8 +135,7 @@ export const EMAIL_TAB_CSS = `
   .em-tag-named { background: color-mix(in srgb, dodgerblue 18%, transparent); color: dodgerblue; }
   .em-tag-general { background: color-mix(in srgb, var(--muted) 20%, transparent); color: var(--muted); }
   .em-tag-fact-unique { background: color-mix(in srgb, #1f883d 12%, transparent); color: #1f883d; }
-  .em-tag-fact-structured { background: color-mix(in srgb, var(--muted) 18%, transparent); color: var(--muted); }
-  .em-tag-fact-group { background: color-mix(in srgb, #d29922 18%, transparent); color: #d29922; }
+  .  .em-tag-fact-group { background: color-mix(in srgb, #d29922 18%, transparent); color: #d29922; }
   .em-tag-fact-none { background: color-mix(in srgb, #d1242f 16%, transparent); color: #d1242f; }
   .em-warn { color: #d29922; font-weight: 600; }
   .em-sent { font-size: 11px; color: var(--muted); margin-left: 6px; }

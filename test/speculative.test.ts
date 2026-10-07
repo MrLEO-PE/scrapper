@@ -1,96 +1,61 @@
 /**
- * The speculative letter — for a school that is not advertising.
- *
- * Most international appointments are made before a vacancy is published, so
- * this is arguably the more valuable of the two letters. It has less to work
- * with than a job application: no role to name, no advert to answer. What it
- * must never do is compensate by inventing, or by sending the same admiring
- * paragraph to five hundred schools.
+ * The letter to a school that is not advertising, and the one to a shared
+ * inbox. Same model, same rules: nothing is said about a school that was not
+ * found, and a missing fact is flagged rather than invented.
  */
 
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { schoolFact, speculativeEmail } from "../src/export/email.ts";
+import { groupSpeculativeEmail, schoolFact, speculativeEmail } from "../src/export/email.ts";
 
-test("uses a prose fact from the school's own pages when there is one", () => {
-  const fact = schoolFact({
-    school: "Tenby Setia Eco Park",
-    schoolHook: "became the first school in Selangor to earn IPC accreditation",
-  });
-  assert.match(fact!, /first school in Selangor/);
+test("opens with the speculative line, then who I am, with no role named", () => {
+  const d = speculativeEmail({ school: "Harbour Pine International School", peHook: "the 25 metre pool" });
+  assert.equal(d.subject, "LEO SEVIN - Speculative application, PE Teacher");
+  assert.match(d.body, /introduce myself as a Physical Education teacher/);
+  assert.match(d.body, /Harbour Pine International School\. I am a PE teacher with 8 years/);
+  assert.match(d.body, /I noticed the 25 metre pool\./);
+  assert.doesNotMatch(d.body, /position at/);
 });
 
-test("falls back to facts we hold, which are real even if not prose", () => {
-  // Only one school in ten has a prose hook, but far more have verified
-  // structured detail. Using it takes the reachable set from 52 to 130.
-  const fact = schoolFact({
-    school: "Westview Cambodian International School",
-    accreditation: "CIS, WASC",
-    curriculum: ["American"],
-    studentCount: 450,
-  });
-  assert.match(fact!, /accreditation with CIS and WASC/);
-  assert.match(fact!, /American programme you run/);
-  assert.match(fact!, /around 450 students/);
-});
-
-test("reads as a list, not as one run-on clause", () => {
-  // "accreditation with CIS, WASC and the American programme" made the
-  // programme sound like a third accrediting body.
-  const fact = schoolFact({
-    school: "A School",
-    accreditation: "CIS, WASC",
-    curriculum: ["American"],
-  });
-  assert.match(fact!, /CIS and WASC, and the American/);
-});
-
-test("says nothing when there is nothing true to say", () => {
-  // A letter with no specific fact is a form letter, which is what this column
-  // exists to avoid.
-  assert.equal(schoolFact({ school: "A School" }), null);
-  assert.equal(schoolFact({ school: "A School", curriculum: [], studentCount: null }), null);
-  // A tiny roll is not a distinguishing fact worth opening a letter with.
-  assert.equal(schoolFact({ school: "A School", studentCount: 30 }), null);
-});
-
-test("writes a complete letter with no role named", () => {
+test("a school fact is used only when one is held; accreditation and roll are never said back", () => {
   const d = speculativeEmail({
-    school: "Westview Cambodian International School",
-    principal: "Ms Jane Doe",
+    school: "Harbour Pine International School",
     accreditation: "CIS, WASC",
-    curriculum: ["American"],
+    curriculum: ["IB", "American"],
+    studentCount: 1200,
   });
-  assert.deepEqual(d.missing, []);
-  assert.match(d.subject, /speculative enquiry/i);
-  assert.match(d.body, /^Dear Ms Jane Doe and the HR Team,/);
-  assert.match(d.body, /keep me in mind for future PE openings/);
-  assert.match(d.body, /when a PE position next opens/);
-  // It must not pretend to be answering an advert.
-  assert.doesNotMatch(d.body, /position at .* I am writing to express my strong interest/);
-  assert.doesNotMatch(d.body, /\{\w+\}/);
+  assert.doesNotMatch(d.body, /CIS|WASC|1,?200|accredit/);
+  assert.ok(d.flags.some((f) => /no specific fact/.test(f)));
+  assert.ok(d.body, "the letter is still written");
 });
 
-test("refuses to write when the school is a blank to us", () => {
-  const d = speculativeEmail({ school: "A School" });
-  assert.equal(d.body, "");
-  assert.deepEqual(d.missing, ["something specific about the school"]);
+test("a PE fact comes before a general school fact", () => {
+  const d = speculativeEmail({ school: "Harbour Pine", peHook: "the sports hall", schoolHook: "was founded in 1974" });
+  assert.match(d.body, /I noticed the sports hall\./);
+  assert.doesNotMatch(d.body, /founded in 1974/);
 });
 
-test("leaves the head's name visibly open rather than blocking", () => {
-  const d = speculativeEmail({ school: "A School", accreditation: "IB" });
-  assert.ok(d.body);
-  assert.match(d.body, /\[add the head's name — not published\]/);
+test("a general school fact is said plainly, as a fact", () => {
+  const d = speculativeEmail({ school: "Harbour Pine", schoolHook: "was founded in 1974" });
+  assert.match(d.body, /Harbour Pine was founded in 1974\./);
 });
 
-test("mentions their sport only when something real was found", () => {
-  const withPe = speculativeEmail({
-    school: "A School", accreditation: "IB", peHook: "the Olympic-size swimming pool",
-  });
-  assert.match(withPe.body, /Olympic-size swimming pool/);
+test("leaves out the head's name rather than leaving a gap", () => {
+  const d = speculativeEmail({ school: "Harbour Pine", peHook: "the sports hall" });
+  assert.match(d.body, /^Dear Principal and the HR Team,/);
+  assert.doesNotMatch(d.body, /\[|add the head/);
+});
 
-  const without = speculativeEmail({ school: "A School", accreditation: "IB" });
-  assert.doesNotMatch(without.body, /I also like/);
-  // And still says what I bring.
-  assert.match(without.body, /I have taught PE since 2019/);
+test("a shared inbox gets one letter that is specific to none of its schools", () => {
+  const d = groupSpeculativeEmail({ schools: ["BASIS Shenzhen", "BASIS Chengdu", "BASIS Beijing"] });
+  assert.match(d.body, /^Dear HR Team,/);
+  assert.match(d.body, /BASIS Shenzhen, BASIS Chengdu and BASIS Beijing/);
+  assert.doesNotMatch(d.body, /I noticed/);
+  assert.equal(groupSpeculativeEmail({ schools: ["Only One"] }).body, "");
+});
+
+test("schoolFact reports whether anything verified is held, without being used as a hook", () => {
+  assert.equal(schoolFact({ school: "X" }), null);
+  assert.match(schoolFact({ school: "X", accreditation: "CIS, WASC" })!, /accredited by CIS and WASC/);
+  assert.equal(schoolFact({ school: "X", schoolHook: "was founded in 1974" }), "X was founded in 1974");
 });

@@ -23,11 +23,13 @@
  */
 
 import type { SchoolRow } from "../store/db.ts";
-import { groupSpeculativeEmail, schoolFact, speculativeEmail } from "./email.ts";
+import { groupSpeculativeEmail, speculativeEmail } from "./email.ts";
+import { trustedPeHook, trustedSchoolHook } from "./hooktrust.ts";
 import { loadSentLog, monthsSinceSent, type SentRecord } from "../sentlog.ts";
 
 export type RecipientTier = "careers" | "named" | "general";
-export type FactQuality = "unique" | "structured" | "none" | "group";
+/** unique: a fact held for this school alone. none: the letter is written without a hook. group: a shared inbox. */
+export type FactQuality = "unique" | "none" | "group";
 
 export interface Recipient {
   email: string;
@@ -43,6 +45,8 @@ export interface Recipient {
   body: string;
   /** Non-empty only when no letter could be written at all. */
   missing: string[];
+  /** Things to check before sending; never part of the body. */
+  flags: string[];
   lastSent: SentRecord | undefined;
   monthsSinceSent: number | null;
 }
@@ -55,18 +59,6 @@ function resolveAddress(s: SchoolRow): { email: string; tier: RecipientTier } | 
   return null;
 }
 
-/** A hook seen on 2+ schools is boilerplate, not a fact about any one of them. */
-function findSharedHooks(schools: SchoolRow[]): Set<string> {
-  const counts = new Map<string, number>();
-  for (const s of schools) {
-    if (!s.school_hook) continue;
-    counts.set(s.school_hook, (counts.get(s.school_hook) ?? 0) + 1);
-  }
-  const shared = new Set<string>();
-  for (const [hook, n] of counts) if (n > 1) shared.add(hook);
-  return shared;
-}
-
 function commonValue<T>(values: (T | null)[]): T | null {
   const unique = new Set(values.filter((v): v is T => v != null));
   return unique.size === 1 ? [...unique][0]! : null;
@@ -74,7 +66,6 @@ function commonValue<T>(values: (T | null)[]): T | null {
 
 export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string): Recipient[] {
   const sentLog = loadSentLog(sentLogPath);
-  const sharedHooks = findSharedHooks(allSchools);
 
   const groups = new Map<string, { tier: RecipientTier; schools: SchoolRow[] }>();
   for (const s of allSchools) {
@@ -124,38 +115,32 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string): 
         subject: draft.subject,
         body: draft.body,
         missing: draft.missing,
+        flags: draft.flags,
       });
       continue;
     }
 
     const s = schools[0]!;
-    const hookIsTrustworthy = !!s.school_hook && !sharedHooks.has(s.school_hook);
+    const schoolHook = trustedSchoolHook(s.school_hook);
+    const peHook = trustedPeHook(s.pe_hook);
     const draft = speculativeEmail({
       school: s.name,
-      principal: s.contact_name || s.principal,
-      schoolHook: hookIsTrustworthy ? s.school_hook : null,
-      peHook: s.pe_hook,
-      accreditation: s.accreditation,
+      // Only the principal is greeted by name. A Director of Sport or an HR
+      // contact is somebody to write TO, not somebody to call "Principal".
+      principal: s.principal,
+      schoolHook,
+      peHook,
       curriculum: s.curriculum_json ? (JSON.parse(s.curriculum_json) as string[]) : null,
-      studentCount: s.student_count,
     });
-
-    const fact = schoolFact({
-      school: s.name,
-      schoolHook: hookIsTrustworthy ? s.school_hook : null,
-      accreditation: s.accreditation,
-      curriculum: s.curriculum_json ? (JSON.parse(s.curriculum_json) as string[]) : null,
-      studentCount: s.student_count,
-    });
-    const factQuality: FactQuality = !fact ? "none" : hookIsTrustworthy ? "unique" : "structured";
 
     recipients.push({
       ...base,
       contactName: s.contact_name || s.principal,
-      factQuality,
+      factQuality: schoolHook || peHook ? "unique" : "none",
       subject: draft.subject,
       body: draft.body,
       missing: draft.missing,
+      flags: draft.flags,
     });
   }
 

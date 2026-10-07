@@ -1,52 +1,18 @@
 /**
- * Working out a school's website from its name.
- *
- * Guessing an address is only acceptable because every guess is checked
- * against the page that answers. A wrong address is worse than none: it yields
- * a confident careers email, package and pay figure for a different school,
- * and nothing downstream looks any less certain than the truth. So these tests
- * are mostly about refusing.
+ * Confirming a school's website. Nothing is guessed from the name — a site is
+ * only taken from an address the school published or from a search, and either
+ * is checked against the page that answers. A wrong address is worse than
+ * none, so these tests are mostly about refusing.
  */
 
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import {
-  candidateHosts,
-  distinctiveWords,
-  pageIsSchool,
-  siteFromEmail,
-} from "../src/enrich/findsite.ts";
+import { distinctiveWords, pageIsSchool, siteFromEmail } from "../src/enrich/findsite.ts";
 
 test("a nationality is not a distinctive name", () => {
-  // The false positive that prompted this rule: "Canadian International School
-  // of Singapore" guessed canadian.edu.sg, which is Canadian Education College
-  // — a language school. Both words appear on both sites.
+  // "Canadian International School of Singapore" and Canadian Education
+  // College — a language school — share both words, so neither identifies it.
   assert.deepEqual(distinctiveWords("Canadian International School of Singapore"), []);
-  assert.deepEqual(candidateHosts("Canadian International School of Singapore", "Singapore"), []);
-
-  for (const bland of [
-    "American International School",
-    "The British School",
-    "Western Academy",
-    "New City International College",
-  ]) {
-    assert.deepEqual(candidateHosts(bland, "Thailand"), [], `${bland} is not guessable`);
-  }
-});
-
-test("a real name yields candidates on the country's school domains", () => {
-  const hosts = candidateHosts("Tenby Setia Eco Park International", "Malaysia");
-  assert.ok(hosts.includes("tenby.edu.my"), `expected tenby.edu.my in ${hosts.join(", ")}`);
-  assert.ok(hosts.every((h) => /\.(edu\.my|com|com\.my)$/.test(h)));
-});
-
-test("builds the acronym schools actually use", () => {
-  // Yangon International School really is yis.edu.mm.
-  assert.ok(candidateHosts("Yangon International School", "Myanmar").includes("yis.edu.mm"));
-});
-
-test("declines a country it has no domain conventions for", () => {
-  assert.deepEqual(candidateHosts("Marshall Islands Academy", "Marshall Islands"), []);
 });
 
 test("accepts a page that is recognisably the school", () => {
@@ -149,8 +115,8 @@ test("leaves a clean title exactly as the school wrote it", () => {
 // --- web search route -------------------------------------------------------
 
 test("search is skipped cleanly when no key is configured", async () => {
-  // The key is optional. Without it discovery must still work by guessing,
-  // not throw or hang.
+  // The key is optional. Without it discovery must still work from email
+  // domains alone, not throw or hang.
   const before = process.env.SCRAPPER_SEARCH_KEY;
   delete process.env.SCRAPPER_SEARCH_KEY;
   const { searchKey } = await import("../src/enrich/findsite.ts");

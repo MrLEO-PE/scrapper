@@ -36,6 +36,7 @@
   "principal": true,
   "draft_email": true,
   "speculative_email": true,
+  "letter_flags": true,
   "outreach_ready": true,
   "job_title": true,
   "seniority": true,

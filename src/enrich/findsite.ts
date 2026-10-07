@@ -6,64 +6,22 @@
  * start without an address — yet Teach Away leaves the website blank for about
  * seven schools in ten.
  *
- * Two routes, cheapest first:
+ * Two routes, and neither is a guess:
  *
- *   1. The domain of an address we already hold. A school writing from
- *      `careers@ucsischools.edu.my` has told us its website.
- *   2. A guess from the name, checked against the site that answers.
+ *   1. The domain of an address the school itself published. A school writing
+ *      from `careers@ucsischools.edu.my` has told us its website.
+ *   2. A web search (when SCRAPPER_SEARCH_KEY is set).
  *
- * Guessing is only safe because of the check. An address belonging to a
- * different school is worse than none at all: it produces a confident careers
- * email, package and pay figure for the wrong place, and nothing downstream
- * looks any less certain than the truth. So a candidate is accepted only when
- * the page that answers is recognisably this school's.
+ * Both are checked against the page that answers before being accepted. A
+ * site belonging to a different school is worse than none: it produces a
+ * confident careers email, package and pay figure for the wrong place.
+ *
+ * Guessing domains from the name (yis.edu.mm from "Yangon International
+ * School") was removed on purpose — no website is ever invented here.
  */
 
 import { fetchText } from "../core/http.ts";
 import { log } from "../core/logger.ts";
-
-/**
- * Where schools in each country actually sit. Ordered by how likely they are,
- * because every extra candidate is a request against a host that may not exist.
- */
-const TLDS: Record<string, string[]> = {
-  Thailand: ["ac.th", "com", "co.th"],
-  Malaysia: ["edu.my", "com", "com.my"],
-  Vietnam: ["edu.vn", "com", "com.vn"],
-  China: ["cn", "com", "com.cn", "edu.cn"],
-  Singapore: ["edu.sg", "com.sg", "com"],
-  Indonesia: ["sch.id", "com", "ac.id"],
-  Japan: ["ed.jp", "ac.jp", "com"],
-  "South Korea": ["kr", "com", "or.kr"],
-  Taiwan: ["edu.tw", "com.tw", "org.tw"],
-  India: ["edu.in", "com", "in"],
-  Philippines: ["edu.ph", "com", "org"],
-  Cambodia: ["edu.kh", "com"],
-  Myanmar: ["edu.mm", "com"],
-  "Sri Lanka": ["lk", "com"],
-  Nepal: ["edu.np", "com"],
-  Bangladesh: ["edu.bd", "com"],
-  Pakistan: ["edu.pk", "com"],
-  Uzbekistan: ["uz", "com"],
-  Türkiye: ["k12.tr", "com.tr", "com"],
-  Tanzania: ["ac.tz", "com", "co.tz"],
-  Mozambique: ["co.mz", "com"],
-  Colombia: ["edu.co", "com.co", "com"],
-  "Costa Rica": ["ed.cr", "cr", "com"],
-  Peru: ["edu.pe", "com.pe", "com"],
-  Guatemala: ["edu.gt", "com.gt", "com"],
-  Nicaragua: ["edu.ni", "com.ni", "com"],
-  Venezuela: ["edu.ve", "com.ve", "com"],
-  Ecuador: ["edu.ec", "k12.ec", "com.ec"],
-  Australia: ["edu.au", "com.au", "vic.edu.au"],
-  "New Zealand": ["school.nz", "ac.nz", "co.nz"],
-  "Papua New Guinea": ["ac.pg", "com.pg"],
-  Laos: ["edu.la", "com"],
-  Bhutan: ["edu.bt", "bt"],
-  Kyrgyzstan: ["kg", "edu.kg"],
-  Maldives: ["edu.mv", "mv"],
-  Fiji: ["edu.fj", "com.fj"],
-};
 
 /** Words that describe every school and so identify none. */
 const GENERIC = new Set([
@@ -100,37 +58,6 @@ const words = (name: string): string[] =>
 /** The parts of a name that could actually identify one school. */
 export function distinctiveWords(name: string): string[] {
   return words(name).filter((w) => w.length > 2 && !GENERIC.has(w) && !NOT_DISTINCTIVE.has(w));
-}
-
-/**
- * Hostnames worth trying for this school.
- *
- * Returns nothing when the name has no distinctive part — "Canadian
- * International School" is every second school in Asia, and a guess from it
- * would be a coin toss dressed as a finding.
- */
-export function candidateHosts(name: string, country: string): string[] {
-  const distinctive = distinctiveWords(name);
-  if (!distinctive.length) return [];
-
-  const all = words(name);
-  const tlds = TLDS[country];
-  if (!tlds) return [];
-
-  const stems = new Set<string>();
-  stems.add(distinctive.join(""));
-  if (distinctive.length > 1) stems.add(distinctive.slice(0, 2).join(""));
-  stems.add(distinctive[0]!);
-  // The classic international-school acronym, from every word including the
-  // generic ones: Yangon International School is yis.edu.mm.
-  if (all.length >= 2 && all.length <= 6) stems.add(all.map((w) => w[0]).join(""));
-
-  const out: string[] = [];
-  for (const stem of stems) {
-    if (stem.length < 3 || stem.length > 30) continue;
-    for (const tld of tlds) out.push(`${stem}.${tld}`);
-  }
-  return out.slice(0, 10);
 }
 
 /**
@@ -185,8 +112,8 @@ export function siteFromEmail(email: string | null | undefined): string | null {
 
 export interface SiteFound {
   url: string;
-  /** How it was established: an address we hold, a guess, or a search. */
-  via: "email" | "guess" | "search";
+  /** How it was established: the domain of an address we hold, or a search. */
+  via: "email" | "search";
   /** How many hosts were tried to get here. */
   tried: number;
 }
@@ -275,31 +202,25 @@ export async function findWebsite(
   country: string,
   knownEmail?: string | null,
 ): Promise<SiteFound | null> {
-  const fromEmail = siteFromEmail(knownEmail);
-  if (fromEmail) return { url: fromEmail, via: "email", tried: 0 };
-
   let tried = 0;
 
-  const check = async (url: string, via: "guess" | "search"): Promise<SiteFound | null> => {
+  const check = async (url: string, via: SiteFound["via"]): Promise<SiteFound | null> => {
     tried++;
-    // Dead domains are the common case, so fail fast and do not retry.
     const html = await fetchText(url, { soft: true, retries: 0, timeoutMs: 8000, label: `site ${via} ${url}` });
     if (!html || !pageIsSchool(html, name)) return null;
     log.debug(`${name}: ${url} verified by ${via}`);
     return { url, via, tried };
   };
 
-  // Guessing is free, so it goes first; search costs a quota query.
-  for (const host of candidateHosts(name, country)) {
-    const hit = await check("https://" + host, "guess");
+  // An email domain is strong evidence, but a shared or parent-company domain
+  // is not this school's site — so it is checked like anything else.
+  const fromEmail = siteFromEmail(knownEmail);
+  if (fromEmail) {
+    const hit = await check(fromEmail, "email");
     if (hit) return hit;
   }
 
-  /*
-   * Whatever the name could not reach. Every result is put through the same
-   * verification as a guess — a search engine's first result is a strong hint,
-   * not proof, and the cost of being wrong is unchanged.
-   */
+  // A search engine's first result is a strong hint, not proof.
   for (const url of await searchForSite(name, country)) {
     const hit = await check(url, "search");
     if (hit) return hit;

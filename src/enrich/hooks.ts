@@ -126,9 +126,15 @@ const SCHOOL_HOOK_PATTERNS: { re: RegExp; shape: (m: RegExpExecArray) => string 
     shape: (m) => `is ${m[1]!.trim()}`,
   },
   {
-    // "founded in 1974"
-    re: /\b(?:founded|established|opened)\s+in\s+((?:18|19|20)\d{2})\b/,
-    shape: (m) => `has been going since ${m[1]}`,
+    /*
+     * "The school was founded in 1974" — and only that. A bare "opened in
+     * 2019" is usually a sports hall or a new wing, and rewording it as "has
+     * been going since 2019" put a false claim about the school into 428
+     * letters. The subject has to be the school, and the wording stays the
+     * page's own.
+     */
+    re: /\b(?:[Tt]he\s+)?(?:[Ss]chool|[Aa]cademy|[Cc]ollege)\s+was\s+(founded|established)\s+in\s+((?:18|19|20)\d{2})\b/,
+    shape: (m) => `was ${m[1]!.toLowerCase()} in ${m[2]}`,
   },
 
   /*
@@ -149,11 +155,6 @@ const SCHOOL_HOOK_PATTERNS: { re: RegExp; shape: (m: RegExpExecArray) => string 
     // "teaches students from nursery through grade 13" / "from age 3 to 18"
     re: /\b(?:teaches|educates|serves|caters\s+for)\s+(?:students?|pupils?|children)\s+((?:from|aged?)\s+[\w\s.'’-]{4,45}?(?:to|through|-|–)\s*[\w\s.'’-]{2,25}?)(?:[.,;]|\s+(?:and|with|in)\b)/i,
     shape: (m) => `teaches students ${m[1]!.trim().replace(/\s+/g, " ")}`,
-  },
-  {
-    // "a college preparatory school", stated on its own.
-    re: /\b(college\s+preparatory)\b/i,
-    shape: () => "is a college preparatory school",
   },
 ];
 
@@ -235,32 +236,32 @@ const PE_HOOK_PATTERNS: { re: RegExp; shape: (m: RegExpExecArray) => string }[] 
     shape: (m) => `your sports programme covering ${m[1]!.trim().replace(/\s+/g, " ").replace(/[.,;]$/, "")}`,
   },
   {
-    // "the volleyball performance pathway from upper primary through to Sixth Form"
-    re: /\b(?:the\s+)?([a-z]{4,14})\s+(?:performance\s+)?pathway\b/i,
-    shape: (m) => `the ${m[1]!.toLowerCase()} performance pathway you are building`,
+    /*
+     * "the volleyball performance pathway". Any word used to be accepted
+     * before "pathway" and padded with "performance … you are building", which
+     * produced "the montessori performance pathway you are building" on 372
+     * schools. Now a sport must name the pathway, and nothing is added.
+     */
+    re: /\b(swimming|basketball|football|soccer|rugby|netball|cricket|tennis|volleyball|badminton|hockey|athletics|gymnastics|golf|rowing)\s+((?:performance\s+)?pathway)\b/i,
+    shape: (m) => `your ${m[1]!.toLowerCase()} ${m[2]!.toLowerCase().replace(/\s+/g, " ")}`,
   },
   {
     // "established competition pathways", "competitive sports programmes"
     re: /\b((?:established|strong|clear)\s+competition\s+pathways|competitive\s+sports?\s+(?:programmes?|programs?))\b/i,
-    shape: (m) => `the ${m[1]!.toLowerCase()} you have put in place`,
+    shape: (m) => `your ${m[1]!.toLowerCase().replace(/\s+/g, " ")}`,
   },
   {
     // "a high-calibre, specialist-led sports programme that drives participation"
     re: /\b((?:specialist[\s-]led|high[\s-]calibre|high[\s-]caliber|high[\s-]performance)\s+sports?\s+programme?s?)\b/i,
     shape: (m) => `your ${m[1]!.toLowerCase().replace(/\s+/g, " ")}`,
   },
-  {
-    // A department with real structure: someone leads sport full time.
-    re: /\b(Director\s+of\s+Sports?|Head\s+of\s+(?:Sports?|PE|Physical\s+Education)|Athletics\s+Director|Head\s+of\s+Athletics)\b/,
-    shape: (m) => `that sport is led properly, with a ${m[1]!.replace(/\s+/g, " ")} in post`,
-  },
-  {
-    // A named sport sitting in the curriculum and beyond it — the Aga Khan
-    // Academy offers "swimming both as part of the MYP Physical and Health
-    // Education lessons and after school".
-    re: /\b(?:offers?|offering|provide[sd]?|run(?:s|ning)?|teach(?:es|ing)?|coach(?:es|ing)?)\s+(?:[\w\s]{0,24}?\s)?(swimming|basketball|football|soccer|rugby|netball|cricket|tennis|volleyball|badminton|hockey|athletics|gymnastics|dance|martial\s+arts)\b(?=[^.]{0,80}\b(?:after[\s-]school|co[\s-]?curricular|lessons?|curriculum|programme|department)\b)/i,
-    shape: (m) => `that ${m[1]!.toLowerCase()} runs right through the curriculum and beyond the timetable`,
-  },
+  /*
+   * Removed: "that sport is led properly, with a Director of Sport in post"
+   * and "that swimming runs right through the curriculum and beyond the
+   * timetable". Both added claims the page never made — and the first read
+   * job adverts too, so an advert *hiring* a Director of Sport produced "a
+   * Director of Sport in post" in the application for that very job.
+   */
 ];
 
 /**

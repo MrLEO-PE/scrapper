@@ -510,7 +510,6 @@ export interface FindSitesOptions {
 export interface FindSitesSummary {
   considered: number;
   fromEmail: number;
-  fromGuess: number;
   fromSearch: number;
   notFound: number;
 }
@@ -528,24 +527,17 @@ export async function runFindSites(opts: FindSitesOptions = {}): Promise<FindSit
   const rows = getSchoolsNeedingWebsite(targets, opts.limit ?? 0);
 
   log.step(`Looking for ${rows.length} missing school websites`);
-  const summary: FindSitesSummary = { considered: rows.length, fromEmail: 0, fromGuess: 0, fromSearch: 0, notFound: 0 };
   const found: Record<string, WebsiteEntry> = {};
   const today = new Date().toISOString().slice(0, 10);
 
   // Each school is a different host, so these do not queue behind each other.
   await mapLimit(rows, opts.concurrency ?? 6, async (s) => {
     const hit = await findWebsite(s.name, s.country ?? "", s.career_email ?? s.school_email);
-    if (!hit) {
-      summary.notFound++;
-      return;
-    }
-    if (hit.via === "email") summary.fromEmail++;
-    else if (hit.via === "search") summary.fromSearch++;
-    else summary.fromGuess++;
+    if (!hit) return;
 
     found[s.school_key] = {
       url: hit.url,
-      via: hit.via === "email" ? "email domain" : hit.via === "search" ? "web search, verified" : "domain-guess, verified",
+      via: hit.via === "email" ? "email domain, verified" : "web search, verified",
       found: today,
       note: `${s.name} — ${s.country ?? "?"}`,
     };
@@ -557,10 +549,9 @@ export async function runFindSites(opts: FindSitesOptions = {}): Promise<FindSit
    *
    * Five different "EF English First" branches all resolved to english.com,
    * which is Pearson Languages. Two "Ministry of Education" records landed on
-   * ministry.com. Where several schools claim one host, the guess is telling
-   * us the stem was too generic to identify anything — so none of them keeps
-   * it. This mirrors the rule that stops a shared applicant-tracking domain
-   * merging thirteen BASIS schools into one.
+   * ministry.com. Where several schools claim one host, it identifies none of
+   * them — so none of them keeps it. This mirrors the rule that stops a shared
+   * applicant-tracking domain merging thirteen BASIS schools into one.
    */
   const byHost = new Map<string, string[]>();
   for (const [key, entry] of Object.entries(found)) {
@@ -570,10 +561,16 @@ export async function runFindSites(opts: FindSitesOptions = {}): Promise<FindSit
   for (const [host, keys] of byHost) {
     if (keys.length < 2) continue;
     for (const k of keys) delete found[k];
-    summary.fromGuess -= keys.length;
-    summary.notFound += keys.length;
     log.warn(`dropped ${host} — ${keys.length} different schools resolved to it, so it identifies none`);
   }
+
+  const kept = Object.values(found);
+  const summary: FindSitesSummary = {
+    considered: rows.length,
+    fromEmail: kept.filter((e) => e.via.startsWith("email")).length,
+    fromSearch: kept.filter((e) => e.via.startsWith("web search")).length,
+    notFound: rows.length - kept.length,
+  };
 
   if (!opts.dryRun && Object.keys(found).length) {
     const added = saveWebsites(found);

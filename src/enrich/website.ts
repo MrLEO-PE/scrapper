@@ -237,32 +237,15 @@ export async function crawlSchoolSite(
   const pdfQueue: Candidate[] = [];
 
   /*
-   * Homepage first, then a handful of guessed careers/contact paths.
+   * Homepage first, then only pages the site itself links to.
    *
-   * The crawl otherwise only reaches these pages by finding a link to them,
-   * and plenty of sites — JS-built ones especially — don't put "Careers" or
-   * "Contact" in HTML the link-text scanner can see, even though the page
-   * exists at exactly the URL you'd expect. Guessing costs one fetch each,
-   * most of which 404 harmlessly, so it is worth doing unconditionally rather
-   * than only when discovery comes up empty.
+   * Guessing URLs (/careers, /join-us, …) was tried and removed: of 37 careers
+   * links it produced, 14 were wrong — redirects to the homepage, empty
+   * pages, and /apply turning out to be student admissions — and it spent the
+   * time budget before the staff and PE pages. A page is followed only when
+   * the school has linked to it.
    */
-  const GUESSED_PATHS = [
-    // Careers, in every phrasing a school site actually uses — kept in sync
-    // with the LINK_PRIORITIES "careers" regex above, since a page worth
-    // guessing at is a page worth recognising if discovery finds it instead.
-    "/careers", "/career", "/careers-opportunities", "/career-opportunities",
-    "/vacancies", "/current-vacancies", "/staff-vacancies", "/teaching-vacancies",
-    "/jobs", "/job-opportunities", "/employment", "/employment-opportunities",
-    "/opportunities", "/recruitment", "/hiring",
-    "/work-with-us", "/work-for-us", "/working-with-us", "/working-for-us", "/work-here",
-    "/join-us", "/join-our-team", "/joinourteam",
-    "/apply", "/staff-openings",
-    "/contact", "/contact-us", "/about/contact", "/about-us/contact",
-  ];
-  const frontier: Candidate[] = [
-    { url: start, score: 1000, tag: "home" },
-    ...GUESSED_PATHS.map((path) => ({ url: origin + path, score: 90, tag: /contact/.test(path) ? "contact" : "careers" })),
-  ];
+  const frontier: Candidate[] = [{ url: start, score: 1000, tag: "home" }];
   // Text gathered across the whole site, for facts that may appear anywhere.
   let corpus = "";
   let careersText = "";

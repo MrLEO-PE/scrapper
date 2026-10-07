@@ -92,3 +92,25 @@ test("returns nothing rather than guessing", () => {
   assert.equal(findSchoolHook(empty, "u"), null);
   assert.equal(findPeHook(empty, "u"), null);
 });
+
+// Nothing in a letter may be worded beyond what the page actually says.
+
+test("founding year only when the school is the subject", () => {
+  const ok = findSchoolHook("<p>The school was founded in 1974 by a group of parents.</p>", "u");
+  assert.equal(ok?.text, "was founded in 1974");
+  assert.equal(findSchoolHook("<p>Our new sports hall opened in 2019.</p>", "u"), null);
+  assert.equal(findSchoolHook("<p>The swimming programme was established in 1996.</p>", "u"), null);
+});
+
+test("a passing mention of college preparatory is not a claim about the school", () => {
+  assert.equal(findSchoolHook("<p>Read about our college preparatory counselling service.</p>", "u"), null);
+});
+
+test("a pathway must be named by a sport, and nothing is added to it", () => {
+  assert.equal(findPeHook("<p>Explore the Montessori pathway and the learning pathway.</p>", "u"), null);
+  assert.equal(findPeHook("<p>Our volleyball performance pathway runs to Year 13.</p>", "u")?.text, "your volleyball performance pathway");
+});
+
+test("a job title on the page is never turned into a claim that the post is filled", () => {
+  assert.equal(findPeHook("<p>We are seeking a Director of Sport to lead our department.</p>", "u"), null);
+});

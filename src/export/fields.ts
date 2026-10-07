@@ -21,6 +21,7 @@ import { countryName, truncate } from "../core/text.ts";
 import type { ApplicationForm, DiscoveredEmail, Salary } from "../core/types.ts";
 import { formLabel } from "../match/appform.ts";
 import {
+  buildLetter,
   draftEmail,
   emailCell,
   loadProfile,
@@ -28,6 +29,7 @@ import {
   schoolFact,
   speculativeEmail,
 } from "./email.ts";
+import { trustedPeHook, trustedSchoolHook } from "./hooktrust.ts";
 import { assessFit, fitSummary } from "../match/fit.ts";
 import { BASIS_LABEL } from "../enrich/salary.ts";
 import { benchmarkAverage, benchmarkSavings, countryBenchmark } from "../enrich/benchmarks.ts";
@@ -451,8 +453,8 @@ export const FIELDS: FieldDef[] = [
       const draft = speculativeEmail({
         school: s.name,
         principal: s.principal,
-        schoolHook: s.school_hook,
-        peHook: s.pe_hook,
+        schoolHook: trustedSchoolHook(s.school_hook),
+        peHook: trustedPeHook(s.pe_hook),
         accreditation: s.accreditation,
         curriculum: parseJsonColumn<string[]>(s.curriculum_json, []),
         studentCount: s.student_count,
@@ -469,7 +471,7 @@ export const FIELDS: FieldDef[] = [
       const reachable = !!bestContact(c).value;
       const hasFact = !!schoolFact({
         school: s.name,
-        schoolHook: s.school_hook,
+        schoolHook: trustedSchoolHook(s.school_hook),
         accreditation: s.accreditation,
         curriculum: parseJsonColumn<string[]>(s.curriculum_json, []),
         studentCount: s.student_count,
@@ -531,6 +533,32 @@ export const FIELDS: FieldDef[] = [
     get: (c) => date(openRolesFor(c.school?.school_key)?.deadline),
   },
   {
+    key: "letter_flags", label: "Check Before Sending", group: "contact", scope: "both",
+    help: "What to check before the letter beside it goes out: the principal's name to confirm on the school's own page, a start date earlier than your availability, requirements the advert asks for that your profile does not hold, and a missing school fact. Blank means nothing to flag.",
+    get: (c) => {
+      if (c.job) {
+        return buildLetter({
+          role: c.job.title,
+          schools: [c.school?.name ?? c.job.school_name ?? ""],
+          principal: c.school?.principal,
+          schoolHook: trustedSchoolHook(c.school?.school_hook),
+          peHook: trustedPeHook(c.school?.pe_hook),
+          advertText: c.job.description,
+          curriculum: parseJsonColumn<string[]>(c.school?.curriculum_json ?? c.job.curriculum_json, []),
+        }).flags.join(" · ");
+      }
+      const s = c.school;
+      if (!s) return "";
+      return buildLetter({
+        schools: [s.name],
+        principal: s.principal,
+        schoolHook: trustedSchoolHook(s.school_hook),
+        peHook: trustedPeHook(s.pe_hook),
+        curriculum: parseJsonColumn<string[]>(s.curriculum_json, []),
+      }).flags.join(" · ");
+    },
+  },
+  {
     key: "draft_email", label: "Prepared Email", group: "contact", scope: "job",
     help: "A personalised application email, built only from details found on the school's own website. When a detail is missing it says which one, rather than inventing it.",
     get: (c) => {
@@ -540,9 +568,10 @@ export const FIELDS: FieldDef[] = [
           role: c.job.title,
           school: c.school?.name ?? c.job.school_name ?? "",
           principal: c.school?.principal,
-          schoolHook: c.school?.school_hook,
-          peHook: c.school?.pe_hook,
+          schoolHook: trustedSchoolHook(c.school?.school_hook),
+          peHook: trustedPeHook(c.school?.pe_hook),
           advertText: c.job.description,
+          curriculum: parseJsonColumn<string[]>(c.school?.curriculum_json ?? c.job.curriculum_json, []),
         }),
         // The website is where every missing detail lives, so an incomplete
         // draft points straight at it. Where there is no website, the school's
