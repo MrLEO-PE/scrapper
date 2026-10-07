@@ -14,6 +14,7 @@
 import { getDb, parseJsonColumn, type JobRow } from "./store/db.ts";
 import type { Salary } from "./core/types.ts";
 import { daysUntil } from "./export/fields.ts";
+import { ledgerState } from "./ledger.ts";
 
 /** A deadline this close is worth flagging. */
 export const CLOSING_SOON_DAYS = 7;
@@ -54,8 +55,12 @@ export function findAlerts(opts: FindOptions = {}): Alert[] {
     .all() as unknown as JobRow[];
 
   const alerts: Alert[] = [];
+  // The permanent record knows what you applied for or ruled out, even when
+  // the advert was re-posted under a new id.
+  const decided = ledgerState();
 
   for (const job of rows) {
+    if (decided.applied.has(job.dedupe_key) || decided.skipped.has(job.dedupe_key)) continue;
     const daysLeft = daysUntil(job.deadline_at);
     const reasons: AlertReason[] = [];
 

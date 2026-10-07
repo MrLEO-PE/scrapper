@@ -93,7 +93,7 @@ export const ALL_SOURCES: Source[] = [
 // the walk stops at a page cap, so "not seen this run" can mean "past the
 // cap" rather than "taken down". Teaching Nomad shows a rolling twenty, where
 // absence means nothing at all.
-const ENUMERATED: SourceId[] = ["tes", "teachaway", "nordanglia", "inspired", "europeanchamber", "isp"];
+const ENUMERATED: SourceId[] = ["tes", "teachaway", "nordanglia", "inspired", "europeanchamber", "isp", "mailalert"];
 
 export interface ScrapeOptions {
   sources?: string[];
@@ -150,9 +150,12 @@ export async function runScrape(opts: ScrapeOptions): Promise<ScrapeSummary> {
   recordSightings(runId, all.map((j) => j.id));
 
   // Only sweep for disappeared vacancies when the enumerating sources actually
-  // ran — otherwise a network failure would mark everything closed.
+  // ran — otherwise a network failure would mark everything closed. A source
+  // that "succeeded" with nothing scanned is the same thing wearing a
+  // different face: a board that has moved or changed its page reports 0
+  // without erroring, and sweeping on that would close every role it carried.
   const ranEnumerated = ENUMERATED.filter(
-    (id) => sources.some((s) => s.id === id) && !bySource[id]?.failed,
+    (id) => sources.some((s) => s.id === id) && !bySource[id]?.failed && (id === "mailalert" || (bySource[id]?.raw ?? 0) > 0),
   );
   const { stale, closed } = sweepMissing(runId, ranEnumerated);
   const expired = expirePastDeadline();

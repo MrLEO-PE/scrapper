@@ -45,6 +45,7 @@ import {
 } from "./track.ts";
 import { closeDb, dedupeSchools, getSchools, queryJobs, rerankCountries } from "./store/db.ts";
 import { readLedger } from "./ledger.ts";
+import { checkHealth, healthMarkdown, problems } from "./health.ts";
 import {
   ALL_SOURCES,
   printStats,
@@ -119,6 +120,15 @@ function reportScrape(s: ScrapeSummary): void {
   if (s.closed) log.plain(`  closed               ${s.closed}`);
   if (s.expired) log.plain(`  past deadline        ${s.expired}`);
   log.plain(`  http requests        ${httpStats.requests} (${httpStats.cacheHits} from cache)`);
+
+  // A source that quietly returned nothing looks exactly like a quiet day, so
+  // say so here rather than leave it to be noticed.
+  const bad = problems(checkHealth());
+  if (bad.length) {
+    log.plain("");
+    log.warn(`SOURCE HEALTH — ${bad.length} source${bad.length === 1 ? "" : "s"} not working as usual:`);
+    for (const b of bad) log.warn(`  ${b.source}: ${b.message}`);
+  }
 }
 
 function showFields(args: Args): void {
@@ -330,6 +340,7 @@ USAGE
   npm run mark-sent -- a@b.com       permanently record an address as emailed today
   npm run import-marks -- marks.json make the site's applied / not-interested marks permanent
   npm run alerts                     list roles worth acting on now
+  npm run health                     did every source return what it usually does?
   npm run site                       build the publishable site/ folder (includes the Email tab)
   npm run report                     open the latest HTML report
   npm run stats                      what's in the database
@@ -721,6 +732,26 @@ async function main(): Promise<void> {
       break;
     }
 
+    case "mark-alerted": {
+      const file = str(args, "ids") ?? args.positional[0];
+      if (!file) { log.error("say which file: mark-alerted --ids ids.json"); process.exitCode = 1; break; }
+      const ids = JSON.parse(readFileSync(file, "utf8")) as string[];
+      markAlerted(ids);
+      log.ok(`marked ${ids.length} roles as alerted`);
+      break;
+    }
+
+    case "health": {
+      const h = checkHealth();
+      for (const x of h) log.plain(`  ${(x.status === "ok" || x.status === "new" ? "ok  " : "BAD ")} ${x.source.padEnd(18)} ${x.message}`);
+      const bad = problems(h);
+      const out = str(args, "out");
+      if (out && bad.length) writeFileSync(out, healthMarkdown(h), "utf8");
+      // Exit 1 when something is wrong, so a workflow can open an issue.
+      if (bad.length) process.exitCode = 1;
+      break;
+    }
+
     case "alerts": {
       const alerts = findAlerts({ includeAlerted: bool(args, "all") });
       const body = formatAlerts(alerts, str(args, "site-url"));
@@ -736,6 +767,12 @@ async function main(): Promise<void> {
         process.stdout.write(body + "\n");
       }
 
+      // Marking happens only after the notification really went out, as a
+      // second step: --ids-out saves who is in this alert, --mark-ids stamps
+      // them once the issue exists. (--mark stamps at once, and is how 117
+      // roles were lost: marked as alerted, notification never created.)
+      const idsOut = str(args, "ids-out");
+      if (idsOut) writeFileSync(idsOut, JSON.stringify(alerts.map((a) => a.job.id)), "utf8");
       if (alerts.length && bool(args, "mark")) markAlerted(alerts.map((a) => a.job.id));
       // Exit 1 when there is nothing to report, so a workflow can skip quietly.
       if (!alerts.length) process.exitCode = 1;

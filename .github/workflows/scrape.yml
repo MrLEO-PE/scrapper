@@ -36,6 +36,9 @@ on:
 permissions:
   contents: write
   pages: write
+  # Needed to open the alert and source-health issues. Without it every
+  # notification failed quietly for weeks.
+  issues: write
   id-token: write
 
 # Never let two runs write the database at once. The directory workflow shares
@@ -112,13 +115,35 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           SITE_URL: ${{ format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
         run: |
-          if TITLE=$(node --experimental-strip-types --no-warnings src/cli.ts alerts \
-                --site-url "$SITE_URL" --mark --out "$RUNNER_TEMP/alert.md"); then
+          if TITLE=$(node --experimental-strip-types --no-warnings src/cli.ts alerts                 --site-url "$SITE_URL" --ids-out "$RUNNER_TEMP/alert-ids.json" --out "$RUNNER_TEMP/alert.md"); then
             echo "$TITLE"
-            gh issue create --title "$TITLE" --body-file "$RUNNER_TEMP/alert.md" \
-              || echo "::warning::Could not open the alert issue. Are Issues enabled on this repository?"
+            # Roles are stamped as alerted only once the issue really exists.
+            # They used to be stamped first, so a failed notification lost the
+            # roles for good: 117 were marked and nobody was told.
+            if gh issue create --title "$TITLE" --body-file "$RUNNER_TEMP/alert.md"; then
+              node --experimental-strip-types --no-warnings src/cli.ts mark-alerted --ids "$RUNNER_TEMP/alert-ids.json"
+            else
+              echo "::warning::Could not open the alert issue — the roles stay unmarked and will be tried again next run."
+            fi
           else
             echo "Nothing new worth alerting about."
+          fi
+
+      # A source that quietly returns nothing looks exactly like a quiet day.
+      # Opens one issue (or comments on the open one) when a board returns far
+      # fewer vacancies than it usually does.
+      - name: Check every source returned what it usually does
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! node --experimental-strip-types --no-warnings src/cli.ts health --out "$RUNNER_TEMP/health.md"; then
+            OPEN=$(gh issue list --state open --search "Source health in:title" --json number -q '.[0].number')
+            if [ -n "$OPEN" ]; then
+              gh issue comment "$OPEN" --body-file "$RUNNER_TEMP/health.md"
+            else
+              gh issue create --title "Source health: a job board stopped returning vacancies" --body-file "$RUNNER_TEMP/health.md"
+            fi
           fi
 
       # Optional. Skipped entirely unless both secrets are set, so the

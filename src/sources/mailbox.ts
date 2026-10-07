@@ -25,6 +25,15 @@ import type { ScrapeContext, Source } from "./base.ts";
 
 export const INBOX_DIR = process.env.SCRAPPER_INBOX || join(process.cwd(), "data", "inbox");
 
+/**
+ * An alert is news, not an archive. Messages older than this are ignored, so a
+ * role that has left the recent alerts stops being reported as open — alert
+ * roles are not swept the way a board's are, and without a window they would
+ * stay "open" for ever. The age is the message's own Date header: a file's
+ * modified time is the moment git checked it out, which says nothing.
+ */
+export const ALERT_WINDOW_DAYS = 30;
+
 /** Recognised senders, so a row can say where the alert came from. */
 const SENDERS: { re: RegExp; label: string }[] = [
   { re: /searchassociates\.com/i, label: "Search Associates" },
@@ -52,6 +61,9 @@ const SENDERS: { re: RegExp; label: string }[] = [
   { re: /gaijinpot\.com/i, label: "GaijinPot (Japan)" },
   { re: /toptutorjob\.com/i, label: "TopTutorJob" },
   { re: /fobisia\.org/i, label: "FOBISIA" },
+  { re: /gemseducation\.com/i, label: "GEMS Education alert" },
+  { re: /taaleem\.ae/i, label: "Taaleem alert" },
+  { re: /cognita\.com|cognitapeople/i, label: "Cognita alert" },
   { re: /cois\.org|councilofinternationalschools/i, label: "CIS Careers" },
   { re: /jobs\.tes\.com|eteach\.com/i, label: "Eteach alert" },
 ];
@@ -273,6 +285,11 @@ export const mailboxSource: Source = {
       try {
         const raw = readFileSync(join(INBOX_DIR, file), "utf8");
         const mail = parseEml(raw);
+        const sent = mail.date ? Date.parse(mail.date) : NaN;
+        if (!Number.isNaN(sent) && Date.now() - sent > ALERT_WINDOW_DAYS * 86_400_000) {
+          log.debug(`${file}: older than ${ALERT_WINDOW_DAYS} days, ignored`);
+          continue;
+        }
         const jobs = jobsFromMail(mail, file);
         for (const job of jobs) out.set(job.sourceJobId, job);
         read++;

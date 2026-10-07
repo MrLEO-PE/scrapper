@@ -2,6 +2,7 @@ data/*
 !data/jobs.db
 !data/sent-log.jsonl
 !data/applications.jsonl
+!data/inbox/
 site/
 node_modules/
 *.log
