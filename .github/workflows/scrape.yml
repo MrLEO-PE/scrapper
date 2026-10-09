@@ -64,9 +64,9 @@ jobs:
     env:
       GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
       GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-      # Optional. A Brave Search API key (free: 2,000 searches a month). Without
-      # it the website finder still works from the email addresses schools
-      # publish, it just cannot search.
+      # Optional. A Tavily API key (free: 1,000 searches a month, no card; keys
+      # start "tvly-"). Without it the website finder still works from the email
+      # addresses schools publish, it just cannot search.
       SCRAPPER_SEARCH_KEY: ${{ secrets.SCRAPPER_SEARCH_KEY }}
 
     steps:
@@ -98,14 +98,14 @@ jobs:
           node --experimental-strip-types --no-warnings src/cli.ts scrape $ARGS
 
       # Schools with an open PE role and no website come first: the website is
-      # what unlocks their careers email and facts. Fifteen a run keeps three
-      # runs a day well inside a free search quota, a school that came back
+      # what unlocks their careers email and facts. Ten a run keeps three
+      # runs a day inside a free quota of a thousand a month, a school that came back
       # empty is not tried again for sixty days, and every site found is
       # verified against the page before it is believed. A found site is saved
       # in the database and queues the school for the enrichment just below.
       - name: Find websites for schools that have none
         continue-on-error: true
-        run: node --experimental-strip-types --no-warnings src/cli.ts find-websites --limit 15
+        run: node --experimental-strip-types --no-warnings src/cli.ts find-websites --limit 10
 
       # Bulk profiling belongs to the directory workflow, which now does five
       # hundred a day. This pass exists to profile the schools behind vacancies

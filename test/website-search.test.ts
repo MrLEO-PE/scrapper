@@ -68,3 +68,84 @@ test("a found website is set once, and queues the school to be profiled again", 
   setSchoolWebsite("hiring|uae", "https://other.example");
   assert.equal((getDb().prepare("SELECT website FROM schools WHERE school_key = 'hiring|uae'").get() as { website: string }).website, "https://hiring.example");
 });
+
+// --- the two search services ---------------------------------------------------
+
+import { candidateSites, searchForSite, searchProvider, searchRequest, searchResults } from "../src/enrich/findsite.ts";
+
+test("the key's prefix chooses the service", () => {
+  assert.equal(searchProvider("tvly-dev-abc123"), "tavily");
+  assert.equal(searchProvider("BSAabc123"), "brave");
+  assert.equal(searchProvider(""), null);
+});
+
+test("Tavily is asked the way its documentation says", () => {
+  const { url, init } = searchRequest("tavily", "tvly-key", '"Kellett School" Hong Kong school official website');
+  assert.equal(url, "https://api.tavily.com/search");
+  assert.equal(init.method, "POST");
+  assert.equal((init.headers as Record<string, string>).Authorization, "Bearer tvly-key");
+  const body = JSON.parse(init.body as string);
+  assert.equal(body.query, '"Kellett School" Hong Kong school official website');
+  assert.equal(body.search_depth, "basic", "basic costs one credit, advanced two");
+  assert.ok(body.max_results <= 10);
+  assert.ok(body.exclude_domains.includes("linkedin.com") && body.exclude_domains.includes("wishlistjobs.com"));
+});
+
+test("Brave is still asked its own way", () => {
+  const { url, init } = searchRequest("brave", "k", "a b");
+  assert.match(url, /api\.search\.brave\.com.*q=a%20b/);
+  assert.equal((init.headers as Record<string, string>)["X-Subscription-Token"], "k");
+});
+
+test("each service's reply is read from its own shape", () => {
+  assert.deepEqual(searchResults("tavily", { results: [{ url: "https://a.edu" }, { url: "https://b.edu" }] }), ["https://a.edu", "https://b.edu"]);
+  assert.deepEqual(searchResults("brave", { web: { results: [{ url: "https://c.edu" }] } }), ["https://c.edu"]);
+  assert.deepEqual(searchResults("tavily", {}), []);
+});
+
+test("job boards and repeats are not candidates", () => {
+  const sites = candidateSites([
+    "https://www.tes.com/jobs/employer/kellett-school",
+    "https://www.linkedin.com/company/kellett",
+    "https://www.kellettschool.com/about",
+    "https://www.kellettschool.com/admissions",
+    "https://en.wikipedia.org/wiki/Kellett_School",
+    "https://www.glassdoor.com/Overview/Kellett",
+  ]);
+  assert.deepEqual(sites, ["https://kellettschool.com"]);
+});
+
+test("a search that cannot be done says so, rather than reporting an empty result", async () => {
+  const real = globalThis.fetch;
+  const key = process.env.SCRAPPER_SEARCH_KEY;
+  try {
+    process.env.SCRAPPER_SEARCH_KEY = "tvly-test";
+    // Refused key, rate limit, plan used up, network error: none is "no website".
+    for (const status of [401, 429, 432, 500]) {
+      globalThis.fetch = (async () => new Response("{}", { status })) as typeof fetch;
+      assert.equal((await searchForSite("Kellett School", "Hong Kong")).ok, false, `status ${status}`);
+    }
+    globalThis.fetch = (async () => { throw new Error("network down"); }) as typeof fetch;
+    assert.equal((await searchForSite("Kellett School", "Hong Kong")).ok, false);
+    // A real, empty answer is a genuine miss.
+    globalThis.fetch = (async () => new Response(JSON.stringify({ results: [] }), { status: 200 })) as typeof fetch;
+    assert.deepEqual(await searchForSite("Kellett School", "Hong Kong"), { urls: [], ok: true });
+    // And a real answer comes back as candidates.
+    globalThis.fetch = (async () => new Response(JSON.stringify({ results: [{ url: "https://www.kellettschool.com/" }, { url: "https://www.tes.com/x" }] }), { status: 200 })) as typeof fetch;
+    assert.deepEqual(await searchForSite("Kellett School", "Hong Kong", "Hong Kong"), { urls: ["https://kellettschool.com"], ok: true });
+  } finally {
+    globalThis.fetch = real;
+    if (key === undefined) delete process.env.SCRAPPER_SEARCH_KEY;
+    else process.env.SCRAPPER_SEARCH_KEY = key;
+  }
+});
+
+test("without a key nothing is searched and nothing is recorded as missing", async () => {
+  const key = process.env.SCRAPPER_SEARCH_KEY;
+  delete process.env.SCRAPPER_SEARCH_KEY;
+  try {
+    assert.deepEqual(await searchForSite("Kellett School", "Hong Kong"), { urls: [], ok: false });
+  } finally {
+    if (key !== undefined) process.env.SCRAPPER_SEARCH_KEY = key;
+  }
+});

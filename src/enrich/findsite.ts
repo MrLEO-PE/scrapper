@@ -143,14 +143,15 @@ const NOT_THE_SCHOOL =
 /**
  * A web search for the school's own site.
  *
- * This is the route for the schools a guess cannot reach — the ones whose name
- * gives nothing distinctive, or whose domain ignores the country convention.
- * It needs an API key, and without one it is skipped silently: the rest of
+ * This is how a school with no website and no published email gets one. It
+ * needs an API key, and without one it is skipped silently: the rest of
  * discovery still works, it just finds fewer.
  *
- * Brave's free tier allows 2,000 queries a month at one per second, which
- * clears a backlog of a few hundred schools comfortably. Set the key as
- * SCRAPPER_SEARCH_KEY.
+ * Tavily's free plan is 1,000 searches a month with no card, and is what this
+ * is set up for; a key starting "tvly-" selects it. Brave works too, but its
+ * free plan was withdrawn in February 2026 and a new account needs a card.
+ * Whichever is used, the key goes in SCRAPPER_SEARCH_KEY. A search result is
+ * only ever a candidate — it is accepted after the page itself is checked.
  */
 export function searchKey(): string | null {
   return process.env.SCRAPPER_SEARCH_KEY?.trim() || null;
@@ -171,10 +172,69 @@ async function pace(): Promise<void> {
   if (at > now) await new Promise((r) => setTimeout(r, at - now));
 }
 
+/** Which search service the key belongs to. Tavily keys start with "tvly-"; anything else is taken to be Brave's. */
+export type SearchProvider = "tavily" | "brave";
+export function searchProvider(key = searchKey()): SearchProvider | null {
+  if (!key) return null;
+  const forced = process.env.SCRAPPER_SEARCH_PROVIDER?.trim().toLowerCase();
+  if (forced === "tavily" || forced === "brave") return forced;
+  return key.startsWith("tvly-") ? "tavily" : "brave";
+}
+
+/**
+ * Pages a search returns that can never be a school's own site, so no result
+ * slot is spent on them. Tavily can leave them out of the results altogether.
+ */
+const EXCLUDE_DOMAINS = [
+  "linkedin.com", "facebook.com", "instagram.com", "twitter.com", "x.com", "youtube.com", "tiktok.com",
+  "wikipedia.org", "glassdoor.com", "indeed.com", "tes.com", "teachaway.com", "teacherhorizons.com",
+  "seekteachers.com", "schrole.com", "searchassociates.com", "wishlistjobs.com", "teast.co",
+  "internationalschoolsdatabase.com", "edarabia.com", "expat.com", "tripadvisor.com", "yelp.com",
+];
+
+/** The hosts worth testing from a list of result addresses: no job boards, one per host. */
+export function candidateSites(urls: (string | undefined)[]): string[] {
+  const out: string[] = [];
+  for (const u of urls) {
+    const host = hostOfUrl(u);
+    if (!host || NOT_THE_SCHOOL.test(host)) continue;
+    if (out.some((s) => hostOfUrl(s) === host)) continue;
+    out.push(`https://${host}`);
+  }
+  return out.slice(0, 4);
+}
+
+/** The exact request each provider wants. Kept apart from the sending so it can be checked without a network. */
+export function searchRequest(provider: SearchProvider, key: string, query: string): { url: string; init: RequestInit } {
+  if (provider === "tavily") {
+    return {
+      url: "https://api.tavily.com/search",
+      init: {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json", Authorization: `Bearer ${key}` },
+        // "basic" costs one credit; the free plan is 1,000 a month.
+        body: JSON.stringify({ query, max_results: 8, search_depth: "basic", exclude_domains: EXCLUDE_DOMAINS }),
+      },
+    };
+  }
+  return {
+    url: `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=8`,
+    init: { headers: { Accept: "application/json", "X-Subscription-Token": key } },
+  };
+}
+
+/** The result addresses in a provider's reply. */
+export function searchResults(provider: SearchProvider, body: unknown): string[] {
+  const b = body as { results?: { url?: string }[]; web?: { results?: { url?: string }[] } };
+  const list = provider === "tavily" ? b?.results : b?.web?.results;
+  return (list ?? []).map((r) => r.url ?? "").filter(Boolean);
+}
+
 /** ok is false when the search could not be done — no key, a limit, a timeout — which is not the same as finding nothing. */
-async function searchForSite(name: string, country: string, city?: string | null): Promise<{ urls: string[]; ok: boolean }> {
+export async function searchForSite(name: string, country: string, city?: string | null): Promise<{ urls: string[]; ok: boolean }> {
   const key = searchKey();
-  if (!key) {
+  const provider = searchProvider(key);
+  if (!key || !provider) {
     if (!warnedNoKey) {
       warnedNoKey = true;
       log.info("no SCRAPPER_SEARCH_KEY set — skipping web search for missing websites (see README)");
@@ -183,33 +243,33 @@ async function searchForSite(name: string, country: string, city?: string | null
   }
   await pace();
 
-  const q = `"${name}" ${city ? `${city} ` : ""}${country} school official website`;
-  const url = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(q)}&count=8`;
+  const query = `"${name}" ${city ? `${city} ` : ""}${country} school official website`;
+  const req = searchRequest(provider, key, query);
 
   let res: Response;
   try {
-    res = await fetch(url, {
-      headers: { Accept: "application/json", "X-Subscription-Token": key },
-      signal: AbortSignal.timeout(15000),
-    });
+    res = await fetch(req.url, { ...req.init, signal: AbortSignal.timeout(15000) });
   } catch (err) {
     log.debug(`search failed for ${name}: ${(err as Error).message}`);
     return { urls: [], ok: false };
   }
   if (!res.ok) {
-    log.warn(`search returned ${res.status} for ${name}${res.status === 429 ? " — rate limited" : ""}`);
+    const why =
+      res.status === 429 ? " — rate limited"
+      : res.status === 401 || res.status === 403 ? " — the key was refused, check SCRAPPER_SEARCH_KEY"
+      : res.status === 432 || res.status === 433 ? " — the plan's monthly searches are used up"
+      : "";
+    log.warn(`${provider} search returned ${res.status} for ${name}${why}`);
     return { urls: [], ok: false };
   }
 
-  const body = (await res.json()) as { web?: { results?: { url?: string }[] } };
-  const out: string[] = [];
-  for (const r of body.web?.results ?? []) {
-    const host = hostOfUrl(r.url);
-    if (!host || NOT_THE_SCHOOL.test(host)) continue;
-    if (out.some((u) => hostOfUrl(u) === host)) continue;
-    out.push(`https://${host}`);
+  let body: unknown;
+  try {
+    body = await res.json();
+  } catch {
+    return { urls: [], ok: false };
   }
-  return { urls: out.slice(0, 4), ok: true };
+  return { urls: candidateSites(searchResults(provider, body)), ok: true };
 }
 
 function hostOfUrl(url: string | undefined): string | null {

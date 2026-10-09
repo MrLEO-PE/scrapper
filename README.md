@@ -257,31 +257,42 @@ start without an address. Teach Away leaves it blank for most of its directory, 
 `npm run find-websites` fills the gap, writing to `config/school-websites.json` where every entry
 can be inspected and a wrong one deleted by hand.
 
-Three routes, cheapest first: the domain of an address already held, a guess from the school's name
-against the domains schools in that country use, and — if a key is set — a web search.
+Two routes, and neither is a guess: the domain of an address the school itself published, and —
+if a key is set — a web search. A website is never invented from a school's name; domain guessing
+was removed on purpose. Schools with an open PE vacancy are done first, a school that came back
+empty is not searched again for sixty days, and a failed search (a refused key, a rate limit) is
+never recorded as "no website".
 
 ```bash
 npm run find-websites -- --dry-run     # show what it would write
 npm run find-websites                  # write config/school-websites.json
 ```
 
-**The optional search key.** Guessing resolved 53 schools; the remaining 304 either have no
-distinctive name or ignore their country's domain convention, and only a search engine reaches
-those. Brave's free tier is 2,000 queries a month, which clears the backlog several times over:
+**The optional search key.** Many roles name a school but give no website and no email — most of
+WISHlistjobs is like that — and only a search reaches them. This is set up for
+[Tavily](https://tavily.com): its free plan is 1,000 searches a month with no card, and one search
+costs one credit. A key starting `tvly-` selects it; Brave also works, but its free plan was
+withdrawn in February 2026 and a new account needs a card.
 
 ```bash
-export SCRAPPER_SEARCH_KEY=your-brave-api-key
+export SCRAPPER_SEARCH_KEY=tvly-your-key          # to try it on your own machine
+npm run find-websites -- --dry-run --limit 10     # shows what it would find, writes nothing
 ```
 
-Without it, search is skipped and the other two routes still run. Every search result is verified
-exactly as a guess is — a first result is a strong hint, not proof.
+On GitHub, add the same value as a repository secret named `SCRAPPER_SEARCH_KEY`
+(Settings → Secrets and variables → Actions); the scheduled run then searches ten schools a run.
+Never put the key in a file: the repository is public.
+
+Without a key, search is skipped and nothing is recorded as missing. A search result is only a
+candidate: the page is fetched and must contain every distinctive word of the school's name and
+its city before the site is believed.
 
 **Why verification matters more than reach.** A wrong address produces a confident careers email,
 package and pay figure for a different school, and nothing downstream looks any less certain than
 the truth. Three rules stop that:
 
-- A nationality or place name is not distinctive enough to guess from. *Canadian International
-  School of Singapore* resolved to `canadian.edu.sg`, which is Canadian Education College.
+- A nationality or place name is not distinctive enough to identify a school. *Canadian
+  International School of Singapore* and Canadian Education College share both words.
 - A host several schools resolve to identifies none of them. Five *EF English First* branches all
   reached `english.com`, which is Pearson Languages.
 - A real school site uses many schoolish words often, not one word repeatedly. `basis.com` is an
