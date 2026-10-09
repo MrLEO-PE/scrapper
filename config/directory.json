@@ -8,6 +8,7 @@
 
   "countries": [
     { "name": "China", "top": 100, "on": true },
+    { "name": "Hong Kong", "top": 40, "on": true },
     { "name": "Thailand", "top": 40, "on": true },
     { "name": "Vietnam", "top": 30, "on": true },
     { "name": "Malaysia", "top": 30, "on": true },
@@ -34,8 +35,11 @@
 
     { "name": "Tanzania", "top": 10, "on": true },
     { "name": "Mozambique", "top": 10, "on": true },
+    { "name": "Zimbabwe", "top": 10, "on": true },
+    { "name": "Nigeria", "top": 20, "on": true },
 
     { "name": "Colombia", "top": 15, "on": true },
+    { "name": "Chile", "top": 20, "on": true },
     { "name": "Costa Rica", "top": 10, "on": true },
     { "name": "Peru", "top": 10, "on": true },
     { "name": "Guatemala", "top": 5, "on": true },

@@ -67,7 +67,18 @@ export function distinctiveWords(name: string): string[] {
  * distinctive words to appear. The distinctive-word filter is doing the real
  * work: without it, any page mentioning "Canadian" and "Singapore" passes.
  */
-export function pageIsSchool(html: string, name: string): boolean {
+export interface VerifyOptions {
+  /**
+   * For a site found by search. Every distinctive word of the name must appear,
+   * not most of them, and so must the school's city when it is known: a search
+   * engine returns the nearest-sounding school, and "Dubai British School" is
+   * not the British School of Dubai.
+   */
+  strict?: boolean;
+  city?: string | null;
+}
+
+export function pageIsSchool(html: string, name: string, opts: VerifyOptions = {}): boolean {
   const text = html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -78,7 +89,10 @@ export function pageIsSchool(html: string, name: string): boolean {
   if (!distinctive.length) return false;
 
   const hits = distinctive.filter((w) => text.includes(w)).length;
-  if (hits / distinctive.length < 0.6) return false;
+  if (hits / distinctive.length < (opts.strict ? 1 : 0.6)) return false;
+
+  const city = words(opts.city ?? "").join(" ");
+  if (opts.strict && city.length > 2 && !text.includes(city)) return false;
 
   /*
    * One word repeated is not a school; a school says many of them, often.
@@ -144,17 +158,32 @@ export function searchKey(): string | null {
 
 let warnedNoKey = false;
 
-async function searchForSite(name: string, country: string): Promise<string[]> {
+/**
+ * Searches are spaced a little over a second apart, across every school being
+ * worked on at once. The free tier allows one a second; six schools in
+ * parallel each sleeping afterwards would all have fired together first.
+ */
+let nextSearchAt = 0;
+async function pace(): Promise<void> {
+  const now = Date.now();
+  const at = Math.max(now, nextSearchAt);
+  nextSearchAt = at + 1100;
+  if (at > now) await new Promise((r) => setTimeout(r, at - now));
+}
+
+/** ok is false when the search could not be done — no key, a limit, a timeout — which is not the same as finding nothing. */
+async function searchForSite(name: string, country: string, city?: string | null): Promise<{ urls: string[]; ok: boolean }> {
   const key = searchKey();
   if (!key) {
     if (!warnedNoKey) {
       warnedNoKey = true;
       log.info("no SCRAPPER_SEARCH_KEY set — skipping web search for missing websites (see README)");
     }
-    return [];
+    return { urls: [], ok: false };
   }
+  await pace();
 
-  const q = `"${name}" ${country} international school official website`;
+  const q = `"${name}" ${city ? `${city} ` : ""}${country} school official website`;
   const url = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(q)}&count=8`;
 
   let res: Response;
@@ -165,11 +194,11 @@ async function searchForSite(name: string, country: string): Promise<string[]> {
     });
   } catch (err) {
     log.debug(`search failed for ${name}: ${(err as Error).message}`);
-    return [];
+    return { urls: [], ok: false };
   }
   if (!res.ok) {
     log.warn(`search returned ${res.status} for ${name}${res.status === 429 ? " — rate limited" : ""}`);
-    return [];
+    return { urls: [], ok: false };
   }
 
   const body = (await res.json()) as { web?: { results?: { url?: string }[] } };
@@ -180,9 +209,7 @@ async function searchForSite(name: string, country: string): Promise<string[]> {
     if (out.some((u) => hostOfUrl(u) === host)) continue;
     out.push(`https://${host}`);
   }
-  // The free tier allows one query a second; stay under it.
-  await new Promise((r) => setTimeout(r, 1100));
-  return out.slice(0, 4);
+  return { urls: out.slice(0, 4), ok: true };
 }
 
 function hostOfUrl(url: string | undefined): string | null {
@@ -197,17 +224,35 @@ function hostOfUrl(url: string | undefined): string | null {
 /**
  * Find and verify one school's website. Returns nothing rather than a guess.
  */
+export interface WebsiteSearch {
+  hit: SiteFound | null;
+  /** A search really ran to the end. False means nothing was learned about this school. */
+  searched: boolean;
+}
+
 export async function findWebsite(
   name: string,
   country: string,
   knownEmail?: string | null,
+  city?: string | null,
 ): Promise<SiteFound | null> {
+  return (await findWebsiteDetailed(name, country, knownEmail, city)).hit;
+}
+
+export async function findWebsiteDetailed(
+  name: string,
+  country: string,
+  knownEmail?: string | null,
+  city?: string | null,
+): Promise<WebsiteSearch> {
   let tried = 0;
 
   const check = async (url: string, via: SiteFound["via"]): Promise<SiteFound | null> => {
     tried++;
     const html = await fetchText(url, { soft: true, retries: 0, timeoutMs: 8000, label: `site ${via} ${url}` });
-    if (!html || !pageIsSchool(html, name)) return null;
+    // A site found by search is held to the strict test; one at the domain of
+    // an address the school itself published is already tied to it.
+    if (!html || !pageIsSchool(html, name, via === "search" ? { strict: true, city } : {})) return null;
     log.debug(`${name}: ${url} verified by ${via}`);
     return { url, via, tried };
   };
@@ -217,14 +262,15 @@ export async function findWebsite(
   const fromEmail = siteFromEmail(knownEmail);
   if (fromEmail) {
     const hit = await check(fromEmail, "email");
-    if (hit) return hit;
+    if (hit) return { hit, searched: false };
   }
 
   // A search engine's first result is a strong hint, not proof.
-  for (const url of await searchForSite(name, country)) {
+  const search = await searchForSite(name, country, city);
+  for (const url of search.urls) {
     const hit = await check(url, "search");
-    if (hit) return hit;
+    if (hit) return { hit, searched: true };
   }
 
-  return null;
+  return { hit: null, searched: search.ok };
 }

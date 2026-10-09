@@ -22,6 +22,8 @@ import { isTargetCountry, targetCountries, vacancyInScope } from "../directoryco
 import { writeCsv, writeHtml, writePage, type SheetRow } from "./sheet.ts";
 import { norobotBody } from "./norobot.ts";
 import { buildRecipients } from "./recipients.ts";
+import { collapseRoles } from "../match/rolekey.ts";
+import { SOURCE_LABELS } from "./fields.ts";
 import { emailTabBody, EMAIL_TAB_CSS, EMAIL_TAB_SCRIPT } from "./emailtab.ts";
 
 /**
@@ -96,9 +98,13 @@ export function buildSite(opts: SiteOptions): { dir: string; jobs: number; schoo
   // build — nothing has to be re-scraped.
   const targets = targetCountries();
 
+  // One row per real opening: a role worded three ways by three boards is one
+  // job, one alert and one letter, not three.
   const toRows = (status: "open" | "closed"): SheetRow[] =>
-    queryJobs({ peOnly: true, status })
-      .filter((job) => vacancyInScope(job.country, targets))
+    collapseRoles(
+      queryJobs({ peOnly: true, status }).filter((job) => vacancyInScope(job.country, targets)),
+      (s) => SOURCE_LABELS[s] ?? s,
+    )
       .map((job) => ({
         job,
         school: job.school_key ? schools.get(job.school_key) : undefined,

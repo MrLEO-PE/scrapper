@@ -129,6 +129,13 @@ CREATE TABLE IF NOT EXISTS sightings (
   seen_at TEXT NOT NULL,
   PRIMARY KEY (run_id, job_id)
 );
+-- Schools whose website was searched for, and whether it was found. A search
+-- costs quota, so a school that came back empty is not tried again for weeks.
+CREATE TABLE IF NOT EXISTS website_attempts (
+  school_key TEXT PRIMARY KEY,
+  at         TEXT NOT NULL,
+  found      INTEGER NOT NULL DEFAULT 0
+);
 `;
 
 let db: DatabaseSync | null = null;
@@ -441,6 +448,10 @@ export interface JobRow {
   app_form_url: string | null;
   /** 1 = TES Quick Apply, 0 = TES "Apply" (hands off to the school), null = source doesn't say. */
   quick_apply: number | null;
+  /** Other boards the same opening was found on (set when duplicates are merged). */
+  also_on?: string;
+  /** Every advert id that is this one opening. */
+  merged_ids?: string[];
 }
 
 export interface QueryOptions {
@@ -851,24 +862,69 @@ export function byCountryRank(a: SchoolRow, b: SchoolRow): number {
  * Any address already held comes along, because its domain is usually the
  * website and costs nothing to check.
  */
+export interface SchoolNeedingWebsite {
+  school_key: string;
+  name: string;
+  country: string | null;
+  city: string | null;
+  career_email: string | null;
+  school_email: string | null;
+  /** Has a PE vacancy open right now. */
+  hiring: number;
+}
+
+/**
+ * Schools with no website, most worth finding one for first.
+ *
+ * A school advertising a PE role right now comes first, wherever it is — it is
+ * the one you might apply to this week, and the website is what unlocks its
+ * careers email and facts. The rest follow by rank, within the countries you
+ * target. A school searched for recently and not found is skipped, so the same
+ * dead end does not spend the search quota again every run.
+ */
 export function getSchoolsNeedingWebsite(
   countries: Set<string>,
   limit = 0,
-): { school_key: string; name: string; country: string | null; career_email: string | null; school_email: string | null }[] {
+  skipTriedWithinDays = 60,
+): SchoolNeedingWebsite[] {
+  const cutoff = new Date(Date.now() - skipTriedWithinDays * 86_400_000).toISOString();
   const rows = getDb()
     .prepare(
-      `SELECT school_key, name, country, career_email, school_email
-         FROM schools
-        WHERE website IS NULL AND country IS NOT NULL
-        ORDER BY COALESCE(country_rank, 9999)`,
+      `SELECT s.school_key, s.name, s.country, s.city, s.career_email, s.school_email,
+              EXISTS (SELECT 1 FROM jobs j WHERE j.school_key = s.school_key AND j.status = 'open' AND j.is_pe = 1) AS hiring
+         FROM schools s
+        WHERE s.website IS NULL AND s.country IS NOT NULL
+          AND s.school_key NOT IN (SELECT school_key FROM website_attempts WHERE found = 0 AND at > ?)
+        ORDER BY hiring DESC, COALESCE(s.country_rank, 9999)`,
     )
-    .all() as { school_key: string; name: string; country: string | null; career_email: string | null; school_email: string | null }[];
+    .all(cutoff) as unknown as SchoolNeedingWebsite[];
 
   const wanted = rows.filter((r) => {
+    if (r.hiring) return true;
     const c = r.country?.trim().toLowerCase();
     return !!c && countries.has(c);
   });
   return limit > 0 ? wanted.slice(0, limit) : wanted;
+}
+
+/** Remember that a school's website was searched for. */
+export function recordWebsiteAttempt(schoolKey: string, found: boolean): void {
+  getDb()
+    .prepare(
+      `INSERT INTO website_attempts (school_key, at, found) VALUES (?, ?, ?)
+       ON CONFLICT(school_key) DO UPDATE SET at = excluded.at, found = excluded.found`,
+    )
+    .run(schoolKey, new Date().toISOString(), found ? 1 : 0);
+}
+
+/**
+ * Give a school the website that was found for it, and queue it for another
+ * look. Enrichment skips a school it enriched recently, so without clearing
+ * the date a school profiled without a website would stay blank for a month
+ * after its website turned up.
+ */
+export function setSchoolWebsite(schoolKey: string, url: string): void {
+  getDb().prepare("UPDATE schools SET website = ?, enriched_at = NULL WHERE school_key = ? AND website IS NULL").run(url, schoolKey);
 }
 
 export function getSchools(keys?: string[]): Map<string, SchoolRow> {

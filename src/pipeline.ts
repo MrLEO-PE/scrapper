@@ -14,7 +14,7 @@ import { dedupe, normalize } from "./core/normalize.ts";
 import { hostOf, schoolKey, slugify } from "./core/text.ts";
 import type { Job, Salary, SchoolProfile, SourceId } from "./core/types.ts";
 import { bestCareerEmail, bestSchoolEmail, domainOf, extractEmails } from "./enrich/email.ts";
-import { findWebsite } from "./enrich/findsite.ts";
+import { findWebsite, findWebsiteDetailed } from "./enrich/findsite.ts";
 import { findSchoolHook } from "./enrich/hooks.ts";
 import { citiesFor, fetchCity } from "./schoolsdb.ts";
 import { loadKnownSchools, rememberWebsite } from "./known.ts";
@@ -54,6 +54,8 @@ import {
   finishRun,
   getSchools,
   getSchoolsNeedingWebsite,
+  recordWebsiteAttempt,
+  setSchoolWebsite,
   parseJsonColumn,
   queryJobs,
   recordSightings,
@@ -539,8 +541,13 @@ export async function runFindSites(opts: FindSitesOptions = {}): Promise<FindSit
 
   // Each school is a different host, so these do not queue behind each other.
   await mapLimit(rows, opts.concurrency ?? 6, async (s) => {
-    const hit = await findWebsite(s.name, s.country ?? "", s.career_email ?? s.school_email);
-    if (!hit) return;
+    const { hit, searched } = await findWebsiteDetailed(s.name, s.country ?? "", s.career_email ?? s.school_email, s.city);
+    if (!hit) {
+      // Only a search that really ran counts as a miss. A school skipped for want
+      // of a key, or hit by a rate limit, has told us nothing and is tried again.
+      if (searched && !opts.dryRun) recordWebsiteAttempt(s.school_key, false);
+      return;
+    }
 
     found[s.school_key] = {
       url: hit.url,
@@ -582,6 +589,14 @@ export async function runFindSites(opts: FindSitesOptions = {}): Promise<FindSit
   if (!opts.dryRun && Object.keys(found).length) {
     const added = saveWebsites(found);
     log.ok(`${added} new entries written to config/school-websites.json`);
+    // Straight into the database too, and the school is queued for another
+    // look: a scheduled run keeps only the database, and enrichment would
+    // otherwise leave the school without a profile for a month.
+    for (const [key, entry] of Object.entries(found)) {
+      if (!entry.url) continue;
+      setSchoolWebsite(key, entry.url);
+      recordWebsiteAttempt(key, true);
+    }
   }
   return summary;
 }

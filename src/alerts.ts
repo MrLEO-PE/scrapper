@@ -14,7 +14,8 @@
 import { getDb, parseJsonColumn, type JobRow } from "./store/db.ts";
 import type { Salary } from "./core/types.ts";
 import { daysUntil } from "./export/fields.ts";
-import { ledgerState } from "./ledger.ts";
+import { findApplied, findSkipped, ledgerState } from "./ledger.ts";
+import { collapseRoles } from "./match/rolekey.ts";
 
 /** A deadline this close is worth flagging. */
 export const CLOSING_SOON_DAYS = 7;
@@ -43,16 +44,25 @@ export interface FindOptions {
  */
 export function findAlerts(opts: FindOptions = {}): Alert[] {
   const strongScore = opts.strongScore ?? 55;
-  const rows = getDb()
-    .prepare(
-      `SELECT * FROM jobs
-        WHERE is_pe = 1 AND status = 'open'
-        ${opts.includeAlerted ? "" : "AND alerted_at IS NULL"}
-        -- Never nag about a role you have already applied to or dismissed.
-        AND (my_status IS NULL OR my_status = 'interested')
-        ORDER BY pe_score DESC`,
-    )
+  /*
+   * Every open role, merged into real openings BEFORE anything is decided.
+   *
+   * Filtering first ("not alerted yet") let a reworded copy slip through: a
+   * role alerted from TES came back as a fresh alert the day Teast listed the
+   * same job. Merging first means the opening is judged as a whole — alerted if
+   * any copy was, applied-for or dismissed if any copy was.
+   */
+  const all = getDb()
+    .prepare(`SELECT * FROM jobs WHERE is_pe = 1 AND status = 'open' ORDER BY pe_score DESC`)
     .all() as unknown as JobRow[];
+  const alertedIds = new Set(all.filter((j) => j.alerted_at).map((j) => j.id));
+  const rows = collapseRoles(all).filter(
+    (j) =>
+      (opts.includeAlerted || !j.merged_ids.some((id) => alertedIds.has(id))) &&
+      // Never nag about a role you have already applied to or dismissed. The
+      // fullest copy carries that mark, so it is the one that is checked.
+      (!j.my_status || j.my_status === "interested"),
+  );
 
   const alerts: Alert[] = [];
   // The permanent record knows what you applied for or ruled out, even when
@@ -60,7 +70,7 @@ export function findAlerts(opts: FindOptions = {}): Alert[] {
   const decided = ledgerState();
 
   for (const job of rows) {
-    if (decided.applied.has(job.dedupe_key) || decided.skipped.has(job.dedupe_key)) continue;
+    if (findApplied(decided, job) || findSkipped(decided, job)) continue;
     const daysLeft = daysUntil(job.deadline_at);
     const reasons: AlertReason[] = [];
 

@@ -9,6 +9,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { log } from "../core/logger.ts";
 import type { JobRow, SchoolRow } from "../store/db.ts";
+import { findSkipped } from "../ledger.ts";
 import { daysUntil, ledger, resolveFields, type FieldContext, type FieldDef } from "./fields.ts";
 
 export interface SheetRow {
@@ -408,7 +409,7 @@ export function writeHtml(
      * own id, so the mark survives a rebuild: the row is rewritten every run,
      * but it keeps the same identity.
      */
-    const skippedRec = row.job ? ledger().skipped.get(row.job.dedupe_key) : undefined;
+    const skippedRec = row.job ? findSkipped(ledger(), row.job) : undefined;
     const id = (row.job?.id ? ` data-job="${esc(row.job.id)}"` : "") + (skippedRec ? ` data-skipped-db="${esc(skippedRec.at)}"` : "");
     if (!classes.length) return id;
     return ` class="${classes.join(" ")}"${id}`;

@@ -19,6 +19,7 @@
 
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { roleSig, sameRole } from "./match/rolekey.ts";
 
 export type LedgerEvent = "applied" | "unapplied" | "skipped" | "unskipped";
 
@@ -62,6 +63,8 @@ export interface LedgerState {
   skipped: Map<string, LedgerEntry>;
   /** Every application ever made, per school, oldest first. */
   bySchool: Map<string, LedgerEntry[]>;
+  /** Positions ruled out, per school. */
+  skippedBySchool: Map<string, LedgerEntry[]>;
 }
 
 export function ledgerState(entries: LedgerEntry[] = readLedger()): LedgerState {
@@ -82,7 +85,43 @@ export function ledgerState(entries: LedgerEntry[] = readLedger()): LedgerState 
       skipped.delete(e.dedupe_key);
     }
   }
-  return { applied, skipped, bySchool };
+  const skippedBySchool = new Map<string, LedgerEntry[]>();
+  for (const e of skipped.values()) {
+    if (e.school_key) skippedBySchool.set(e.school_key, [...(skippedBySchool.get(e.school_key) ?? []), e]);
+  }
+  return { applied, skipped, bySchool, skippedBySchool };
+}
+
+export interface PositionRef {
+  dedupe_key: string;
+  school_key: string | null;
+  title: string;
+}
+
+/**
+ * The record of applying for this position, if there is one.
+ *
+ * The exact key (school + title) is tried first. If that misses, any
+ * application at the same school for the same opening counts — however the
+ * board worded it — so a role re-advertised as "Secondary PE Teacher" after
+ * you applied for "Secondary Physical Education (PE) Teacher" is still known
+ * to be one you applied for.
+ */
+export function findApplied(state: LedgerState, job: PositionRef): LedgerEntry | undefined {
+  const exact = state.applied.get(job.dedupe_key);
+  if (exact || !job.school_key) return exact;
+  const sig = roleSig(job.title);
+  return (state.bySchool.get(job.school_key) ?? []).find(
+    (e) => state.applied.has(e.dedupe_key) && sameRole(roleSig(e.title), sig),
+  );
+}
+
+/** The record of ruling this position out, however it was worded. */
+export function findSkipped(state: LedgerState, job: PositionRef): LedgerEntry | undefined {
+  const exact = state.skipped.get(job.dedupe_key);
+  if (exact || !job.school_key) return exact;
+  const sig = roleSig(job.title);
+  return (state.skippedBySchool.get(job.school_key) ?? []).find((e) => sameRole(roleSig(e.title), sig));
 }
 
 const niceDate = (iso: string): string =>
@@ -96,12 +135,12 @@ const niceDate = (iso: string): string =>
 export function historyFor(
   state: LedgerState,
   schoolKey: string | null | undefined,
-  dedupeKey?: string | null,
+  job?: { dedupe_key: string; title: string } | null,
 ): string {
   if (!schoolKey) return "";
   const past = (state.bySchool.get(schoolKey) ?? []).filter((e) => state.applied.has(e.dedupe_key));
   if (!past.length) return "";
   const lines = past.map((e) => `${niceDate(e.at)}: ${e.title}`);
-  const same = dedupeKey && state.applied.has(dedupeKey) ? "SAME ROLE — " : "";
+  const same = job && findApplied(state, { ...job, school_key: schoolKey }) ? "SAME ROLE — " : "";
   return `${same}applied ${past.length}× — ${lines.join("; ")}`;
 }

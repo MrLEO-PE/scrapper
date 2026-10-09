@@ -29,9 +29,11 @@ on:
     # January — posts appear and close inside a week, so those months run
     # three times a day. February to August is quiet, so once a day is plenty.
     # (Cron has no "if month" — two entries with different month lists do it.)
-    # GitHub queues scheduled runs, so any of them may start late.
-    - cron: "0 6,12,18 * 9-12,1 *"
-    - cron: "0 6 * 2-8 *"
+    # Minute 17, not 0: the top of the hour is when GitHub's scheduler is
+    # busiest, and the runs here were starting five to seven hours late — a
+    # role that closes inside a week can be gone before it was ever seen.
+    - cron: "17 6,12,18 * 9-12,1 *"
+    - cron: "17 6 * 2-8 *"
 
 # Needed to commit the database back and to publish Pages.
 permissions:
@@ -62,6 +64,10 @@ jobs:
     env:
       GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
       GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      # Optional. A Brave Search API key (free: 2,000 searches a month). Without
+      # it the website finder still works from the email addresses schools
+      # publish, it just cannot search.
+      SCRAPPER_SEARCH_KEY: ${{ secrets.SCRAPPER_SEARCH_KEY }}
 
     steps:
       # Check out the branch itself, not the commit that triggered the run.
@@ -90,6 +96,16 @@ jobs:
           if [ -n "${{ inputs.sources }}" ]; then ARGS="$ARGS --sources ${{ inputs.sources }}"; fi
           if [ "${{ inputs.shallow }}" = "true" ]; then ARGS="$ARGS --shallow"; fi
           node --experimental-strip-types --no-warnings src/cli.ts scrape $ARGS
+
+      # Schools with an open PE role and no website come first: the website is
+      # what unlocks their careers email and facts. Fifteen a run keeps three
+      # runs a day well inside a free search quota, a school that came back
+      # empty is not tried again for sixty days, and every site found is
+      # verified against the page before it is believed. A found site is saved
+      # in the database and queues the school for the enrichment just below.
+      - name: Find websites for schools that have none
+        continue-on-error: true
+        run: node --experimental-strip-types --no-warnings src/cli.ts find-websites --limit 15
 
       # Bulk profiling belongs to the directory workflow, which now does five
       # hundred a day. This pass exists to profile the schools behind vacancies

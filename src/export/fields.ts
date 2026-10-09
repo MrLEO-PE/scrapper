@@ -30,7 +30,7 @@ import {
   speculativeEmail,
 } from "./email.ts";
 import { trustedPeHook, trustedSchoolHook } from "./hooktrust.ts";
-import { historyFor, ledgerState } from "../ledger.ts";
+import { findApplied, historyFor, ledgerState } from "../ledger.ts";
 import { principalFor } from "./factsource.ts";
 import { assessFit, fitSummary } from "../match/fit.ts";
 import { BASIS_LABEL } from "../enrich/salary.ts";
@@ -70,7 +70,7 @@ const SENIORITY_LABELS: Record<string, string> = {
   unknown: "Unknown",
 };
 
-const SOURCE_LABELS: Record<string, string> = {
+export const SOURCE_LABELS: Record<string, string> = {
   tes: "TES",
   teachaway: "Teach Away",
   teacherhorizons: "Teacher Horizons",
@@ -844,9 +844,14 @@ export const FIELDS: FieldDef[] = [
 
   // ---- tracking -------------------------------------------------------
   {
+    key: "also_on", label: "Also Listed On", group: "job", scope: "job",
+    help: "Other boards that advertise this same opening, worded differently. They are merged into this one row so one job is one line — and one alert, and one letter.",
+    get: (c) => c.job?.also_on ?? "",
+  },
+  {
     key: "application_history", label: "Past Applications", group: "tracking", scope: "both",
     help: "Every position you have applied for at this school, from the permanent record (data/applications.jsonl), so a second application to the same school is a decision you make with the history in front of you. Starts with SAME ROLE when this very position — even if re-advertised under a new id — is one you already applied for.",
-    get: (c) => historyFor(ledger(), c.school?.school_key ?? c.job?.school_key, c.job?.dedupe_key),
+    get: (c) => historyFor(ledger(), c.school?.school_key ?? c.job?.school_key, c.job),
   },
   {
     key: "applied", label: "Applied", group: "tracking", scope: "job",
@@ -854,7 +859,7 @@ export const FIELDS: FieldDef[] = [
     get: (c) => {
       // The permanent record counts as well as the database status, and it
       // recognises a re-posted role by position, not by advert id.
-      const rec = c.job ? ledger().applied.get(c.job.dedupe_key) : undefined;
+      const rec = c.job ? findApplied(ledger(), c.job) : undefined;
       if (rec && !APPLIED.has(c.job?.my_status ?? "")) {
         return `✅ ${new Date(rec.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
       }

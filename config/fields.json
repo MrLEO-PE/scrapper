@@ -50,6 +50,7 @@
   "last_day": true,
   "deadline": false,
   "source": true,
+  "also_on": true,
   "application_form": true,
   "apply_type": true,
   "form_link": true,

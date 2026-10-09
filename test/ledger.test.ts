@@ -9,7 +9,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { appendLedger, historyFor, ledgerState, readLedger, type LedgerEntry } from "../src/ledger.ts";
+import { appendLedger, findApplied, findSkipped, historyFor, ledgerState, readLedger, type LedgerEntry } from "../src/ledger.ts";
 
 const entry = (over: Partial<LedgerEntry>): LedgerEntry => ({
   at: "2026-08-12T10:00:00Z",
@@ -42,12 +42,12 @@ test("undo is a later event, and history is kept", () => {
 
 test("a re-posted role under a new advert id is still the same position", () => {
   const s = ledgerState([entry({})]);
-  assert.match(historyFor(s, "harbour-pine|china", "harbour-pine|china::pe-teacher"), /^SAME ROLE — applied 1×/);
+  assert.match(historyFor(s, "harbour-pine|china", { dedupe_key: "harbour-pine|china::pe-teacher", title: "PE Teacher" }), /^SAME ROLE — applied 1×/);
   // A different position at the same school shows the history, not the warning.
-  const other = historyFor(s, "harbour-pine|china", "harbour-pine|china::head-of-pe");
+  const other = historyFor(s, "harbour-pine|china", { dedupe_key: "harbour-pine|china::head-of-pe", title: "Head of PE" });
   assert.match(other, /^applied 1×/);
   assert.doesNotMatch(other, /SAME ROLE/);
-  assert.equal(historyFor(s, "another-school|uk", "x"), "");
+  assert.equal(historyFor(s, "another-school|uk", { dedupe_key: "x", title: "PE Teacher" }), "");
 });
 
 test("applying to a role you had skipped removes the skip, and a skip never overrides an application", () => {
@@ -61,4 +61,21 @@ test("one damaged line does not take the history down", () => {
   const p = tmp();
   writeFileSync(p, JSON.stringify(entry({})) + "\n{not json\n" + JSON.stringify(entry({ job_id: "tes:2", dedupe_key: "k2" })) + "\n");
   assert.equal(readLedger(p).length, 2);
+});
+
+test("a position is recognised however a board words it", () => {
+  const s = ledgerState([entry({ title: "Secondary Physical Education (PE) Teacher", dedupe_key: "harbour-pine|china::secondary-physical-education-pe-teacher" })]);
+  const reposted = { dedupe_key: "harbour-pine|china::secondary-pe-teacher", school_key: "harbour-pine|china", title: "Secondary PE Teacher" };
+  assert.ok(findApplied(s, reposted), "same opening, different wording");
+  assert.match(historyFor(s, "harbour-pine|china", reposted), /^SAME ROLE/);
+  // A different opening at the same school is not it.
+  assert.equal(findApplied(s, { ...reposted, dedupe_key: "k", title: "Head of PE" }), undefined);
+  assert.equal(findApplied(s, { ...reposted, dedupe_key: "k", title: "Primary PE Teacher" }), undefined);
+  assert.equal(findApplied(s, { ...reposted, dedupe_key: "k", title: "PE Teacher - Maternity Cover" }), undefined);
+});
+
+test("a role ruled out is recognised the same way", () => {
+  const s = ledgerState([entry({ event: "skipped", title: "Physical Education Teacher (Female)", dedupe_key: "a::pe-female" })]);
+  assert.ok(findSkipped(s, { dedupe_key: "a::female-pe-teacher", school_key: "harbour-pine|china", title: "Female PE Teacher" }));
+  assert.equal(findSkipped(s, { dedupe_key: "a::pe", school_key: "harbour-pine|china", title: "Physical Education Teacher" }), undefined);
 });

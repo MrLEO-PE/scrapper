@@ -38,9 +38,11 @@ on:
         default: false
         type: boolean
   schedule:
-    # 02:00 UTC daily, four hours clear of the job scrape at 06:00. They share
-    # a concurrency group, so if this one overruns the scrape simply waits.
-    - cron: "0 2 * * *"
+    # About 02:00 UTC daily, four hours clear of the job scrape. They share a
+    # concurrency group, so if this one overruns the scrape simply waits.
+    # Never on the hour: GitHub's own docs warn the top of the hour is when
+    # scheduled runs are most delayed, and sometimes dropped.
+    - cron: "23 2 * * *"
 
 permissions:
   contents: write
