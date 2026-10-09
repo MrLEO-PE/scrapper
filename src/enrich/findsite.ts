@@ -83,16 +83,25 @@ export function pageIsSchool(html: string, name: string, opts: VerifyOptions = {
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
-    .toLowerCase();
+    .toLowerCase()
+    // The name is compared without accents, so the page must be too —
+    // "Querétaro" and "Colégio" were rejected against "queretaro" and "colegio".
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
 
   const distinctive = distinctiveWords(name);
   if (!distinctive.length) return false;
 
-  const hits = distinctive.filter((w) => text.includes(w)).length;
+  // A site found by search must contain the words as WORDS. Plain substring
+  // matching let "Itu" match inside "situation" and "Han" inside "channel",
+  // which made the strict test far weaker than it looked.
+  const present = (w: string): boolean => (opts.strict ? new RegExp(`(?:^|[^a-z0-9])${w}(?:$|[^a-z0-9])`).test(text) : text.includes(w));
+
+  const hits = distinctive.filter(present).length;
   if (hits / distinctive.length < (opts.strict ? 1 : 0.6)) return false;
 
   const city = words(opts.city ?? "").join(" ");
-  if (opts.strict && city.length > 2 && !text.includes(city)) return false;
+  if (opts.strict && city.length > 2 && !present(city.replace(/\s+/g, "[^a-z0-9]+"))) return false;
 
   /*
    * One word repeated is not a school; a school says many of them, often.

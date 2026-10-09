@@ -149,3 +149,21 @@ test("without a key nothing is searched and nothing is recorded as missing", asy
     if (key !== undefined) process.env.SCRAPPER_SEARCH_KEY = key;
   }
 });
+
+test("accents on the page do not hide a school's name", () => {
+  const html = page("Bienvenidos al International School of Querétaro. Colégio Progresso Bilíngue.");
+  assert.equal(pageIsSchool(html, "International School of Queretaro", { strict: true, city: "Querétaro" }), true);
+  assert.equal(pageIsSchool(html, "Colégio Progresso Bilíngue", { strict: true }), true);
+  // Still refuses the wrong school.
+  assert.equal(pageIsSchool(html, "Instituto Thomas Jefferson Queretaro", { strict: true, city: "Querétaro" }), false);
+});
+
+test("the strict test matches whole words, not pieces of other words", () => {
+  const noise = page("The situation in the channel institute is changing; admissions and teachers and curriculum.");
+  // "itu" is inside "situation" and "han" inside "channel": neither is the school.
+  assert.equal(pageIsSchool(noise, "Colégio Itu", { strict: true, city: "Itu" }), false);
+  assert.equal(pageIsSchool(noise, "Han Academy", { strict: true, city: "Hong Kong" }), false);
+  // The real thing still passes, including a multi-word city.
+  assert.equal(pageIsSchool(page("Han Academy, Hong Kong — an international school."), "Han Academy", { strict: true, city: "Hong Kong" }), true);
+  assert.equal(pageIsSchool(page("Colégio Itu is in Itu, São Paulo."), "Colégio Itu", { strict: true, city: "Itu" }), true);
+});
