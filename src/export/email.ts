@@ -217,10 +217,16 @@ export function buildLetter(i: LetterInputs): DraftEmail {
     } else {
       greeting = `Dear Principal ${name} and the HR Team,`;
       if (!src) flags.push("check the principal's name on the school's own page");
-      else if (isStale(src)) {
-        flags.push(
-          `principal's name was last read ${monthsAgo(src.seenAt)} months ago — people change in July and August, so re-check it on the school's own page before sending`,
-        );
+      else {
+        // Every name is flagged with the page it was read from. Names are read
+        // off web pages by pattern and some are wrong — a menu word, the next
+        // line of the page — so the check has to take seconds, not a search.
+        flags.push(`greeting uses "${name}", read from ${src.where ?? "the school's site"} — confirm the name there before sending`);
+        if (isStale(src)) {
+          flags.push(
+            `that name was last read ${monthsAgo(src.seenAt)} months ago — people change in July and August, so re-check it before sending`,
+          );
+        }
       }
     }
   } else if (group) {

@@ -152,7 +152,7 @@ const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3
      columns stay compact; a column of sentences gets room; a column of
      letters gets a wide column that keeps its line breaks. */
   th.wide, td.wide { min-width: 260px; max-width: 440px; }
-  th.xwide, td.xwide { min-width: 560px; max-width: 780px; }
+  th.xwide, td.xwide { min-width: 940px; max-width: 1180px; }
   td.xwide { white-space: pre-wrap; line-height: 1.5; }
   th { background: var(--head); position: sticky; top: 0; cursor: pointer; white-space: nowrap; }
   th:hover { text-decoration: underline; }

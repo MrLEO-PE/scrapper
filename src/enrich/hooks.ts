@@ -17,6 +17,7 @@
  */
 
 import { htmlToText } from "../core/text.ts";
+import { cleanPersonName } from "./personname.ts";
 
 export interface Hook {
   text: string;
@@ -63,7 +64,10 @@ export function findPrincipal(html: string, sourceUrl: string, schoolName = ""):
   );
 
   const accept = (candidate: string): string | null => {
-    const name = candidate.replace(/\s+/g, " ").trim();
+    // Furniture trimmed from the edges, and anything that is not name-shaped
+    // refused, before the other checks look at it.
+    const name = cleanPersonName(candidate.replace(/\s+/g, " ").trim(), schoolName);
+    if (!name) return null;
     const bare = name.replace(new RegExp(`^${HONORIFIC}\\s+`), "").trim();
 
     if (bare.length < 5 || bare.length > 40) return null;

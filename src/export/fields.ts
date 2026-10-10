@@ -32,6 +32,7 @@ import {
 import { trustedPeHook, trustedSchoolHook } from "./hooktrust.ts";
 import { findApplied, historyFor, ledgerState } from "../ledger.ts";
 import { principalFor } from "./factsource.ts";
+import { cleanPersonName } from "../enrich/personname.ts";
 import { assessFit, fitSummary } from "../match/fit.ts";
 import { BASIS_LABEL } from "../enrich/salary.ts";
 import { benchmarkAverage, benchmarkSavings, countryBenchmark } from "../enrich/benchmarks.ts";
@@ -620,7 +621,7 @@ export const FIELDS: FieldDef[] = [
   {
     key: "principal", label: "Principal", group: "contact", scope: "both",
     help: "Head of School, read from the school's own site. Blank when it could not be established with confidence.",
-    get: (c) => c.school?.principal ?? "",
+    get: (c) => cleanPersonName(c.school?.principal, c.school?.name) ?? "",
   },
   {
     key: "turnover", label: "Turnover", group: "school", scope: "both",

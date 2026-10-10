@@ -11,6 +11,7 @@
  */
 
 import type { SchoolRow } from "../store/db.ts";
+import { cleanPersonName } from "../enrich/personname.ts";
 
 export type PrincipalSourceKind = "school-page" | "advert" | "unknown";
 
@@ -50,6 +51,10 @@ export function isStale(src: PrincipalSource, now = Date.now()): boolean {
 }
 
 /** The two things a letter needs about a school's principal. */
-export function principalFor(s: Pick<SchoolRow, "principal" | "provenance_json" | "enriched_at">) {
-  return { principal: s.principal, principalSource: s.principal ? principalSource(s) : undefined };
+export function principalFor(s: Pick<SchoolRow, "principal" | "provenance_json" | "enriched_at"> & { name?: string }) {
+  // Cleaned when read, whatever was stored: about a third of the names on file
+  // carried menu words or the next line of the page, and a name that is not
+  // clearly a person is not used in a greeting.
+  const principal = cleanPersonName(s.principal, s.name);
+  return { principal, principalSource: principal ? principalSource(s) : undefined };
 }
