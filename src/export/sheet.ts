@@ -146,6 +146,14 @@ const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3
   .wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 9px; }
   table { border-collapse: collapse; width: 100%; font-size: 13px; }
   th, td { border-bottom: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; max-width: 380px; }
+  /* Column width follows what the column holds. A cap of 380px for every column
+     squeezed a 1,500-character letter into a thin strip seventy lines tall,
+     which made the one column you read most the hardest to read. Short
+     columns stay compact; a column of sentences gets room; a column of
+     letters gets a wide column that keeps its line breaks. */
+  th.wide, td.wide { min-width: 260px; max-width: 440px; }
+  th.xwide, td.xwide { min-width: 560px; max-width: 780px; }
+  td.xwide { white-space: pre-wrap; line-height: 1.5; }
   th { background: var(--head); position: sticky; top: 0; cursor: pointer; white-space: nowrap; }
   th:hover { text-decoration: underline; }
   tr.closed { opacity: .45; }
@@ -213,7 +221,7 @@ const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3
   nav a:hover { border-color: var(--fg); }
   nav a.cta { margin-left: auto; background: #1f883d; color: #fff; border-color: #1f883d; font-weight: 600; }
   nav a.cta:hover { background: #1a7f37; }
-  @media (max-width: 640px) { body { padding: 16px; } th, td { max-width: 220px; } }
+  @media (max-width: 640px) { body { padding: 16px; } th, td { max-width: 220px; } th.wide, td.wide { min-width: 200px; } th.xwide, td.xwide { min-width: 280px; max-width: 320px; } }
 `;
 
 /** The nav strip across the top of every page. */
@@ -325,6 +333,23 @@ export function writeHtml(
   const { headers, body, fields } = buildTable(rows, fieldKeys, scope);
   const esc = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  /*
+   * How wide each column should be, from what is actually in it.
+   *
+   * The 90th percentile of the cell lengths rather than the longest: one long
+   * advert in an otherwise short column should not widen it for everyone. A
+   * column of letters or adverts is "xwide", a column of sentences "wide", and
+   * everything else keeps the compact default.
+   */
+  const widthClass = fields.map((_, j) => {
+    // A link shows as one word ("open", "careers"), whatever its address is long.
+    const lens = body.map((r) => (/^https?:\/\//.test(r[j] ?? "") ? 0 : (r[j] ?? "").length)).sort((a, b) => a - b);
+    const p90 = lens.length ? lens[Math.min(lens.length - 1, Math.floor(lens.length * 0.9))]! : 0;
+    // Letters and adverts run to a thousand characters or more; a column of
+    // flags or notes runs to a few hundred and does not need that room.
+    return p90 > 600 ? "xwide" : p90 > 70 ? "wide" : "";
+  });
 
   const cell = (value: string, field: FieldDef): string => {
     if (!value) return "";
@@ -438,9 +463,9 @@ ${
 <button type="button" class="mark" id="exportMarks" title="Download your applied / not-interested marks, then run: npm run import-marks -- marks.json">export marks</button>
 ${leadershipCount ? '<label class="only"><input type="checkbox" id="leadOnly"> leadership roles only</label>' : ""}
 <div class="wrap"><table>
-<thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
+<thead><tr>${headers.map((h, j) => `<th${widthClass[j] ? ` class="${widthClass[j]}"` : ""}>${esc(h)}</th>`).join("")}</tr></thead>
 <tbody>
-${body.map((r, i) => `<tr${rowAttrs(r, rows[i]!)}>${r.map((v, j) => `<td class="col-${esc(fields[j]!.key.replace(/_/g, "-"))}">${cell(v, fields[j]!)}</td>`).join("")}</tr>`).join("\n")}
+${body.map((r, i) => `<tr${rowAttrs(r, rows[i]!)}>${r.map((v, j) => `<td class="col-${esc(fields[j]!.key.replace(/_/g, "-"))}${widthClass[j] ? ` ${widthClass[j]}` : ""}">${cell(v, fields[j]!)}</td>`).join("")}</tr>`).join("\n")}
 </tbody></table></div>
 <p class="empty" id="empty" style="display:none">${esc(opts.view === "applied" ? "Nothing here yet. Mark a role as applied on the Open roles page and it moves to this tab."
       : opts.view === "skipped" ? "Nothing here yet. Mark a role as not interested on the Open roles page and it moves to this tab, where you can undo it."
