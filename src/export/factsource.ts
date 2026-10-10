@@ -12,8 +12,10 @@
 
 import type { SchoolRow } from "../store/db.ts";
 import { cleanPersonName } from "../enrich/personname.ts";
+import { expiredFor, verifiedFor } from "./verifiednames.ts";
 
-export type PrincipalSourceKind = "school-page" | "advert" | "unknown";
+/** "verified" is the only kind a letter greets by name; the rest are candidates a person has not yet confirmed. */
+export type PrincipalSourceKind = "verified" | "school-page" | "advert" | "unknown";
 
 export interface PrincipalSource {
   kind: PrincipalSourceKind;
@@ -50,11 +52,26 @@ export function isStale(src: PrincipalSource, now = Date.now()): boolean {
   return m !== null && m * 30.44 > STALE_NAME_DAYS;
 }
 
-/** The two things a letter needs about a school's principal. */
-export function principalFor(s: Pick<SchoolRow, "principal" | "provenance_json" | "enriched_at"> & { name?: string }) {
-  // Cleaned when read, whatever was stored: about a third of the names on file
-  // carried menu words or the next line of the page, and a name that is not
-  // clearly a person is not used in a greeting.
-  const principal = cleanPersonName(s.principal, s.name);
-  return { principal, principalSource: principal ? principalSource(s) : undefined };
+/**
+ * What a letter may say about a school's principal.
+ *
+ * A name a person has confirmed (verifiednames.ts) is used. Anything the scraper
+ * read off a page is only a candidate: it is carried along so the letter can say
+ * who it might be and where to check, but it is never used in a greeting.
+ */
+export function principalFor(s: Pick<SchoolRow, "principal" | "provenance_json" | "enriched_at"> & { name?: string; school_key?: string }) {
+  const verified = verifiedFor(s.school_key);
+  if (verified) {
+    return { principal: verified.name, principalSource: { kind: "verified" as const, where: verified.source, seenAt: verified.verifiedOn } };
+  }
+  // A candidate is cleaned of menu words, but it is still not confirmed.
+  const candidate = cleanPersonName(s.principal, s.name);
+  const expired = expiredFor(s.school_key);
+  return {
+    principal: candidate,
+    principalSource: candidate ? principalSource(s) : undefined,
+    // A confirmation that has run out is not used, but is worth saying: someone
+    // checked this name once, and it only needs checking again.
+    expiredName: expired?.name,
+  };
 }

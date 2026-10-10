@@ -46,6 +46,8 @@ import {
 import { closeDb, dedupeSchools, getSchools, queryJobs, rerankCountries } from "./store/db.ts";
 import { readLedger } from "./ledger.ts";
 import { checkHealth, healthMarkdown, problems } from "./health.ts";
+import { forgetVerified, loadVerified, recordVerified } from "./export/verifiednames.ts";
+import { principalFor } from "./export/factsource.ts";
 import {
   ALL_SOURCES,
   printStats,
@@ -338,6 +340,7 @@ USAGE
   npm run schedule -- --daily 07:00  install an OS scheduled task
   npm run track                      your pipeline + what closes soon
   npm run mark-sent -- a@b.com       permanently record an address as emailed today
+  npm run verify-name                list principals to confirm; confirm one with: verify-name -- "school" "Name"
   npm run import-marks -- marks.json make the site's applied / not-interested marks permanent
   npm run alerts                     list roles worth acting on now
   npm run health                     did every source return what it usually does?
@@ -695,6 +698,76 @@ async function main(): Promise<void> {
       appendLedger(entries);
       log.ok(`recorded ${entries.length} marks permanently${unknown ? ` · ${unknown} not found in the database (an old advert that has left it)` : ""}`);
       for (const e of entries) log.plain(`  ${e.event.padEnd(8)} ${(e.school ?? "?").slice(0, 30).padEnd(32)} ${e.title.slice(0, 50)}`);
+      break;
+    }
+
+    case "verify-name": {
+      /*
+       * A principal's name is used in a greeting only once a person has
+       * confirmed it on the school's own page. This lists the candidates for the
+       * schools you might apply to, and records a confirmation.
+       */
+      const schools = [...getSchools().values()];
+      const forget = str(args, "forget");
+      const [query, ...nameParts] = args.positional;
+
+      const find = (q: string) => {
+        const needle = q.toLowerCase();
+        const byKey = schools.filter((s) => s.school_key.toLowerCase() === needle);
+        if (byKey.length) return byKey;
+        const byName = schools.filter((s) => s.name.toLowerCase() === needle);
+        if (byName.length) return byName;
+        // Whole words only: "Han Academy" must not find "Aga Khan Academy".
+        const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const re = new RegExp(`(?:^|[^a-z0-9])${escaped}(?:$|[^a-z0-9])`, "i");
+        return schools.filter((s) => re.test(s.name));
+      };
+
+      if (forget) {
+        const hit = find(forget);
+        if (hit.length !== 1) { log.error(hit.length ? `${hit.length} schools match "${forget}" — be more specific` : `no school matches "${forget}"`); process.exitCode = 1; break; }
+        log.ok(forgetVerified(hit[0]!.school_key) ? `no longer confirmed: ${hit[0]!.name}` : `${hit[0]!.name} had no confirmed name`);
+        break;
+      }
+
+      if (query && nameParts.length) {
+        const hit = find(query);
+        if (hit.length !== 1) {
+          log.error(hit.length ? `${hit.length} schools match "${query}" — be more specific, or use the key:` : `no school matches "${query}"`);
+          for (const s of hit.slice(0, 8)) log.plain(`  ${s.school_key}   ${s.name}`);
+          process.exitCode = 1;
+          break;
+        }
+        const s = hit[0]!;
+        const cand = principalFor(s);
+        // Default the source to the page the scraper read it from, when it is the same name.
+        const source = str(args, "source") ?? (cand.principal && nameParts.join(" ").includes(cand.principal.replace(/^(?:Mr|Mrs|Ms|Miss|Dr|Prof).?s+/i, "")) ? cand.principalSource?.where : undefined);
+        const e = recordVerified(s.school_key, nameParts.join(" "), source);
+        log.ok(`confirmed: ${e.name} — ${s.name}  (${e.verifiedOn}${e.source ? `, ${e.source}` : ""})`);
+        log.plain("  letters will greet them by name from the next site build, for nine months.");
+        break;
+      }
+
+      // Default: the candidates worth checking — schools with an open PE role.
+      const open = new Set(queryJobs({ peOnly: true, status: "open" }).map((j) => j.school_key).filter((k): k is string => !!k));
+      const confirmed = loadVerified();
+      const todo = schools
+        .filter((s) => open.has(s.school_key))
+        .map((s) => ({ s, p: principalFor(s) }))
+        .filter(({ s, p }) => !(s.school_key in confirmed) || p.principalSource?.kind !== "verified");
+      log.step(`Principals to confirm — schools with an open PE role (${todo.length}); ${Object.keys(confirmed).length} confirmed so far`);
+      // Those with a candidate first: they only need checking. The rest need
+      // finding, which is a different job.
+      const withName = todo.filter(({ p }) => p.principal);
+      for (const { s, p } of withName) log.plain(`  ${s.name.slice(0, 44).padEnd(46)} ${p.principal!.padEnd(28)} ${p.principalSource?.where ?? ""}`);
+      if (bool(args, "all")) {
+        for (const { s } of todo.filter(({ p }) => !p.principal)) log.plain(`  ${s.name.slice(0, 44).padEnd(46)} — no candidate —`);
+      } else {
+        log.plain(`  (${todo.length - withName.length} more have no candidate name at all — add --all to list them)`);
+      }
+      log.plain("");
+      log.plain('  Open the page, check the name, then:  npm run verify-name -- "school name or key" "Dr Jane Smith"');
+      log.plain('  To withdraw one:                        npm run verify-name -- --forget "school name or key"');
       break;
     }
 

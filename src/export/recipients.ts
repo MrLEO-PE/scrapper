@@ -153,7 +153,9 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string): 
 
     recipients.push({
       ...base,
-      contactName: s.contact_name || s.principal,
+      // Only a name a person has confirmed. A candidate read off a page is
+      // not shown as though it were the contact.
+      contactName: principalFor(s).principalSource?.kind === "verified" ? principalFor(s).principal : null,
       factQuality: schoolHook || peHook ? "unique" : "none",
       subject: draft.subject,
       body: draft.body,

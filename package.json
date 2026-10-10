@@ -24,6 +24,7 @@
     "known": "node --experimental-strip-types --no-warnings src/cli.ts known",
     "dedupe": "node --experimental-strip-types --no-warnings src/cli.ts dedupe",
     "import-marks": "node --experimental-strip-types --no-warnings src/cli.ts import-marks",
+    "verify-name": "node --experimental-strip-types --no-warnings src/cli.ts verify-name",
     "mark-sent": "node --experimental-strip-types --no-warnings src/cli.ts mark-sent",
     "watch": "node --experimental-strip-types --no-warnings src/cli.ts watch",
     "schedule": "node --experimental-strip-types --no-warnings src/cli.ts schedule",

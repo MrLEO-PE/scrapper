@@ -32,7 +32,6 @@ import {
 import { trustedPeHook, trustedSchoolHook } from "./hooktrust.ts";
 import { findApplied, historyFor, ledgerState } from "../ledger.ts";
 import { principalFor } from "./factsource.ts";
-import { cleanPersonName } from "../enrich/personname.ts";
 import { assessFit, fitSummary } from "../match/fit.ts";
 import { BASIS_LABEL } from "../enrich/salary.ts";
 import { benchmarkAverage, benchmarkSavings, countryBenchmark } from "../enrich/benchmarks.ts";
@@ -620,8 +619,16 @@ export const FIELDS: FieldDef[] = [
   },
   {
     key: "principal", label: "Principal", group: "contact", scope: "both",
-    help: "Head of School, read from the school's own site. Blank when it could not be established with confidence.",
-    get: (c) => cleanPersonName(c.school?.principal, c.school?.name) ?? "",
+    help: "Head of School. A name here is only a candidate read off the school's site by pattern — about a third of such names were wrong — and letters never use it. It says '✓ confirmed' only once a person has checked it on the school's own page (npm run verify-name); otherwise it says 'not confirmed'.",
+    get: (c) => {
+      const s = c.school;
+      if (!s) return "";
+      const p = principalFor(s);
+      if (!p.principal) return p.expiredName ? `${p.expiredName} — confirmation expired, check again` : "";
+      return p.principalSource?.kind === "verified"
+        ? `${p.principal} ✓ confirmed ${p.principalSource.seenAt}`
+        : `${p.principal} (not confirmed)`;
+    },
   },
   {
     key: "turnover", label: "Turnover", group: "school", scope: "both",
@@ -823,7 +830,7 @@ export const FIELDS: FieldDef[] = [
     get: (c) => {
       const s = c.school;
       if (!s?.contact_name) return "";
-      const who = s.contact_role ? `${s.contact_name} — ${s.contact_role}` : s.contact_name;
+      const who = `(not confirmed) ${s.contact_role ? `${s.contact_name} — ${s.contact_role}` : s.contact_name}`;
       return s.contact_email ? `${who} · ${s.contact_email}` : `${who} (no address — send to the school inbox, FAO them)`;
     },
   },

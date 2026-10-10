@@ -348,6 +348,18 @@ npm run dedupe                  # merge, then re-rank
 Merging only ever fills gaps — a value is taken from the row being removed only where the row
 being kept has none — so it combines evidence and cannot lose it.
 
+## Principals' names: only confirmed ones are used
+
+A name the scraper reads off a web page is only a *candidate*. Letters greet
+"Dear Principal and the HR Team" until you confirm the name yourself:
+
+    npm run verify-name                      # list candidates and where each was read
+    npm run verify-name "School" "Ms Jane Doe" --source <page url>
+    npm run verify-name -- --forget "School"
+
+Confirmations are stored in `config/verified-names.json` and expire after
+270 days (nine months), after which the letter flags it and goes generic again.
+
 ## Tracking what you have applied to
 
 The sheet tells you what exists. This tells you where **you** stand with it — which turns a list

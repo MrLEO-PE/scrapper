@@ -14,6 +14,8 @@ const complete = {
   role: "Secondary PE Teacher",
   school: "Harbour Pine International School",
   principal: "Ms Anna Reyes",
+  // Only a name a person has confirmed is ever used in a greeting.
+  principalSource: { kind: "verified" as const, where: "https://x.edu/head", seenAt: "2026-10-01" },
   peHook: "a self-review at the end of each unit",
   advertText: "Cambridge IGCSE PE. Start August 2027.",
   curriculum: ["Cambridge"],

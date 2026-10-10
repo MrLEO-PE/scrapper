@@ -26,7 +26,7 @@ import { log } from "../core/logger.ts";
 import type { Qualification } from "../core/types.ts";
 import { assessFit } from "../match/fit.ts";
 import { pickDuty, type StrengthKey } from "../match/advertpick.ts";
-import { isStale, monthsAgo, type PrincipalSource } from "./factsource.ts";
+import type { PrincipalSource } from "./factsource.ts";
 
 export interface Bullet {
   key: string;
@@ -171,6 +171,8 @@ export interface LetterInputs {
   principal?: string | null;
   /** Where the name was read. Without it the name is used but flagged. */
   principalSource?: PrincipalSource;
+  /** Someone confirmed this name once; the confirmation has expired. */
+  expiredName?: string;
   schoolHook?: string | null;
   peHook?: string | null;
   curriculum?: string[] | null;
@@ -205,30 +207,22 @@ export function buildLetter(i: LetterInputs): DraftEmail {
   if (!group && i.principal) {
     const src = i.principalSource;
     const name = bareName(i.principal);
-    if (src && src.kind !== "school-page") {
-      // Rule 2: the name comes from the school's own page. A name that was
-      // only found in an advert, or whose source was never recorded, is left
-      // out (rule 3) and said so, so it can be confirmed and used.
-      flags.push(
-        src.kind === "advert"
-          ? `a principal "${name}" appears only in a job advert, not on the school's own page — confirm it there to use the name`
-          : `a principal "${name}" is on file but its source was never recorded — confirm it on the school's own page to use the name`,
-      );
-    } else {
+    if (src?.kind === "verified") {
+      // A person confirmed this name, on the page named here, on the date shown.
       greeting = `Dear Principal ${name} and the HR Team,`;
-      if (!src) flags.push("check the principal's name on the school's own page");
-      else {
-        // Every name is flagged with the page it was read from. Names are read
-        // off web pages by pattern and some are wrong — a menu word, the next
-        // line of the page — so the check has to take seconds, not a search.
-        flags.push(`greeting uses "${name}", read from ${src.where ?? "the school's site"} — confirm the name there before sending`);
-        if (isStale(src)) {
-          flags.push(
-            `that name was last read ${monthsAgo(src.seenAt)} months ago — people change in July and August, so re-check it before sending`,
-          );
-        }
-      }
+    } else {
+      /*
+       * Never used. Reading a name off a page by pattern cannot be made certain
+       * — menu words, the next line of text, a deputy — and a wrong name in an
+       * application is worse than none, so the greeting stays "Dear Principal"
+       * until a person confirms it. The candidate is offered in the flags with
+       * where it was read, so confirming takes a moment.
+       */
+      const where = src?.kind === "school-page" && src.where ? `read from ${src.where}` : src?.kind === "advert" ? "found only in a job advert" : "of unrecorded source";
+      flags.push(`possible principal "${name}" (${where}) is NOT used — not confirmed. Check it on the school's own page; if right, run: npm run verify-name`);
     }
+  } else if (!group && i.expiredName) {
+    flags.push(`"${i.expiredName}" was confirmed as principal here before, but that was over nine months ago — confirm it again to use the name`);
   } else if (group) {
     greeting = "Dear HR Team,";
   }
@@ -301,6 +295,7 @@ export interface EmailInputs {
   school: string;
   principal?: string | null;
   principalSource?: PrincipalSource;
+  expiredName?: string;
   schoolHook?: string | null;
   peHook?: string | null;
   advertText?: string | null;
@@ -314,6 +309,7 @@ export function draftEmail(i: EmailInputs): DraftEmail {
     schools: [i.school],
     principal: i.principal,
     principalSource: i.principalSource,
+    expiredName: i.expiredName,
     schoolHook: i.schoolHook,
     peHook: i.peHook,
     advertText: i.advertText,
@@ -325,6 +321,7 @@ export interface SpeculativeInputs {
   school: string;
   principal?: string | null;
   principalSource?: PrincipalSource;
+  expiredName?: string;
   schoolHook?: string | null;
   peHook?: string | null;
   accreditation?: string | null;
@@ -338,6 +335,7 @@ export function speculativeEmail(i: SpeculativeInputs): DraftEmail {
     schools: [i.school],
     principal: i.principal,
     principalSource: i.principalSource,
+    expiredName: i.expiredName,
     schoolHook: i.schoolHook,
     peHook: i.peHook,
     curriculum: i.curriculum,

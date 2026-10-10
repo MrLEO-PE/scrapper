@@ -72,10 +72,22 @@ test("reads where a principal's name came from", () => {
   assert.equal(principalSource({ provenance_json: null, enriched_at: seen }).kind, "unknown");
 });
 
-test("a name from the school's own page is used; one from an advert or of unknown source is not", () => {
+test("only a name a person has verified is used; everything the scraper read is a candidate", () => {
   const base = { role: "PE Teacher", school: "X", principal: "Dr Anna Reyes" };
-  const page = draftEmail({ ...base, principalSource: { kind: "school-page", where: "https://x.edu/head", seenAt: seen } });
-  assert.match(page.body, /^Dear Principal Anna Reyes and the HR Team,/);
+
+  const verified = draftEmail({ ...base, principalSource: { kind: "verified", where: "https://x.edu/head", seenAt: seen } });
+  assert.match(verified.body, /^Dear Principal Anna Reyes and the HR Team,/);
+  assert.ok(!verified.flags.some((f) => /NOT used/.test(f)));
+
+  // Read off the school's own page, but by pattern: not used.
+  const page = draftEmail({ ...base, principalSource: { kind: "school-page", where: "https://x.edu/leadership", seenAt: seen } });
+  assert.match(page.body, /^Dear Principal and the HR Team,/);
+  assert.doesNotMatch(page.body, /Anna|Reyes/);
+  assert.ok(
+    page.flags.some((f) => f.includes('possible principal "Anna Reyes"') && f.includes("https://x.edu/leadership") && f.includes("NOT used")),
+    "the candidate and where to check it are offered, but it is not used",
+  );
+  assert.ok(page.flags.some((f) => /npm run verify-name/.test(f)));
 
   const advert = draftEmail({ ...base, principalSource: { kind: "advert", seenAt: seen } });
   assert.match(advert.body, /^Dear Principal and the HR Team,/);
@@ -83,14 +95,15 @@ test("a name from the school's own page is used; one from an advert or of unknow
 
   const unknown = draftEmail({ ...base, principalSource: { kind: "unknown", seenAt: seen } });
   assert.match(unknown.body, /^Dear Principal and the HR Team,/);
-  assert.ok(unknown.flags.some((f) => /never recorded/.test(f)));
+
+  // No source at all is no proof: not used.
+  assert.match(draftEmail(base).body, /^Dear Principal and the HR Team,/);
 });
 
-test("a name last read long ago is flagged for a re-check before the hiring season", () => {
-  const old = new Date(Date.now() - 300 * 86_400_000).toISOString();
-  const d = draftEmail({ role: "PE Teacher", school: "X", principal: "Anna Reyes", principalSource: { kind: "school-page", where: "https://x.edu", seenAt: old } });
-  assert.match(d.body, /^Dear Principal Anna Reyes/);
-  assert.ok(d.flags.some((f) => /months ago — people change in July and August/.test(f)));
+test("a confirmation that has expired is not used, and says so", () => {
+  const d = draftEmail({ role: "PE Teacher", school: "X", expiredName: "Anna Reyes" });
+  assert.match(d.body, /^Dear Principal and the HR Team,/);
+  assert.ok(d.flags.some((f) => /"Anna Reyes" was confirmed as principal here before.*over nine months ago/.test(f)));
   assert.equal(isStale({ kind: "school-page", seenAt: seen }), false);
-  assert.equal(monthsAgo(old) !== null && monthsAgo(old)! >= 9, true);
+  assert.equal(monthsAgo(new Date(Date.now() - 300 * 86_400_000).toISOString())! >= 9, true);
 });
