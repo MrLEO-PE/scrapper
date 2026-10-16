@@ -118,7 +118,9 @@ export function buildSite(opts: SiteOptions): { dir: string; jobs: number; schoo
     .map((school) => ({ school }));
 
   const s = dbStats();
-  const note = `${s.leadership} leadership roles · ${s.schoolsWithCareerEmail} schools with a careers email`;
+  // The database counts every country it has scraped, which is more than this
+  // page shows, so the line says so rather than seeming to contradict the count above it.
+  const note = `${s.leadership} leadership roles in all countries scraped · ${s.schoolsWithCareerEmail} schools with a careers email`;
 
   writeHtml(join(dir, "index.html"), open, opts.fields, "job", "International school PE vacancies", {
     nav: navFor("index.html"),

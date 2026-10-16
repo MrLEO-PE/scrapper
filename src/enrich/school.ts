@@ -29,6 +29,7 @@ import { pdfToText } from "./pdf.ts";
 import { extractSalaryFromText, type SourcedSalary } from "./salary.ts";
 import { crawlSchoolSite } from "./website.ts";
 import { knownWebsite } from "./websites.ts";
+import { knownCareerEmail } from "./knownemails.ts";
 import { bestSocial, extractSocial, type SocialLink } from "./social.ts";
 import { findPeHook, findPrincipal, findSchoolHook } from "./hooks.ts";
 import { bestPerson, type Person } from "./people.ts";
@@ -135,7 +136,13 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
 
   if (input.country) profile.country = sourced(countryName(input.country)!, input.sourceLabel, 0.9);
   if (input.city) profile.city = sourced(input.city, input.sourceLabel, 0.85);
-  if (input.website) {
+  // An address checked by hand outranks the one a board listed: boards
+  // sometimes give a directory page (Kellett's was a Good Schools Guide entry),
+  // and the crawl would then read the wrong site.
+  const checked = knownWebsite(input.schoolKey);
+  if (checked?.url && /^manual/i.test(checked.via)) {
+    profile.website = sourced(checked.url, `website lookup (${checked.via})`, 0.95);
+  } else if (input.website) {
     profile.website = sourced(input.website, input.sourceLabel, 0.9);
   } else {
     // The listing gave no address, so the crawl — and with it the careers
@@ -178,6 +185,10 @@ export async function enrichSchool(input: SchoolInput, opts: EnrichOptions = {})
 
   // Vacancy text often names the address to apply to.
   emails = mergeEmails(emails, extractEmails(jobCorpus, "job advert", "html"));
+
+  // An address copied by hand from a document the crawl cannot reach.
+  const byHand = knownCareerEmail(input.schoolKey);
+  if (byHand) emails = mergeEmails([byHand], emails);
 
   // A school's social pages, collected from the adverts and later from its own
   // site. For a school with no website this is the only place left to look —

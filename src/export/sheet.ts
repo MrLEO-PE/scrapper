@@ -11,6 +11,7 @@ import { log } from "../core/logger.ts";
 import type { JobRow, SchoolRow } from "../store/db.ts";
 import { findSkipped } from "../ledger.ts";
 import { daysUntil, ledger, resolveFields, type FieldContext, type FieldDef } from "./fields.ts";
+import { JOB_LAYOUT } from "./layout.ts";
 
 export interface SheetRow {
   job?: JobRow;
@@ -157,10 +158,10 @@ const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3
   th { background: var(--head); position: sticky; top: 0; cursor: pointer; white-space: nowrap; }
   th:hover { text-decoration: underline; }
   tr.closed { opacity: .45; }
-  tr.stale { background: color-mix(in srgb, orange 9%, transparent); }
-  tr.lead { background: color-mix(in srgb, dodgerblue 10%, transparent); }
+  tr.stale { --tint: color-mix(in srgb, orange 9%, transparent); background: var(--tint); }
+  tr.lead { --tint: color-mix(in srgb, dodgerblue 10%, transparent); background: var(--tint); }
   tr.lead td:first-child { box-shadow: inset 3px 0 0 dodgerblue; }
-  tr.lead.stale { background: color-mix(in srgb, orange 12%, transparent); }
+  tr.lead.stale { --tint: color-mix(in srgb, orange 12%, transparent); background: var(--tint); }
   /* The count is in the cell, so it is coloured rather than badged — a badge
      beside a number that already says "3 days" only repeated it. */
   tr.urgent td.col-days-left { color: #d1242f; font-weight: 700; white-space: nowrap; }
@@ -168,9 +169,9 @@ const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3
 
   /* A role you have already applied for should be recognisable without
      reading it, and should stop competing for attention with the live ones. */
-  tr.applied { background: color-mix(in srgb, #1f883d 13%, transparent); }
+  tr.applied { --tint: color-mix(in srgb, #1f883d 13%, transparent); background: var(--tint); }
   tr.applied td:first-child { box-shadow: inset 3px 0 0 #1f883d; }
-  tr.applied.lead { background: color-mix(in srgb, #1f883d 16%, transparent); }
+  tr.applied.lead { --tint: color-mix(in srgb, #1f883d 16%, transparent); background: var(--tint); }
   td.col-applied { white-space: nowrap; }
   button.mark { font: inherit; font-size: 12px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--muted); cursor: pointer; }
   button.mark:hover { border-color: #1f883d; color: #1f883d; }
@@ -194,10 +195,10 @@ const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3
    * underline; and a glyph (⬛) on the cell text itself, so the signal
    * survives even with colour removed entirely.
    */
-  tr.hasform { background: color-mix(in srgb, var(--warn) 18%, transparent); }
+  tr.hasform { --tint: color-mix(in srgb, var(--warn) 18%, transparent); background: var(--tint); }
   tr.hasform td { box-shadow: inset 0 -4px 0 var(--warn); }
-  tr.hasform.lead { background: color-mix(in srgb, var(--warn) 24%, transparent); }
-  tr.hasform.applied { background: color-mix(in srgb, var(--warn) 14%, transparent); }
+  tr.hasform.lead { --tint: color-mix(in srgb, var(--warn) 24%, transparent); background: var(--tint); }
+  tr.hasform.applied { --tint: color-mix(in srgb, var(--warn) 14%, transparent); background: var(--tint); }
   tr.hasform.applied td:first-child { box-shadow: inset 3px 0 0 #1f883d, inset 0 -4px 0 var(--warn); }
 
   /* TES "Apply" (not Quick Apply) hands you off to the school's site, which
@@ -207,13 +208,16 @@ const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3
   /* Marking a row applied must not erase the "extra step" warning — the
      underline (and, for the first cell, the applied tick's own border) stay
      visible either way, same as hasform already does below. */
-  tr.extapply.applied { background: color-mix(in srgb, var(--warn) 14%, transparent); }
+  tr.extapply.applied { --tint: color-mix(in srgb, var(--warn) 14%, transparent); background: var(--tint); }
   tr.extapply.applied td:first-child { box-shadow: inset 3px 0 0 #1f883d, inset 0 -4px 0 var(--warn); }
   .extra-step { color: var(--warn); font-weight: 700; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px; white-space: nowrap; }
 
   p.empty { color: var(--muted); padding: 18px 2px; margin: 0; }
   tr.fresh td:first-child::before { content: "new"; margin-right: 6px; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; background: #1f883d; color: #fff; vertical-align: middle; }
   label.only { margin-left: 14px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+  /* The page-wide input rule is meant for the filter box; left alone it made
+     this checkbox 340px wide and pushed its label to the far side of the row. */
+  label.only input { width: auto; margin: 0 6px 0 0; padding: 0; vertical-align: middle; }
   a { color: inherit; }
   nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
   nav a { padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; font-size: 13px; }
@@ -222,6 +226,47 @@ const PAGE_CSS = `  :root { color-scheme: light dark; --line:#d5dae1; --head:#f3
   nav a.cta { margin-left: auto; background: #1f883d; color: #fff; border-color: #1f883d; font-weight: 600; }
   nav a.cta:hover { background: #1a7f37; }
   @media (max-width: 640px) { body { padding: 16px; } th, td { max-width: 220px; } th.wide, td.wide { min-width: 200px; } th.xwide, td.xwide { min-width: 280px; max-width: 320px; } }
+`;
+
+/**
+ * Styles for the grouped job table (see layout.ts): stacked cells, long text
+ * cut to a few lines, and the Role column pinned while the rest scrolls.
+ */
+const GROUPED_CSS = `
+  table.grouped th { white-space: normal; vertical-align: top; z-index: 3; }
+  table.grouped th .t { font-weight: 600; white-space: nowrap; }
+  table.grouped th .sub { display: block; margin-top: 2px; font-size: 11px; font-weight: 400; color: var(--muted); line-height: 1.3; }
+  table.grouped th.stack, table.grouped td.stack { min-width: 150px; max-width: 250px; }
+  table.grouped th.role, table.grouped td.role { min-width: 230px; max-width: 300px; }
+  /* Long text is cut to a few lines below, so its column no longer needs a page's width. */
+  table.grouped th.xwide, table.grouped td.xwide { min-width: 520px; max-width: 620px; }
+
+  .f { margin: 0 0 3px; overflow-wrap: anywhere; }
+  .f:last-child { margin-bottom: 0; }
+  .f[data-label]::before { content: attr(data-label); margin-right: 5px; font-size: 11px; color: var(--muted); }
+  .f.lnk { display: inline-block; margin-right: 10px; }
+  .f-job-title { font-weight: 600; }
+  .f-city, .f-fit-score { color: var(--muted); }
+  .f-seniority { display: inline-block; font-size: 11px; padding: 1px 7px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); }
+  tr.lead .f-seniority { border-color: dodgerblue; color: dodgerblue; font-weight: 600; }
+  tr.urgent .f-days-left { color: #d1242f; font-weight: 700; }
+  tr.closed .f-days-left { font-weight: 400; }
+  .flag + .flag { margin-top: 4px; }
+  .flag::before { content: "• "; color: var(--muted); }
+
+  .clip { max-height: 9em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 65%, transparent); mask-image: linear-gradient(#000 65%, transparent); }
+  .clip.open { max-height: none; -webkit-mask-image: none; mask-image: none; }
+  button.more { font: inherit; font-size: 11px; margin-top: 3px; padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; text-decoration: underline; }
+
+  /* The tint is the row's own, so a pinned cell still shows lead / applied / form colouring. */
+  table.grouped td.sticky, table.grouped th.sticky { position: sticky; left: 0; border-right: 1px solid var(--line); }
+  table.grouped td.sticky { z-index: 2; background-color: var(--bg); background-image: linear-gradient(var(--tint, transparent), var(--tint, transparent)); }
+  table.grouped th.sticky { z-index: 5; }
+  @media (max-width: 640px) {
+    table.grouped td.sticky, table.grouped th.sticky { position: static; }
+    table.grouped th.stack, table.grouped td.stack { min-width: 140px; max-width: 200px; }
+    table.grouped th.xwide, table.grouped td.xwide { min-width: 280px; max-width: 320px; }
+  }
 `;
 
 /** The nav strip across the top of every page. */
@@ -358,6 +403,8 @@ export function writeHtml(
         field.key === "job_url" ? "open"
         : field.key === "careers_page" ? "careers"
         : field.key === "form_link" ? "form"
+        : field.key === "apply_url" ? "apply"
+        : field.key === "website" ? "website"
         : "link";
       return `<a href="${esc(value)}" target="_blank" rel="noopener">${label}</a>`;
     }
@@ -377,6 +424,87 @@ export function writeHtml(
       return `<span class="extra-step">⬛ ${esc(value)}</span>`;
     }
     return esc(value);
+  };
+
+  /*
+   * What the page shows. The job tables group related fields into one stacked
+   * cell (see layout.ts); every other table keeps one column per field. Both
+   * read the same flat `body`, so the row colouring, the filter, the CSV and
+   * the applied marks all see exactly the data they always did.
+   */
+  interface DisplayCol {
+    title: string;
+    items: { i: number; label: string }[];
+    sortIndex: number;
+    sticky: boolean;
+    cls: string;
+  }
+  const fieldIndex = new Map(fields.map((f, i) => [f.key, i] as const));
+  const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const displayCols: DisplayCol[] = [];
+  const grouped = scope === "job";
+  if (grouped) {
+    const used = new Set<number>();
+    for (const col of JOB_LAYOUT) {
+      const items = col.items
+        .filter((it) => fieldIndex.has(it.key))
+        .map((it) => ({ i: fieldIndex.get(it.key)!, label: it.label }));
+      if (!items.length) continue;
+      items.forEach((it) => used.add(it.i));
+      displayCols.push({
+        title: col.title,
+        items,
+        sortIndex: fieldIndex.get(col.sort ?? col.items[0]!.key) ?? items[0]!.i,
+        sticky: !!col.sticky,
+        cls: items.length > 1 ? (col.sticky ? "role" : "stack") : "",
+      });
+    }
+    // A field ticked in fields.json but not placed in the layout still shows.
+    fields.forEach((f, i) => {
+      if (!used.has(i)) displayCols.push({ title: f.label, items: [{ i, label: "" }], sortIndex: i, sticky: false, cls: "" });
+    });
+  } else {
+    fields.forEach((f, i) => displayCols.push({ title: f.label, items: [{ i, label: "" }], sortIndex: i, sticky: false, cls: "" }));
+  }
+  // A single-field column is as wide as what it holds; a stack has its own width.
+  displayCols.forEach((c) => {
+    if (c.cls === "" && c.items.length === 1) c.cls = widthClass[c.items[0]!.i] ?? "";
+  });
+
+  /** Long text is cut to a few lines with a "more" toggle, so a row stays one screen tall. */
+  const CLIP_AT = 320;
+  const clip = (html: string, long: boolean): string =>
+    long ? `<div class="clipwrap"><div class="clip">${html}</div><button type="button" class="more">▾ more</button></div>` : html;
+
+  /** A value as HTML, cut short when it is long. The flags are one per line, not one run-on string. */
+  const render = (value: string, field: FieldDef): string => {
+    if (field.key === "letter_flags" && value) {
+      const flags = value.split(/ · /).filter(Boolean);
+      return clip(flags.map((f) => `<div class="flag">${esc(f)}</div>`).join(""), flags.length > 3 || value.length > CLIP_AT);
+    }
+    return clip(cell(value, field), grouped && value.length > CLIP_AT);
+  };
+
+  /** One field's value as it appears inside a stacked cell. */
+  const part = (value: string, field: FieldDef, label: string): string => {
+    // The applied cell is filled in by the page's script, so it is kept even when empty.
+    if (!value && field.key !== "applied") return "";
+    const link = /^https?:\/\//.test(value) || /email$/.test(field.key) ? " lnk" : "";
+    return `<div class="f f-${slug(field.key)}${link}" data-f="${esc(field.key)}"${label ? ` data-label="${esc(label)}"` : ""} title="${esc(field.label)}">${render(value, field)}</div>`;
+  };
+
+  /** The cell for one display column on one row. */
+  const displayCell = (r: string[], col: DisplayCol): string => {
+    const sticky = col.sticky ? " sticky" : "";
+    if (col.items.length === 1) {
+      const f = fields[col.items[0]!.i]!;
+      const cls = [`col-${esc(f.key.replace(/_/g, "-"))}`, col.cls, sticky.trim()].filter(Boolean).join(" ");
+      return `<td class="${cls}">${render(r[col.items[0]!.i] ?? "", f)}</td>`;
+    }
+    const sortValue = r[col.sortIndex] ?? "";
+    return `<td class="col-${slug(col.title)} ${col.cls}${sticky}" data-sort="${esc(sortValue)}">${col.items
+      .map(({ i, label }) => part(r[i] ?? "", fields[i]!, label))
+      .join("")}</td>`;
   };
 
   const statusIndex = fields.findIndex((f) => f.key === "status");
@@ -449,7 +577,7 @@ export function writeHtml(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <style>
-${PAGE_CSS}</style></head><body>
+${PAGE_CSS}${GROUPED_CSS}</style></head><body>
 ${
   opts.nav?.length
     ? `<nav>${opts.nav
@@ -462,10 +590,18 @@ ${
 <input id="q" placeholder="Filter rows…" autocomplete="off">
 <button type="button" class="mark" id="exportMarks" title="Download your applied / not-interested marks, then run: npm run import-marks -- marks.json">export marks</button>
 ${leadershipCount ? '<label class="only"><input type="checkbox" id="leadOnly"> leadership roles only</label>' : ""}
-<div class="wrap"><table>
-<thead><tr>${headers.map((h, j) => `<th${widthClass[j] ? ` class="${widthClass[j]}"` : ""}>${esc(h)}</th>`).join("")}</tr></thead>
+<div class="wrap"><table${grouped ? ' class="grouped"' : ""}>
+<thead><tr>${displayCols
+  .map((c) => {
+    const cls = [c.cls, c.sticky ? "sticky" : ""].filter(Boolean).join(" ");
+    // A stacked column's heading lists the fields inside it, under their original names.
+    const sub = c.items.length > 1 ? `<span class="sub">${c.items.map((it) => esc(it.label || fields[it.i]!.label)).join(" · ")}</span>` : "";
+    const sortsBy = c.items.length > 1 ? ` title="Sorts by ${esc(fields[c.sortIndex]!.label)}"` : "";
+    return `<th${cls ? ` class="${cls}"` : ""}${sortsBy}><span class="t">${esc(c.title)}</span>${sub}</th>`;
+  })
+  .join("")}</tr></thead>
 <tbody>
-${body.map((r, i) => `<tr${rowAttrs(r, rows[i]!)}>${r.map((v, j) => `<td class="col-${esc(fields[j]!.key.replace(/_/g, "-"))}${widthClass[j] ? ` ${widthClass[j]}` : ""}">${cell(v, fields[j]!)}</td>`).join("")}</tr>`).join("\n")}
+${body.map((r, i) => `<tr${rowAttrs(r, rows[i]!)}>${displayCols.map((c) => displayCell(r, c)).join("")}</tr>`).join("\n")}
 </tbody></table></div>
 <p class="empty" id="empty" style="display:none">${esc(opts.view === "applied" ? "Nothing here yet. Mark a role as applied on the Open roles page and it moves to this tab."
       : opts.view === "skipped" ? "Nothing here yet. Mark a role as not interested on the Open roles page and it moves to this tab, where you can undo it."
@@ -510,13 +646,10 @@ function isApplied(row) {
 }
 
 function setupApplied() {
-  const headers = [...document.querySelectorAll("thead th")].map((th) => th.textContent.trim());
-  const col = headers.indexOf("Applied");
-  if (col < 0) return;
-
   for (const row of rows) {
     const id = row.dataset.job;
-    const td = row.children[col];
+    // Stacked into the "Me" column on the job tables, a column of its own elsewhere.
+    const td = row.querySelector('[data-f="applied"]') || row.querySelector("td.col-applied");
     if (!id || !td) continue;
 
     // A tick already in the cell is the database's, and the stronger record:
@@ -607,6 +740,14 @@ if (exportBtn) exportBtn.addEventListener("click", () => {
   URL.revokeObjectURL(a.href);
 });
 if (leadOnly) leadOnly.addEventListener("change", applyFilters);
+
+// Long text is cut to a few lines; "more" opens it in place.
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button.more");
+  if (!btn) return;
+  const open = btn.previousElementSibling.classList.toggle("open");
+  btn.textContent = open ? "▴ less" : "▾ more";
+});
 document.querySelectorAll("th").forEach((th, i) => {
   let asc = true;
   th.addEventListener("click", () => {
@@ -616,7 +757,9 @@ document.querySelectorAll("th").forEach((th, i) => {
     const WORDS = { closed: -1, today: 0, tomorrow: 1 };
     const num = (s) => (s.toLowerCase() in WORDS ? WORDS[s.toLowerCase()] : parseFloat(s));
     const sorted = [...tbody.querySelectorAll("tr")].sort((a, b) => {
-      const x = a.children[i].textContent.trim(), y = b.children[i].textContent.trim();
+      // A stacked cell names the value it sorts by; a plain cell sorts by its text.
+      const key = (tr) => { const c = tr.children[i]; return (c.dataset.sort ?? c.textContent).trim(); };
+      const x = key(a), y = key(b);
       // A blank sorts last either way: no deadline is not "very urgent".
       if (!x !== !y) return !x ? 1 : -1;
       const nx = num(x), ny = num(y);

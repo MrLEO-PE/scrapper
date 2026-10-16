@@ -20,6 +20,7 @@ import { rankByValue } from "../match/packagevalue.ts";
 import { salaryToUsdAverage } from "../enrich/salary.ts";
 import { benchmarkAverage } from "../enrich/benchmarks.ts";
 import type { Job, Provenance, Salary, SchoolProfile, SourceId } from "../core/types.ts";
+import { knownCareerEmail } from "../enrich/knownemails.ts";
 
 export type JobStatus = "open" | "stale" | "closed";
 
@@ -934,6 +935,13 @@ export function getSchools(keys?: string[]): Map<string, SchoolRow> {
       ? d.prepare(`SELECT * FROM schools WHERE school_key IN (${keys.map(() => "?").join(",")})`).all(...keys)
       : d.prepare("SELECT * FROM schools").all()
   ) as unknown as SchoolRow[];
+  // An address copied by hand (config/school-emails.json) wins over whatever
+  // the database holds, so it shows even where the school has not been
+  // re-crawled since it was added.
+  for (const r of rows) {
+    const byHand = knownCareerEmail(r.school_key);
+    if (byHand) r.career_email = byHand.email;
+  }
   return new Map(rows.map((r) => [r.school_key, r]));
 }
 

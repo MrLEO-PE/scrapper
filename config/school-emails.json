@@ -1,0 +1,340 @@
+{
+  "//": "Careers / recruitment addresses found by hand, where the crawl cannot see them (a job-description PDF on another vacancy, a login-only page).",
+  "//how": "key is the school key, as in school-websites.json. Copy the address from a document the school published; never guess one from a pattern.",
+  "king-s-college-wimbledon-ho-chi-minh-city|vietnam": {
+    "email": "recruitment@kingshcmc.edu.vn",
+    "via": "job brochure PDF (Head of Science) attached to the school's TES vacancy",
+    "found": "2026-10-13",
+    "note": "King's College Wimbledon Ho Chi Minh City — its own site lists only admissions@"
+  },
+  "vinschool|vietnam": {
+    "email": "recruitment@vinschool.edu.vn",
+    "via": "Vinschool's own recruitment portal (tuyendung.vinschool.edu.vn), which also lists tuyendung@vinschool.edu.vn",
+    "found": "2026-10-16",
+    "note": "Vinschool — Vietnam (group-wide)"
+  },
+  "brighton-college-vietnam|vietnam": {
+    "email": "recruitment@brightoncollege.edu.vn",
+    "via": "the school's VietnamWorks employer profile — not yet seen on its own site, which blocks plain fetches",
+    "found": "2026-10-16",
+    "note": "Brighton College Vietnam, Hanoi — check before relying on it"
+  },
+  "diocesan-boys-school|hong-kong": {
+    "email": "recruitment@dbs.edu.hk",
+    "via": "found by the crawl of dbs.edu.hk; also on the school's job adverts",
+    "found": "2026-10-16",
+    "note": "Diocesan Boys' School — Hong Kong (secondary). Primary division uses recruitment@dbspd.edu.hk"
+  },
+  "renaissance-international-school-saigon|vietnam": {
+    "email": "vacancies@renaissance.edu.vn",
+    "via": "\"Working at Renaissance\" page on renaissance.edu.vn (Cloudflare-protected, decoded)",
+    "found": "2026-10-16",
+    "note": "Renaissance International School Saigon — also accepts applications via Search Associates"
+  },
+  "international-school-saigon-pearl|vietnam": {
+    "email": "admissions@issp.edu.vn",
+    "via": "the school's own admissions handbook PDF — an ADMISSIONS inbox, no HR address found",
+    "found": "2026-10-16",
+    "note": "International School Saigon Pearl — ask admissions for the recruitment contact"
+  },
+  "international-school-eastern-seaboard|thailand": {
+    "email": "hr@ise.ac.th",
+    "via": "ise.ac.th/careers: \"Please send your CV to hr@ise.ac.th\"",
+    "found": "2026-10-16",
+    "note": "ISE Eastern Seaboard — Thailand"
+  },
+  "ise-international-school-eastern-seaboard|thailand": {
+    "email": "hr@ise.ac.th",
+    "via": "ise.ac.th/careers: \"Please send your CV to hr@ise.ac.th\"",
+    "found": "2026-10-16",
+    "note": "duplicate record of the above"
+  },
+  "ris-swiss-section-deutschsprachige-schule-bangkok|thailand": {
+    "email": "supit.k@ris-swiss-section.org",
+    "via": "job-opportunities page: applications go to the HR Administrator, Mrs Supit Knoop (principal: c.vogel@ris-swiss-section.org)",
+    "found": "2026-10-16",
+    "note": "RIS Swiss Section — Bangkok"
+  },
+  "british-international-school-phuket|thailand": {
+    "email": "sirirats@bisphuket.ac.th",
+    "via": "bisphuket.ac.th/about-us/employment: application contacts sirirats@ and nussaran@bisphuket.ac.th",
+    "found": "2026-10-16",
+    "note": "BIS Phuket — named staff, listed on the employment page"
+  },
+  "bangkok-international-preparatory-secondary-school|thailand": {
+    "email": "info@bkkprep.ac.th",
+    "via": "bangkokprep.ac.th/careers lists only this general address; an old advert used recruitment@bkkprep.ac.th (2020, unconfirmed)",
+    "found": "2026-10-16",
+    "note": "Bangkok Prep — GENERAL inbox, applications also go through the school's online system"
+  },
+  "wellington-college-international-school-bangkok|thailand": {
+    "email": "recruitment@wellingtoncollege.ac.th",
+    "via": "Tes job adverts (2020) — school site shows no email; current adverts use WhatSchool/Spill",
+    "found": "2026-10-16",
+    "note": "Wellington College Bangkok — UNCONFIRMED, old advert"
+  },
+  "lycee-francais-international-de-bangkok|thailand": {
+    "email": "recrutement@lfib.ac.th",
+    "via": "several job adverts incl. ajarn.com — school site blocked me",
+    "found": "2026-10-16",
+    "note": "LFIB — from adverts, not seen on the school site"
+  },
+  "sekolah-pelita-harapan|indonesia": {
+    "email": "expat.recruitment@sph.ac.id",
+    "via": "sph.edu/career lists expat.recruitment@ (foreign staff) and national.recruitment@sph.ac.id (Indonesian staff)",
+    "found": "2026-10-17",
+    "note": "Sekolah Pelita Harapan — group-wide recruitment inbox"
+  },
+  "sekolah-pelita-harapan-sentul-city|indonesia": {
+    "email": "expat.recruitment@sph.ac.id",
+    "via": "sph.edu/career lists expat.recruitment@ (foreign staff) and national.recruitment@sph.ac.id (Indonesian staff)",
+    "found": "2026-10-17",
+    "note": "Sekolah Pelita Harapan — group-wide recruitment inbox"
+  },
+  "sekolah-pelita-harapan-lippo-cikarang|indonesia": {
+    "email": "expat.recruitment@sph.ac.id",
+    "via": "sph.edu/career lists expat.recruitment@ (foreign staff) and national.recruitment@sph.ac.id (Indonesian staff)",
+    "found": "2026-10-17",
+    "note": "Sekolah Pelita Harapan — group-wide recruitment inbox"
+  },
+  "sekolah-pelita-harapan-pluit-village|indonesia": {
+    "email": "expat.recruitment@sph.ac.id",
+    "via": "sph.edu/career lists expat.recruitment@ (foreign staff) and national.recruitment@sph.ac.id (Indonesian staff)",
+    "found": "2026-10-17",
+    "note": "Sekolah Pelita Harapan — group-wide recruitment inbox"
+  },
+  "hsinchu-american-school|taiwan": {
+    "email": "anti.lin@has.hc.edu.tw",
+    "via": "has.hc.edu.tw/careers: \"Please send your email to anti.lin@has.hc.edu.tw\"",
+    "found": "2026-10-17",
+    "note": "Hsinchu American School"
+  },
+  "hsinchu-international-academy-hia|taiwan": {
+    "email": "choquette@hia.hcc.edu.tw",
+    "via": "hia.com.tw/careers: candidates may contact the Head of School, Mr Christian Choquette, at this address",
+    "found": "2026-10-17",
+    "note": "HIA Taiwan — the HEAD OF SCHOOL, not an HR inbox"
+  },
+  "british-school-manila|philippines": {
+    "email": "eabawag@britishschoolmanila.org",
+    "via": "britishschoolmanila.org/community/work-at-bsm: applications go to Ezra Carlo Abawag, HR Officer",
+    "found": "2026-10-17",
+    "note": "The British School Manila — named HR Officer; use the subject line the page asks for"
+  },
+  "beijing-royal-school|china": {
+    "email": "brshr@brs.edu.cn",
+    "via": "brs.edu.cn/en/hr — the school's own HR page",
+    "found": "2026-10-17",
+    "note": "Beijing Royal School"
+  },
+  "international-montessori-school-beijing-msb|china": {
+    "email": "hr@msb.edu.cn",
+    "via": "msb.edu.cn/job-careers page",
+    "found": "2026-10-17",
+    "note": "Montessori School of Beijing"
+  },
+  "international-montessori-school-beijing|china": {
+    "email": "hr@msb.edu.cn",
+    "via": "msb.edu.cn/job-careers page",
+    "found": "2026-10-17",
+    "note": "Montessori School of Beijing"
+  },
+  "utahloy-international-school-guangzhou|china": {
+    "email": "recruitment@uisgz.org",
+    "via": "utahloy.cn/gz/work-at-uisg: \"Send everything to recruitment@uisgz.org\"",
+    "found": "2026-10-17",
+    "note": "Utahloy Guangzhou"
+  },
+  "qsi-international-school-shenzhen|china": {
+    "email": "teach@qsi.org",
+    "via": "qsi.org/careers — QSI group-wide teaching recruitment address",
+    "found": "2026-10-17",
+    "note": "QSI Shenzhen — group inbox"
+  },
+  "lycee-francais-de-bali|indonesia": {
+    "email": "emploi@lfbali.com",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Lycée Français de Bali — Indonesia"
+  },
+  "bali-island-school|indonesia": {
+    "email": "jobs@baliis.net",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Bali Island School — Indonesia"
+  },
+  "sis-bandung|indonesia": {
+    "email": "hrd@sisschools.org",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "SIS Bandung — Indonesia"
+  },
+  "tsi-international-school|thailand": {
+    "email": "recruit@tsi.ac.th",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "TSI International School — Thailand"
+  },
+  "american-school-bangkok-green-valley-campus|thailand": {
+    "email": "asbgv-recruitment@asb.ac.th",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "The American School of Bangkok - Green Valley Campus — Thailand"
+  },
+  "aster-international-school-bangkok|thailand": {
+    "email": "recruitment@aster.ac.th",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Aster International School Bangkok — Thailand"
+  },
+  "satit-bilingual-school-rangsit-university|thailand": {
+    "email": "recruit@sbs.ac.th",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Satit Bilingual School of Rangsit University — Thailand"
+  },
+  "dbs-denla-british-school-bangkok|thailand": {
+    "email": "hrm@dbsbangkok.ac.th",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "DBS Denla British School Bangkok — Thailand"
+  },
+  "rbis-international-school|thailand": {
+    "email": "recruitment@rbis.ac.th",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "RBIS International School — Thailand"
+  },
+  "charter-international-school|thailand": {
+    "email": "personnel@charter.ac.th",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Charter International School — Thailand"
+  },
+  "meritton-british-international-school|thailand": {
+    "email": "hr@merittonbritish.com",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Meritton British International School — Thailand"
+  },
+  "sbs-international-school-chiangmai|thailand": {
+    "email": "hr@sbscm.ac.th",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "SBS International School Chiangmai — Thailand"
+  },
+  "independent-school-jakarta|indonesia": {
+    "email": "hr@isj.id",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "The Independent School of Jakarta — Indonesia"
+  },
+  "sis-kelapa-gading-north-east-jakarta|indonesia": {
+    "email": "hrd@sisschools.org",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "SIS Kelapa Gading North East Jakarta — Indonesia"
+  },
+  "new-zealand-school-jakarta|indonesia": {
+    "email": "recruitment@nzsj.sch.id",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "New Zealand School Jakarta — Indonesia"
+  },
+  "beacon-school|philippines": {
+    "email": "careers@beaconschool.ph",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "The Beacon School — Philippines"
+  },
+  "domuschola-international-school|philippines": {
+    "email": "hr.dismnl@globalschools.com",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Domuschola International School — Philippines"
+  },
+  "sis-medan|indonesia": {
+    "email": "hrd@sisschools.org",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "SIS Medan — Indonesia"
+  },
+  "headstart-international-school|thailand": {
+    "email": "recruiting@headstartphuket.com",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "HeadStart International School — Thailand"
+  },
+  "lighthouse-international-school-phuket|thailand": {
+    "email": "recruitment@lighthouse.ac.th",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Lighthouse International School Phuket — Thailand"
+  },
+  "britannica-international-school-shanghai|china": {
+    "email": "recruitment@britannicaschool.hu",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Britannica International School, Shanghai — China"
+  },
+  "sis-surabaya|indonesia": {
+    "email": "hrd@sisschools.org",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "SIS Surabaya — Indonesia"
+  },
+  "kang-chiao-international-school-xiugang-campus|taiwan": {
+    "email": "recruitment@kcis.com.tw",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Kang Chiao International School Xiugang Campus — Taiwan"
+  },
+  "sis-pantai-indah-kapuk|indonesia": {
+    "email": "hrd@sisschools.org",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "SIS Pantai Indah Kapuk — Indonesia"
+  },
+  "sis-south-jakarta|indonesia": {
+    "email": "hrd@sisschools.org",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "SIS South Jakarta — Indonesia"
+  },
+  "britannica-international-school|china": {
+    "email": "recruitment@britannicaschool.hu",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Britannica International School — China"
+  },
+  "sis-semarang|indonesia": {
+    "email": "hrd@sisschools.org",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "SIS Semarang — Indonesia"
+  },
+  "sis-cilegon|indonesia": {
+    "email": "hrd@sisschools.org",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "SIS Cilegon — Indonesia"
+  },
+  "sis-palembang|indonesia": {
+    "email": "hrd@sisschools.org",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "SIS Palembang — Indonesia"
+  },
+  "noblesse-international-school|philippines": {
+    "email": "hr@nis.com.ph",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Noblesse International School — Philippines"
+  },
+  "pacific-american-school|taiwan": {
+    "email": "pas.recruitment@pacificamerican.org",
+    "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
+    "found": "2026-10-17",
+    "note": "Pacific American School — Taiwan"
+  }
+}

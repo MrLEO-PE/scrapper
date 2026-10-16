@@ -16,7 +16,7 @@ import { fetchBuffer, fetchText } from "../core/http.ts";
 import { log } from "../core/logger.ts";
 import { htmlToText } from "../core/text.ts";
 import type { DiscoveredEmail } from "../core/types.ts";
-import { extractEmails, mergeEmails } from "./email.ts";
+import { decodeCloudflareEmails, extractEmails, jsonLdEmails, mergeEmails } from "./email.ts";
 import {
   countPeStaff,
   extractCurriculum,
@@ -294,6 +294,7 @@ export async function crawlSchoolSite(
       findings.emails,
       pageEmails,
       extractEmails(mailtos.join(" "), next.url, "html"),
+      extractEmails([...decodeCloudflareEmails(html), ...jsonLdEmails(html)].join(" "), next.url, "html"),
     );
 
     // The school's own social pages, almost always linked from the footer.

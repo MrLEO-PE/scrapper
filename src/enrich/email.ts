@@ -211,3 +211,40 @@ export function domainOf(url?: string): string | undefined {
     return undefined;
   }
 }
+
+/**
+ * Addresses hidden by Cloudflare's "email protection".
+ *
+ * The page carries the address as hex — `data-cfemail="1c6a…"` or a link to
+ * `/cdn-cgi/l/email-protection#1c6a…` — whose first byte is the key every other
+ * byte is XORed with, and a browser decodes it with a script. A crawler that
+ * does not run scripts saw `[email protected]` instead, so a school that
+ * publishes a perfectly good recruitment address read as having none.
+ */
+export function decodeCloudflareEmails(html: string): string[] {
+  const out: string[] = [];
+  for (const m of html.matchAll(/(?:data-cfemail="|email-protection#)([0-9a-f]{6,})/gi)) {
+    const hex = m[1]!;
+    const key = parseInt(hex.slice(0, 2), 16);
+    let address = "";
+    for (let i = 2; i + 1 < hex.length; i += 2) address += String.fromCharCode(parseInt(hex.slice(i, i + 2), 16) ^ key);
+    if (/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(address)) out.push(address);
+  }
+  return out;
+}
+
+/**
+ * Addresses in a page's structured data.
+ *
+ * Many school sites state their contact in `<script type="application/ld+json">`
+ * — `"email": "bishanoi@bishanoi.com"` — and nowhere in the visible text. The
+ * crawl strips scripts before reading, so the one address the school took care
+ * to publish for machines was the one it never saw.
+ */
+export function jsonLdEmails(html: string): string[] {
+  const out: string[] = [];
+  for (const block of html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
+    for (const m of block[1]!.matchAll(/"email"\s*:\s*"(?:mailto:)?([^"\s]+@[^"\s]+\.[A-Za-z]{2,})"/gi)) out.push(m[1]!);
+  }
+  return out;
+}

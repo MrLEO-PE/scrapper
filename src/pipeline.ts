@@ -193,13 +193,22 @@ export interface EnrichRunOptions extends EnrichOptions {
   maxAgeDays?: number;
   limit?: number;
   concurrency?: number;
+  /**
+   * Only these schools (by school key), whatever their age. For a school whose
+   * website was just added by hand: waiting thirty days for the next refresh
+   * would leave its careers email missing the whole time.
+   */
+  only?: string[];
 }
 
 export async function runEnrich(opts: EnrichRunOptions = {}): Promise<{ enriched: number; withCareerEmail: number }> {
   // The enrichment queue is ordered partly by estimated USD pay (see
   // schoolsNeedingEnrichment), so today's rates should be live where possible.
   await loadFxRates();
-  const pending = schoolsNeedingEnrichment(opts.maxAgeDays ?? 30, opts.limit ?? 0);
+  const only = opts.only?.length ? new Set(opts.only) : null;
+  const pending = only
+    ? schoolsNeedingEnrichment(0, 0).filter((s) => only.has(s.school_key))
+    : schoolsNeedingEnrichment(opts.maxAgeDays ?? 30, opts.limit ?? 0);
   if (!pending.length) {
     log.info("every school is already enriched and fresh — nothing to do");
     return { enriched: 0, withCareerEmail: 0 };

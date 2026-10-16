@@ -104,6 +104,12 @@
     "found": "2026-09-24",
     "note": "San Rafael de Alajuela. Part of Nord Anglia, which is why it has no domain of its own."
   },
+  "deira-international-school|united-arab-emirates": {
+    "url": "https://www.disdubai.ae",
+    "via": "search — domain confirmed on the school's own and Al-Futtaim pages; site blocks plain fetches",
+    "found": "2026-10-13",
+    "note": "Deira International School — Dubai"
+  },
   "delhi-public|india": {
     "url": "https://dps.edu.in",
     "via": "domain-guess, verified",
@@ -115,6 +121,12 @@
     "via": "search",
     "found": "2026-09-24",
     "note": "American International School Dhaka. CIS and NEASC, matching the stored accreditation."
+  },
+  "diocesan-boys-school|hong-kong": {
+    "url": "https://www.dbs.edu.hk",
+    "via": "manual — opened and checked",
+    "found": "2026-10-13",
+    "note": "Diocesan Boys' School — Hong Kong"
   },
   "elegant|cambodia": {
     "url": "https://eis.edu.kh",
@@ -145,6 +157,12 @@
     "via": "domain-guess, verified",
     "found": "2026-09-25",
     "note": "Fleming College — Peru"
+  },
+  "gems-firstpoint-school-villa|united-arab-emirates": {
+    "url": "https://www.gemsfirstpointschool-dubai.com",
+    "via": "manual — opened and checked",
+    "found": "2026-10-13",
+    "note": "GEMS FirstPoint School, The Villa — Dubai"
   },
   "global-prodigy|south-korea": {
     "url": "https://prodigy.com",
@@ -182,11 +200,23 @@
     "found": "2026-09-25",
     "note": "ILBC — Myanmar"
   },
+  "international-school-choueifat-6-october|egypt": {
+    "url": "https://isc6october.sabis.net",
+    "via": "manual — opened and checked",
+    "found": "2026-10-13",
+    "note": "International School of Choueifat, 6 October — Egypt"
+  },
   "international-school-kyrgyzstan|kyrgyzstan": {
     "url": "https://isk.edu.kg",
     "via": "email domain",
     "found": "2026-10-04",
     "note": "International School of Kyrgyzstan — Kyrgyzstan"
+  },
+  "international-school-saigon-pearl|vietnam": {
+    "url": "https://www.issp.edu.vn",
+    "via": "manual — address printed in the school's own admissions handbook PDF",
+    "found": "2026-10-16",
+    "note": "International School Saigon Pearl — Ho Chi Minh City"
   },
   "ise-eastern-seaboard|thailand": {
     "url": "https://ise.ac.th",
@@ -211,6 +241,12 @@
     "via": "domain-guess, verified",
     "found": "2026-09-25",
     "note": "Karachi American School — Pakistan"
+  },
+  "kellett-school|hong-kong": {
+    "url": "https://www.kellettschool.com",
+    "via": "manual — opened and checked",
+    "found": "2026-10-13",
+    "note": "Kellett School — Hong Kong (replaces a Good Schools Guide page the board listed as its site)"
   },
   "lahore|pakistan": {
     "url": "https://las.edu.pk",
@@ -242,6 +278,12 @@
     "found": "2026-09-25",
     "note": "MindQuest Tutorial and Review Center — Philippines"
   },
+  "muna-british-academy|united-arab-emirates": {
+    "url": "https://www.munabritishacademy.ae",
+    "via": "manual — opened and checked",
+    "found": "2026-10-13",
+    "note": "Muna British Academy — Abu Dhabi"
+  },
   "mutiara-grammar|malaysia": {
     "url": "https://migs.edu.my",
     "via": "domain-guess, verified",
@@ -271,6 +313,12 @@
     "via": "search",
     "found": "2026-09-24",
     "note": "Colegio Americano de Quito. Stored city is the province, Pichincha."
+  },
+  "rangitoto-college|new-zealand": {
+    "url": "https://www.rangitoto.school.nz",
+    "via": "manual — opened and checked",
+    "found": "2026-10-13",
+    "note": "Rangitoto College — New Zealand"
   },
   "sekolah-victory-plus|indonesia": {
     "url": "https://svp.sch.id",

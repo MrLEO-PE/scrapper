@@ -448,6 +448,7 @@ async function main(): Promise<void> {
 
   const enrichOpts = {
     limit: num(args, "limit"),
+    only: csv(args, "only"),
     noCrawl: bool(args, "no-crawl"),
     maxPages: num(args, "max-pages"),
     maxPdfs: num(args, "max-pdfs"),
