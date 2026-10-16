@@ -678,6 +678,33 @@ async function main(): Promise<void> {
       break;
     }
 
+    case "hr-scan": {
+      // npm run hr-scan -- [--top 35] [--country Thailand] [--limit N] [--dry-run]
+      const { runHrScan } = await import("./hrscan.ts");
+      const r = await runHrScan({
+        top: num(args, "top"), country: str(args, "country"), limit: num(args, "limit"),
+        concurrency: num(args, "concurrency"), dryRun: bool(args, "dry-run"),
+      });
+      log.step(`Found an HR address for ${r.hits.length} of ${r.scanned} schools${bool(args, "dry-run") ? " (dry run — nothing saved)" : ""}`);
+      for (const h of r.hits.sort((a, b) => (a.school.country ?? "").localeCompare(b.school.country ?? "") || (a.school.country_rank ?? 0) - (b.school.country_rank ?? 0)))
+        log.plain(`  ${(h.school.country ?? "").padEnd(14)} ${String(h.school.country_rank ?? "").padStart(3)}  ${h.school.name.slice(0, 44).padEnd(44)} ${h.best.email}  [${h.best.kind}]`);
+      break;
+    }
+
+    case "db": {
+      // Long-term keeping of the database: npm run db -- backup | merge <file> | sync | status
+      const { backupDb, mergeDb, syncFromGitHub, dbStatus } = await import("./dbtools.ts");
+      const sub = args.positional[0];
+      const said = (r: { schoolsAdded: number; schoolsUpdated: number; jobsAdded: number; jobsUpdated: number }) =>
+        `${r.schoolsAdded} schools added, ${r.schoolsUpdated} updated; ${r.jobsAdded} jobs added, ${r.jobsUpdated} updated`;
+      if (sub === "backup") backupDb();
+      else if (sub === "merge" && args.positional[1]) log.ok(`merged: ${said(mergeDb(args.positional[1]))}`);
+      else if (sub === "sync") log.ok(`synced with GitHub: ${said(syncFromGitHub())}`);
+      else if (sub === "status") for (const [k, v] of Object.entries(dbStatus())) log.plain(`  ${k.padEnd(18)} ${v}`);
+      else log.error("npm run db -- backup | merge <other.db> | sync | status");
+      break;
+    }
+
     case "import-marks": {
       // Takes the file the site's "Export marks" button downloads, and makes
       // it permanent: {"applied": {jobId: iso}, "skipped": {jobId: iso}}.

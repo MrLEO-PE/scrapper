@@ -336,5 +336,263 @@
     "via": "found on the school's own site by the re-crawl (Cloudflare / JSON-LD / careers page)",
     "found": "2026-10-17",
     "note": "Pacific American School — Taiwan"
+  },
+  "american-pacific-international-school|thailand": {
+    "email": "arunee.l@apis.ac.th",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://www.apis.ac.th/employment/",
+    "found": "2026-10-16",
+    "note": "American Pacific International School — Thailand"
+  },
+  "silver-fern-international-school|thailand": {
+    "email": "hr@silverfern.ac.th",
+    "via": "careers-page scan (address named for hiring): https://silverferninternationalschool.com/careers/",
+    "found": "2026-10-16",
+    "note": "Silver Fern International School — Thailand"
+  },
+  "inventure-academy-whitefield-sarjapur-campus|india": {
+    "email": "recruitment@inventureacademy.com",
+    "via": "careers-page scan (address named for hiring): https://www.inventureacademy.com/careers/",
+    "found": "2026-10-16",
+    "note": "Inventure Academy - Whitefield-Sarjapur Campus — India"
+  },
+  "jayshree-periwal-international-school|india": {
+    "email": "hr@jpischool.com",
+    "via": "careers-page scan (address named for hiring): https://jpischool.com/careers-at-jpis/",
+    "found": "2026-10-16",
+    "note": "Jayshree Periwal International School — India"
+  },
+  "kiit-international-school|india": {
+    "email": "careers@kiitis.ac.in",
+    "via": "careers-page scan (address named for hiring): https://kiitis.ac.in/careers",
+    "found": "2026-10-16",
+    "note": "KIIT International School — India"
+  },
+  "ahmedabad-international-school|india": {
+    "email": "careers@aischool.net",
+    "via": "careers-page scan (address named for hiring): https://www.aischool.net/careers/",
+    "found": "2026-10-16",
+    "note": "Ahmedabad International School — India"
+  },
+  "beanstalk-international-bilingual-school-shunyi|china": {
+    "email": "bibs_hra@bibs.com.cn",
+    "via": "careers-page scan (address named for hiring): https://shunyi-en.bibs.com.cn/careers",
+    "found": "2026-10-16",
+    "note": "Beanstalk International Bilingual School - Shunyi — China"
+  },
+  "beanstalk-international-bilingual-school-chengdu|china": {
+    "email": "bibs_hra@bibs.com.cn",
+    "via": "careers-page scan (address named for hiring): https://chengdu-en.bibs.com.cn/careers",
+    "found": "2026-10-16",
+    "note": "Beanstalk International Bilingual School Chengdu — China"
+  },
+  "nas-nantong|china": {
+    "email": "ntohr@nasnantong.cn",
+    "via": "careers-page scan (address named for hiring): http://www.nasnantong.cn/careers",
+    "found": "2026-10-16",
+    "note": "NAS Nantong — China"
+  },
+  "king-henry-viii-college|malaysia": {
+    "email": "hrd@kinghenryviii.edu.my",
+    "via": "careers-page scan (address named for hiring): https://kinghenryviii.edu.my/our-careers",
+    "found": "2026-10-16",
+    "note": "King Henry VIII College — Malaysia"
+  },
+  "acs-international-school-doha|qatar": {
+    "email": "careers@acsdoha.school",
+    "via": "careers-page scan (address named for hiring): https://acsdoha.school/careers/",
+    "found": "2026-10-16",
+    "note": "ACS International School of Doha — Qatar"
+  },
+  "international-school-penang-uplands|malaysia": {
+    "email": "hr@uplands.org",
+    "via": "careers-page scan (address named for hiring): https://www.uplands.org/careers-at-uplands/",
+    "found": "2026-10-16",
+    "note": "The International School of Penang (Uplands) — Malaysia"
+  },
+  "stonyhurst-international-school-penang|malaysia": {
+    "email": "hr@stonyhurstpenang.edu.my",
+    "via": "careers-page scan (address named for hiring): https://www.stonyhurstpenang.edu.my/jointheteam/",
+    "found": "2026-10-16",
+    "note": "Stonyhurst International School Penang — Malaysia"
+  },
+  "sri-kuala-lumpur-school|malaysia": {
+    "email": "career@srikl.edu.my",
+    "via": "careers-page scan (address named for hiring): https://www.srikl.edu.my/careers",
+    "found": "2026-10-16",
+    "note": "Sri Kuala Lumpur School — Malaysia"
+  },
+  "st-john-s-international-school|malaysia": {
+    "email": "hr@sjis.edu.my",
+    "via": "careers-page scan (address named for hiring): https://sjis.edu.my/career-enquiry/",
+    "found": "2026-10-16",
+    "note": "St. John's International School — Malaysia"
+  },
+  "north-london-collegiate-school-singapore|singapore": {
+    "email": "hr@nlcssingapore.sg",
+    "via": "careers-page scan (address named for hiring): https://nlcssingapore.sg/careers-at-nlcs/",
+    "found": "2026-10-16",
+    "note": "North London Collegiate School Singapore — Singapore"
+  },
+  "hwa-international-school|singapore": {
+    "email": "recruitment@hwa.edu.sg",
+    "via": "careers-page scan (address named for hiring): https://www.hwa.edu.sg/about/careers/",
+    "found": "2026-10-16",
+    "note": "HWA International School — Singapore"
+  },
+  "saint-maur-international-school|japan": {
+    "email": "jobapplicants@stmaur.ac.jp",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://www.stmaur.ac.jp/about-us/people/job-openings-at-saint-maur-international-school",
+    "found": "2026-10-16",
+    "note": "Saint Maur International School — Japan"
+  },
+  "yoyogi-international-school|japan": {
+    "email": "hire@yoyogi-is.com",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://yoyogi-is.com/opportunities/",
+    "found": "2026-10-16",
+    "note": "Yoyogi International School — Japan"
+  },
+  "queen-margaret-college|new-zealand": {
+    "email": "people@qmc.school.nz",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://www.qmc.school.nz/about/work-us/",
+    "found": "2026-10-16",
+    "note": "Queen Margaret College — New Zealand"
+  },
+  "canggu-community-school|indonesia": {
+    "email": "hr@ccsbali.com",
+    "via": "careers-page scan (address named for hiring): https://www.ccsbali.com/employment",
+    "found": "2026-10-16",
+    "note": "Canggu Community School — Indonesia"
+  },
+  "uluwatu-school|indonesia": {
+    "email": "humancare@uluwatuschool.org",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://uluwatuschool.org/partners/",
+    "found": "2026-10-16",
+    "note": "Uluwatu School — Indonesia"
+  },
+  "gandhi-memorial-intercontinental-school|indonesia": {
+    "email": "hr@gmis.edu",
+    "via": "careers-page scan (address named for hiring): https://gmis.sch.id/careers",
+    "found": "2026-10-16",
+    "note": "Gandhi Memorial Intercontinental School — Indonesia"
+  },
+  "sekolah-stella-mundi|indonesia": {
+    "email": "hr@stellamundi.net",
+    "via": "careers-page scan (address named for hiring): https://stellamundi.net/career/",
+    "found": "2026-10-16",
+    "note": "Sekolah Stella Mundi — Indonesia"
+  },
+  "international-school-yangon|myanmar": {
+    "email": "opportunities@isyedu.org",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://isyedu.org/about-isy/career-opportunities",
+    "found": "2026-10-16",
+    "note": "The International School of Yangon — Myanmar"
+  },
+  "yuteh-international-school|taiwan": {
+    "email": "doi@yuteh.ntpc.edu.tw",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://www.yuteh.ntpc.edu.tw/p/426-1000-46.php?Lang=en",
+    "found": "2026-10-16",
+    "note": "Yuteh International School — Taiwan"
+  },
+  "taejon-christian-international-school|south-korea": {
+    "email": "tcishr@tcis.or.kr",
+    "via": "careers-page scan (address named for hiring): https://www.tcis.or.kr/footer-link-2",
+    "found": "2026-10-16",
+    "note": "Taejon Christian International School — South Korea"
+  },
+  "aitchison-college-lahore|pakistan": {
+    "email": "hr@aitchison.edu.pk",
+    "via": "careers-page scan (address named for hiring): https://www.aitchison.edu.pk/careers",
+    "found": "2026-10-16",
+    "note": "Aitchison College Lahore — Pakistan"
+  },
+  "costa-rica-international-academy|costa-rica": {
+    "email": "l.mare@criacademy.com",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://criacademy.com/employment-opportunities/",
+    "found": "2026-10-16",
+    "note": "Costa Rica International Academy — Costa Rica — this is the DIRECTOR (Lois Mare); the page says to cc admin@criacademy.com"
+  },
+  "davy-college|peru": {
+    "email": "recruitment@davycollege.edu.pe",
+    "via": "careers-page scan (address named for hiring): https://www.davycollege.edu.pe/trabaja-con-nosotros",
+    "found": "2026-10-16",
+    "note": "Davy College — Peru"
+  },
+  "international-school-western-australia|australia": {
+    "email": "humanresources@iswa.wa.edu.au",
+    "via": "careers-page scan (address named for hiring): https://www.iswa.wa.edu.au/welcome/employment/",
+    "found": "2026-10-16",
+    "note": "International School of Western Australia — Australia"
+  },
+  "international-school-suva-iss-fiji|fiji": {
+    "email": "hrm@iss.school.fj",
+    "via": "careers-page scan (address named for hiring): https://iss.school.fj/join/teach-work-at-iss/",
+    "found": "2026-10-16",
+    "note": "International School Suva (ISS Fiji) — Fiji"
+  },
+  "international-school-hyderabad|india": {
+    "email": "careers@ishyd.org",
+    "via": "careers-page scan (address named for hiring): https://www.ishyd.org/apps/pages/index.jsp?uREC_ID=3249918&type=d",
+    "found": "2026-10-16",
+    "note": "International School of Hyderabad — India"
+  },
+  "bombay-international-school-gilbert-campus|india": {
+    "email": "mail@bis.edu.in",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://bis.edu.in/work-at-bis/current-openings",
+    "found": "2026-10-16",
+    "note": "Bombay International School - Gilbert Campus — India"
+  },
+  "bromsgrove-school-mission-hills|china": {
+    "email": "bmhhr@bmh.education",
+    "via": "careers-page scan (address named for hiring): https://bromsgrove-mh.com/en-us/teaching.php",
+    "found": "2026-10-16",
+    "note": "Bromsgrove School Mission Hills — China"
+  },
+  "majestic-international-college|china": {
+    "email": "vivian.ye@nhmic.com",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): http://www.nhmic.com/En/Recruit",
+    "found": "2026-10-16",
+    "note": "Majestic International College — China"
+  },
+  "qosmo-international-school|malaysia": {
+    "email": "b.lanza@qosmoschools.edu.my",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://qosmoschools.edu.my/career/",
+    "found": "2026-10-16",
+    "note": "Qosmo International School — Malaysia"
+  },
+  "yokohama-international-school|japan": {
+    "email": "yis@yis.ac.jp",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://yis.ac.jp/employment/application-process/",
+    "found": "2026-10-16",
+    "note": "Yokohama International School — Japan"
+  },
+  "tokyo-international-progressive-school|japan": {
+    "email": "tips@tokyoips.com",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://www.tokyoips.com/employment/",
+    "found": "2026-10-16",
+    "note": "Tokyo International Progressive School — Japan"
+  },
+  "woodford-house|new-zealand": {
+    "email": "careers@woodford.school.nz",
+    "via": "careers-page scan (address named for hiring): https://woodford.school.nz/top-private-high-school/careers-planning/",
+    "found": "2026-10-16",
+    "note": "Woodford House — New Zealand"
+  },
+  "lycee-francais-de-manille|philippines": {
+    "email": "recrutement@lfmanille.ph",
+    "via": "careers-page scan (address named for hiring): https://www.lfmanille.ph/recrutement",
+    "found": "2026-10-16",
+    "note": "Lycée Français de Manille — Philippines"
+  },
+  "morrison-academy-taipei|taiwan": {
+    "email": "recruitment@ma.org.tw",
+    "via": "careers-page scan (address named for hiring): https://www.ma.org.tw/employment/",
+    "found": "2026-10-16",
+    "note": "Morrison Academy Taipei — Taiwan"
+  },
+  "sis-myanmar|myanmar": {
+    "email": "hrdsis@sisschools.org",
+    "via": "careers-page scan (address named for hiring): https://sisschools.org/career",
+    "found": "2026-10-16",
+    "note": "SIS Myanmar — Myanmar"
   }
 }

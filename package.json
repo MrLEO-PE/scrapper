@@ -33,7 +33,9 @@
     "site": "node --experimental-strip-types --no-warnings src/cli.ts site",
     "health": "node --experimental-strip-types --no-warnings src/cli.ts health",
     "alerts": "node --experimental-strip-types --no-warnings src/cli.ts alerts",
-    "track": "node --experimental-strip-types --no-warnings src/cli.ts track"
+    "hr-scan": "node --experimental-strip-types --no-warnings src/cli.ts hr-scan",
+    "db": "node --experimental-strip-types --no-warnings src/cli.ts db",
+    "track":"node --experimental-strip-types --no-warnings src/cli.ts track"
   },
   "devDependencies": {
     "typescript": "^5.6.0",
