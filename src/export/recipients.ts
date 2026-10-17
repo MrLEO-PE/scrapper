@@ -28,6 +28,7 @@ import { trustedPeHook, trustedSchoolHook } from "./hooktrust.ts";
 import { principalFor } from "./factsource.ts";
 import { ledgerState } from "../ledger.ts";
 import { loadSentLog, monthsSinceSent, type SentRecord } from "../sentlog.ts";
+import { loadSkipLog, type SkipRecord } from "../skiplog.ts";
 
 export type RecipientTier = "careers" | "named" | "general";
 /** unique: a fact held for this school alone. none: the letter is written without a hook. group: a shared inbox. */
@@ -56,6 +57,8 @@ export interface Recipient {
   /** Applied within the last 60 days — a speculative email now would cross it. */
   appliedRecently: boolean;
   lastSent: SentRecord | undefined;
+  /** Marked not interested, from the permanent record. */
+  skipped: SkipRecord | undefined;
   monthsSinceSent: number | null;
 }
 
@@ -72,8 +75,9 @@ function commonValue<T>(values: (T | null)[]): T | null {
   return unique.size === 1 ? [...unique][0]! : null;
 }
 
-export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string): Recipient[] {
+export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string, skipLogPath?: string): Recipient[] {
   const sentLog = loadSentLog(sentLogPath);
+  const skipLog = loadSkipLog(skipLogPath);
   const decided = ledgerState();
   const RECENT_DAYS = 60;
 
@@ -117,6 +121,7 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string): 
       city: commonValue(schools.map((s) => s.city)),
       rank,
       lastSent: rec,
+      skipped: skipLog.get(email),
       monthsSinceSent: monthsSinceSent(rec),
     };
 

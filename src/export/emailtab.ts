@@ -48,11 +48,17 @@ export function emailTabBody(recipients: Recipient[]): string {
       r.contactName ? `named: ${r.contactName}` : null,
     ].filter(Boolean).map(esc).join(" · ");
 
-    const sentBadge = r.lastSent
-      ? `<span class="em-sent" title="${esc(r.lastSent.date)}">sent ${esc(r.lastSent.date)}${
-          r.monthsSinceSent != null ? ` (${Math.round(r.monthsSinceSent)}mo ago)` : ""
-        }</span>`
-      : "";
+    // What the permanent records say, drawn here so the page is right before any script runs.
+    const when = (iso: string): string => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    const sentDate = r.lastSent?.date ?? "";
+    const skipDate = r.skipped?.date ?? "";
+    const latest = sentDate && skipDate ? (sentDate >= skipDate ? "applied" : "skipped") : sentDate ? "applied" : skipDate ? "skipped" : "";
+    const statusText =
+      latest === "applied"
+        ? `✅ applied ${when(sentDate)}${r.monthsSinceSent != null && r.monthsSinceSent >= 1 ? ` (${Math.round(r.monthsSinceSent)} mo ago)` : ""} · recorded`
+        : latest === "skipped"
+          ? `🚫 not interested ${when(skipDate)} · recorded`
+          : "not marked yet";
 
     const body = r.body
       ? `<details class="em-preview"><summary>preview letter</summary><pre>${esc(r.body)}</pre></details>
@@ -61,13 +67,16 @@ export function emailTabBody(recipients: Recipient[]): string {
     <a class="em-btn" href="${esc(gmailComposeUrl(r.email, r.subject, r.body))}" target="_blank" rel="noopener">open in Gmail</a>`
       : `<span class="em-warn">NEEDS: ${esc(r.missing.join(", "))}</span>`;
 
-    return `  <li class="em-item" data-email="${esc(r.email)}" data-country="${esc(r.country ?? "")}" data-tier="${esc(r.tier)}" data-fact="${esc(r.factQuality)}" data-sent="${r.lastSent ? "1" : "0"}" data-recent="${r.appliedRecently ? "1" : "0"}" data-idx="${idx}">
+    return `  <li class="em-item" data-email="${esc(r.email)}" data-country="${esc(r.country ?? "")}" data-tier="${esc(r.tier)}" data-fact="${esc(r.factQuality)}" data-applied-at="${esc(sentDate)}" data-skipped-at="${esc(skipDate)}" data-recent="${r.appliedRecently ? "1" : "0"}" data-idx="${idx}">
     <label class="tick"><input type="checkbox" class="em-pick" data-mark="rcpt|${esc(r.email)}"><span class="box" aria-hidden="true"></span></label>
     <div>
       <p class="nr-name"><a class="em-mailto" href="mailto:${esc(r.email)}">${esc(r.email)}</a>
         <span class="em-tag em-tag-${esc(r.tier)}">${esc(TIER_LABEL[r.tier])}</span>
         <span class="em-tag em-tag-fact-${esc(r.factQuality)}">${esc(FACT_LABEL[r.factQuality])}</span>
-        ${sentBadge}
+      </p>
+      <p class="nr-meta em-statusline"><span class="em-status">${esc(statusText)}</span>
+        <button type="button" class="em-mark em-m-applied" title="Record that you sent your application to this address">mark applied</button>
+        <button type="button" class="em-mark em-m-skip" title="Hide this address from your working list">not interested</button>
       </p>
       <p class="nr-meta">${schoolLine}</p>
       ${meta ? `<p class="nr-meta">${meta}</p>` : ""}
@@ -85,7 +94,7 @@ export function emailTabBody(recipients: Recipient[]): string {
 <p class="meta">
   ${recipients.length} recipient addresses (deduplicated from ${recipients.reduce((a, r) => a + r.schools.length, 0)} schools) ·
   ${recipients.filter((r) => r.factQuality === "unique").length} with a specific fact · ${recipients.filter((r) => r.factQuality === "none").length} without one ·
-  ticks and the batch counter are saved in this browser only
+  <span id="emSummary"></span>
 </p>
 
 <p class="nr-lead">
@@ -94,6 +103,13 @@ export function emailTabBody(recipients: Recipient[]): string {
   the running count below tracks today's batch. The permanent record of who has actually been
   emailed lives in <code>data/sent-log.jsonl</code>, written by <code>npm run mark-sent</code> —
   the ticks here reset if you clear this browser, that file does not.
+</p>
+<p class="nr-lead">
+  <strong>Mark applied</strong> / <strong>not interested</strong> work like the buttons on Open roles: they
+  are saved in this browser straight away, and <strong>export marks</strong> turns them into the permanent
+  record — save the file, then run <code>npm run import-marks -- marks.json</code>. Rows already in the permanent
+  record show <em>recorded</em> beside the date. "Not marked yet" is the working list; switch the status
+  filter to see what you applied to, and when.
 </p>
 
 <div class="em-bar">
@@ -106,7 +122,12 @@ export function emailTabBody(recipients: Recipient[]): string {
     <option value="general">General inbox</option>
   </select>
   <label class="em-check"><input type="checkbox" id="emReady" checked> specific fact only</label>
-  <label class="em-check"><input type="checkbox" id="emHideSent"> hide already sent</label>
+  <select id="emStatus" title="Which addresses to list">
+    <option value="undecided">Not marked yet</option>
+    <option value="applied">Applied</option>
+    <option value="skipped">Not interested</option>
+    <option value="all">All</option>
+  </select>
   <label class="em-check"><input type="checkbox" id="emHideApplied" checked> hide schools I applied to in the last 60 days</label>
 </div>
 
@@ -114,6 +135,7 @@ export function emailTabBody(recipients: Recipient[]): string {
   <button type="button" class="em-btn" id="emSelectAll">select all visible</button>
   <button type="button" class="em-btn" id="emSelectNone">clear selection</button>
   <button type="button" class="em-btn primary" id="emCopyAll">copy visible addresses</button>
+  <button type="button" class="em-btn" id="emExport" title="Download your applied / not-interested marks, then run: npm run import-marks -- marks.json">export marks</button>
   <span class="em-check" style="margin-left:4px">one address per line, for a BCC or a mail-merge list — your call whether they get one shared body or the pre-rendered one each</span>
 </div>
 
@@ -123,7 +145,7 @@ export function emailTabBody(recipients: Recipient[]): string {
 ${recipients.map(card).join("\n")}
 </ul>
 <p class="nr-lead" style="margin-top:14px">
-  After sending a batch, record it permanently: <code>npm run mark-sent -- addr1@school.edu addr2@school.edu</code>
+  After sending a batch, record it permanently (or use the mark applied buttons, then export): <code>npm run mark-sent -- addr1@school.edu addr2@school.edu</code>
   (or paste a list of addresses into <code>--file sent.txt</code>). The next build greys those rows out and
   shows the date, for every device — not just this browser.
 </p>`;
@@ -140,13 +162,20 @@ export const EMAIL_TAB_CSS = `
   .em-tag-named { background: color-mix(in srgb, dodgerblue 18%, transparent); color: dodgerblue; }
   .em-tag-general { background: color-mix(in srgb, var(--muted) 20%, transparent); color: var(--muted); }
   .em-tag-fact-unique { background: color-mix(in srgb, #1f883d 12%, transparent); color: #1f883d; }
-  .  .em-tag-fact-group { background: color-mix(in srgb, #d29922 18%, transparent); color: #d29922; }
+  .em-tag-fact-group { background: color-mix(in srgb, #d29922 18%, transparent); color: #d29922; }
   .em-tag-fact-none { background: color-mix(in srgb, #d1242f 16%, transparent); color: #d1242f; }
   .em-warn { color: #d29922; font-weight: 600; }
   .em-history { color: var(--muted); }
   .em-recent { color: var(--warn); font-weight: 600; }
-  .em-sent { font-size: 11px; color: var(--muted); margin-left: 6px; }
-  li.em-item.em-sent-row { opacity: .5; }
+  .em-statusline { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 4px; }
+  .em-status { font-weight: 600; font-size: 12.5px; margin-right: 4px; }
+  button.em-mark { font: inherit; font-size: 12px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--muted); cursor: pointer; }
+  button.em-mark:hover { border-color: #1f883d; color: #1f883d; }
+  button.em-mark.em-m-skip:hover { border-color: var(--muted); color: var(--fg); }
+  button.em-mark.done { border-color: #1f883d; background: color-mix(in srgb, #1f883d 18%, transparent); color: inherit; font-weight: 600; }
+  button.em-mark.em-m-skip.done { border-color: var(--muted); background: color-mix(in srgb, var(--muted) 20%, transparent); }
+  li.em-item.em-applied { border-left: 3px solid #1f883d; background: color-mix(in srgb, #1f883d 8%, transparent); }
+  li.em-item.em-skipped { opacity: .55; }
   .em-preview { margin: 6px 0; }
   .em-preview summary { cursor: pointer; font-size: 12.5px; color: var(--muted); }
   .em-preview pre { white-space: pre-wrap; font: 12.5px/1.5 ui-monospace, monospace; background: var(--head); border: 1px solid var(--line); border-radius: 6px; padding: 10px; margin: 6px 0 0; }
@@ -174,14 +203,86 @@ export const EMAIL_TAB_SCRIPT = `
   var country = document.getElementById("emCountry");
   var tier = document.getElementById("emTier");
   var readyOnly = document.getElementById("emReady");
-  var hideSent = document.getElementById("emHideSent");
+  var statusSel = document.getElementById("emStatus");
   var hideApplied = document.getElementById("emHideApplied");
   var counter = document.getElementById("emCounter");
 
+  // ---- applied / not interested ------------------------------------------------------
+  // Saved in this browser at once; "export marks" + "npm run import-marks" make them
+  // permanent. A row already in the permanent record shows "recorded". Whichever
+  // decision is latest — recorded, or marked here — is the one shown.
+  var MARKS = "email-marks";
+  function readMarks() { try { return JSON.parse(localStorage.getItem(MARKS) || "{}"); } catch (e) { return {}; } }
+  function writeMarks(m) { try { localStorage.setItem(MARKS, JSON.stringify(m)); } catch (e) { /* private window */ } }
+  var marks = readMarks();
+  function nice(iso) { return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }); }
+
+  function stateOf(li) {
+    var c = [];
+    if (li.dataset.appliedAt) c.push({ s: "applied", at: li.dataset.appliedAt, src: "recorded" });
+    if (li.dataset.skippedAt) c.push({ s: "skipped", at: li.dataset.skippedAt, src: "recorded" });
+    var m = marks[li.dataset.email];
+    if (m) c.push({ s: m.s, at: m.at, src: "browser" });
+    c.sort(function (a, b) { return a.at < b.at ? -1 : a.at > b.at ? 1 : (a.src === "browser" ? 1 : -1); });
+    return c.length ? c[c.length - 1] : { s: "", at: "", src: "" };
+  }
+
+  function paint(li) {
+    var st = stateOf(li);
+    li.dataset.state = st.s || "undecided";
+    li.classList.toggle("em-applied", st.s === "applied");
+    li.classList.toggle("em-skipped", st.s === "skipped");
+    var tag = st.src === "recorded" ? " · recorded" : "";
+    li.querySelector(".em-status").textContent =
+      st.s === "applied" ? "✅ applied " + nice(st.at) + tag
+      : st.s === "skipped" ? "🚫 not interested " + nice(st.at) + tag
+      : "not marked yet";
+    var a = li.querySelector(".em-m-applied"), k = li.querySelector(".em-m-skip");
+    a.classList.toggle("done", st.s === "applied");
+    k.classList.toggle("done", st.s === "skipped");
+    a.textContent = st.s === "applied" ? (st.src === "browser" ? "applied — undo" : "applied ✓") : "mark applied";
+    k.textContent = st.s === "skipped" ? (st.src === "browser" ? "not interested — undo" : "not interested ✓") : "not interested";
+  }
+
+  function summary() {
+    var n = { applied: 0, skipped: 0, undecided: 0 };
+    items.forEach(function (li) { n[li.dataset.state || "undecided"]++; });
+    var el = document.getElementById("emSummary");
+    if (el) el.textContent = n.applied + " applied · " + n.skipped + " not interested · " + n.undecided + " not marked yet";
+  }
+
+  function toggle(li, which) {
+    var email = li.dataset.email, st = stateOf(li);
+    if (st.s === which && st.src === "browser") delete marks[email];
+    else if (st.s === which) return; // already in the permanent record: nothing to add
+    else marks[email] = { s: which, at: new Date().toISOString() };
+    writeMarks(marks);
+    paint(li);
+    applyFilters();
+  }
+
   items.forEach(function (li) {
-    if (li.dataset.sent === "1") li.classList.add("em-sent-row");
+    paint(li);
     var box = li.querySelector(".em-pick");
     box.addEventListener("change", updateCounter);
+  });
+  list.addEventListener("click", function (e) {
+    var a = e.target.closest(".em-m-applied"), k = e.target.closest(".em-m-skip");
+    if (a) toggle(a.closest("li.em-item"), "applied");
+    else if (k) toggle(k.closest("li.em-item"), "skipped");
+  });
+
+  var exportBtn = document.getElementById("emExport");
+  if (exportBtn) exportBtn.addEventListener("click", function () {
+    function read(key) { try { return JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { return {}; } }
+    var emailApplied = {}, emailSkipped = {};
+    Object.keys(marks).forEach(function (e) { (marks[e].s === "applied" ? emailApplied : emailSkipped)[e] = marks[e].at; });
+    var blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), applied: read("applied-dates"), skipped: read("skipped-dates"), emailApplied: emailApplied, emailSkipped: emailSkipped }, null, 2)], { type: "application/json" });
+    var link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "marks.json";
+    link.click();
+    URL.revokeObjectURL(link.href);
   });
 
   function updateCounter() {
@@ -198,17 +299,19 @@ export const EMAIL_TAB_SCRIPT = `
       var matchesCountry = !c || li.dataset.country === c;
       var matchesTier = !t || li.dataset.tier === t;
       var matchesReady = !readyOnly.checked || li.dataset.fact !== "none";
-      var matchesSent = !hideSent.checked || li.dataset.sent !== "1";
+      var want = statusSel.value;
+      var matchesStatus = want === "all" || (li.dataset.state || "undecided") === want;
       var matchesApplied = !hideApplied.checked || li.dataset.recent !== "1";
-      var show = matchesText && matchesCountry && matchesTier && matchesReady && matchesSent && matchesApplied;
+      var show = matchesText && matchesCountry && matchesTier && matchesReady && matchesStatus && matchesApplied;
       li.style.display = show ? "" : "none";
       if (show) visible++;
     });
     updateCounter();
+    summary();
   }
 
   [q, country, tier].forEach(function (el) { el.addEventListener("input", applyFilters); });
-  [readyOnly, hideSent, hideApplied].forEach(function (el) { el.addEventListener("change", applyFilters); });
+  [readyOnly, statusSel, hideApplied].forEach(function (el) { el.addEventListener("change", applyFilters); });
   applyFilters();
 
   function visibleItems() {

@@ -59,11 +59,11 @@ export function loadSentLog(path: string = SENT_LOG_PATH): Map<string, SentRecor
 }
 
 /** Append one line per address sent today. Never rewrites what is already there. */
-export function recordSent(records: { email: string; schools: string[] }[], path: string = SENT_LOG_PATH): void {
+export function recordSent(records: { email: string; schools: string[]; date?: string }[], path: string = SENT_LOG_PATH): void {
   if (!records.length) return;
   mkdirSync(dirname(path), { recursive: true });
-  const date = new Date().toISOString().slice(0, 10);
-  const lines = records.map((r) => JSON.stringify({ email: r.email.toLowerCase(), date, schools: r.schools }));
+  const today = new Date().toISOString().slice(0, 10);
+  const lines = records.map((r) => JSON.stringify({ email: r.email.toLowerCase(), date: r.date ?? today, schools: r.schools }));
   appendFileSync(path, lines.join("\n") + "\n", "utf8");
 }
 

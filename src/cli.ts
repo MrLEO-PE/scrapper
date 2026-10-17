@@ -13,7 +13,8 @@
 import { execFile } from "node:child_process";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { recordSent } from "./sentlog.ts";
+import { loadSentLog, recordSent } from "./sentlog.ts";
+import { loadSkipLog, recordSkipped } from "./skiplog.ts";
 import { appendLedger, type LedgerEntry, type LedgerEvent } from "./ledger.ts";
 import { OUT_DIR, loadFields, loadTargets, writeFieldsConfig } from "./config.ts";
 import { stats as httpStats } from "./core/http.ts";
@@ -710,7 +711,10 @@ async function main(): Promise<void> {
       // it permanent: {"applied": {jobId: iso}, "skipped": {jobId: iso}}.
       const file = str(args, "file") ?? args.positional[0];
       if (!file) { log.error("say which file: npm run import-marks -- marks.json"); process.exitCode = 1; break; }
-      const marks = JSON.parse(readFileSync(file, "utf8")) as { applied?: Record<string, string>; skipped?: Record<string, string> };
+      const marks = JSON.parse(readFileSync(file, "utf8")) as {
+        applied?: Record<string, string>; skipped?: Record<string, string>;
+        emailApplied?: Record<string, string>; emailSkipped?: Record<string, string>;
+      };
       const jobs = new Map(queryJobs({ peOnly: false, status: "any" }).map((j) => [j.id, j]));
       const have = new Set(readLedger().map((e) => `${e.event}|${e.dedupe_key}`));
       const entries: LedgerEntry[] = [];
@@ -723,6 +727,24 @@ async function main(): Promise<void> {
           entries.push({ at, event, job_id: id, dedupe_key: j.dedupe_key, school_key: j.school_key, school: j.school_name, title: j.title, url: j.url });
         }
       }
+      // The Email tab's marks: an address applied to goes in the sent log, one not wanted in the skip log.
+      // Anything already recorded for that address on that day is left alone, so importing twice is harmless.
+      const allSchools = [...getSchools().values()];
+      const schoolsFor = (email: string) =>
+        allSchools.filter((s) => [s.career_email, s.contact_email, s.school_email].some((e) => e?.toLowerCase() === email)).map((s) => s.school_key);
+      const sentAlready = loadSentLog();
+      const skippedAlready = loadSkipLog();
+      const newSent = Object.entries(marks.emailApplied ?? {})
+        .map(([e, at]) => ({ email: e.toLowerCase(), date: at.slice(0, 10) }))
+        .filter((r) => sentAlready.get(r.email)?.date !== r.date)
+        .map((r) => ({ ...r, schools: schoolsFor(r.email) }));
+      const newSkips = Object.entries(marks.emailSkipped ?? {})
+        .map(([e, at]) => ({ email: e.toLowerCase(), date: at.slice(0, 10) }))
+        .filter((r) => skippedAlready.get(r.email)?.date !== r.date)
+        .map((r) => ({ ...r, schools: schoolsFor(r.email) }));
+      recordSent(newSent);
+      recordSkipped(newSkips);
+      if (newSent.length || newSkips.length) log.ok(`email marks recorded: ${newSent.length} applied, ${newSkips.length} not interested`);
       appendLedger(entries);
       log.ok(`recorded ${entries.length} marks permanently${unknown ? ` · ${unknown} not found in the database (an old advert that has left it)` : ""}`);
       for (const e of entries) log.plain(`  ${e.event.padEnd(8)} ${(e.school ?? "?").slice(0, 30).padEnd(32)} ${e.title.slice(0, 50)}`);

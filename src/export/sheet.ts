@@ -732,7 +732,12 @@ q.addEventListener("input", applyFilters);
 // the permanent record: save the file, then run "npm run import-marks".
 const exportBtn = document.getElementById("exportMarks");
 if (exportBtn) exportBtn.addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), applied: marks, skipped: skips }, null, 2)], { type: "application/json" });
+  // The Email tab keeps its marks in this same browser; one export carries both.
+  let emailMarks = {};
+  try { emailMarks = JSON.parse(localStorage.getItem("email-marks") || "{}"); } catch { /* none */ }
+  const emailApplied = {}, emailSkipped = {};
+  for (const [address, m] of Object.entries(emailMarks)) (m.s === "applied" ? emailApplied : emailSkipped)[address] = m.at;
+  const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), applied: marks, skipped: skips, emailApplied, emailSkipped }, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "marks.json";
