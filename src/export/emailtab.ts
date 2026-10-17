@@ -44,7 +44,7 @@ export function emailTabBody(recipients: Recipient[]): string {
     const meta = [
       r.country,
       r.city,
-      r.rank != null ? `rank ${r.rank}` : null,
+      r.rank != null ? `rank ${r.rank}${r.rankOf ? ` of ${r.rankOf}` : ""}${r.rankBasis ? ` · ${r.rankBasis}` : ""}` : null,
       r.contactName ? `named: ${r.contactName}` : null,
     ].filter(Boolean).map(esc).join(" · ");
 
@@ -67,7 +67,7 @@ export function emailTabBody(recipients: Recipient[]): string {
     <a class="em-btn" href="${esc(gmailComposeUrl(r.email, r.subject, r.body))}" target="_blank" rel="noopener">open in Gmail</a>`
       : `<span class="em-warn">NEEDS: ${esc(r.missing.join(", "))}</span>`;
 
-    return `  <li class="em-item" data-email="${esc(r.email)}" data-country="${esc(r.country ?? "")}" data-tier="${esc(r.tier)}" data-fact="${esc(r.factQuality)}" data-applied-at="${esc(sentDate)}" data-skipped-at="${esc(skipDate)}" data-recent="${r.appliedRecently ? "1" : "0"}" data-idx="${idx}">
+    return `  <li class="em-item" data-email="${esc(r.email)}" data-country="${esc(r.country ?? "")}" data-tier="${esc(r.tier)}" data-fact="${esc(r.factQuality)}" data-applied-at="${esc(sentDate)}" data-skipped-at="${esc(skipDate)}" data-recent="${r.appliedRecently ? "1" : "0"}" data-rank="${r.rank ?? ""}" data-share="${r.rankShare != null ? r.rankShare.toFixed(4) : ""}" data-idx="${idx}">
     <label class="tick"><input type="checkbox" class="em-pick" data-mark="rcpt|${esc(r.email)}"><span class="box" aria-hidden="true"></span></label>
     <div>
       <p class="nr-name"><a class="em-mailto" href="mailto:${esc(r.email)}">${esc(r.email)}</a>
@@ -115,6 +115,22 @@ export function emailTabBody(recipients: Recipient[]): string {
 <div class="em-bar">
   <input id="emQ" placeholder="Filter by school, email, country…" autocomplete="off">
   <select id="emCountry"><option value="">All countries</option>${countries.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("")}</select>
+  <select id="emRank" title="Rank is the school's place in its own country: package and salary first, then tuition fees, then accreditation">
+    <option value="">Any rank</option>
+    <option value="n:10">Top 10 in each country</option>
+    <option value="n:25">Top 25 in each country</option>
+    <option value="n:50">Top 50 in each country</option>
+    <option value="n:100">Top 100 in each country</option>
+    <option value="p:0.2">Top 20% of each country</option>
+    <option value="p:0.35">Top 35% of each country</option>
+    <option value="p:0.5">Top 50% of each country</option>
+    <option value="none">Unranked</option>
+  </select>
+  <select id="emSort" title="Order of the list">
+    <option value="">Order: default</option>
+    <option value="rank">Best rank first</option>
+    <option value="share">Best share of country first</option>
+  </select>
   <select id="emTier">
     <option value="">Any tier</option>
     <option value="careers">Careers inbox</option>
@@ -202,6 +218,8 @@ export const EMAIL_TAB_SCRIPT = `
   var q = document.getElementById("emQ");
   var country = document.getElementById("emCountry");
   var tier = document.getElementById("emTier");
+  var rankSel = document.getElementById("emRank");
+  var sortSel = document.getElementById("emSort");
   var readyOnly = document.getElementById("emReady");
   var statusSel = document.getElementById("emStatus");
   var hideApplied = document.getElementById("emHideApplied");
@@ -299,10 +317,16 @@ export const EMAIL_TAB_SCRIPT = `
       var matchesCountry = !c || li.dataset.country === c;
       var matchesTier = !t || li.dataset.tier === t;
       var matchesReady = !readyOnly.checked || li.dataset.fact !== "none";
+      var rk = rankSel.value, matchesRank = true;
+      if (rk === "none") matchesRank = li.dataset.rank === "";
+      else if (rk) {
+        var kind = rk.charAt(0), lim = parseFloat(rk.slice(2));
+        matchesRank = li.dataset.rank !== "" && (kind === "n" ? parseInt(li.dataset.rank, 10) <= lim : parseFloat(li.dataset.share) <= lim);
+      }
       var want = statusSel.value;
       var matchesStatus = want === "all" || (li.dataset.state || "undecided") === want;
       var matchesApplied = !hideApplied.checked || li.dataset.recent !== "1";
-      var show = matchesText && matchesCountry && matchesTier && matchesReady && matchesStatus && matchesApplied;
+      var show = matchesText && matchesCountry && matchesTier && matchesReady && matchesStatus && matchesApplied && matchesRank;
       li.style.display = show ? "" : "none";
       if (show) visible++;
     });
@@ -311,7 +335,23 @@ export const EMAIL_TAB_SCRIPT = `
   }
 
   [q, country, tier].forEach(function (el) { el.addEventListener("input", applyFilters); });
-  [readyOnly, statusSel, hideApplied].forEach(function (el) { el.addEventListener("change", applyFilters); });
+  [readyOnly, statusSel, hideApplied, rankSel].forEach(function (el) { el.addEventListener("change", applyFilters); });
+  // Ordering: the page is built best-country-rank first within each country; this reorders in place.
+  var original = items.slice();
+  function applySort() {
+    var by = sortSel.value;
+    var ordered = original.slice();
+    if (by) {
+      var key = by === "rank" ? "rank" : "share";
+      ordered.sort(function (a, b) {
+        var x = a.dataset[key] === "" ? Infinity : parseFloat(a.dataset[key]);
+        var y = b.dataset[key] === "" ? Infinity : parseFloat(b.dataset[key]);
+        return x - y;
+      });
+    }
+    ordered.forEach(function (li) { list.appendChild(li); });
+  }
+  sortSel.addEventListener("change", applySort);
   applyFilters();
 
   function visibleItems() {

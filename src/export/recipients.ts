@@ -29,6 +29,7 @@ import { principalFor } from "./factsource.ts";
 import { ledgerState } from "../ledger.ts";
 import { loadSentLog, monthsSinceSent, type SentRecord } from "../sentlog.ts";
 import { loadSkipLog, type SkipRecord } from "../skiplog.ts";
+import { RANK_BASIS_LABEL } from "../match/packagevalue.ts";
 
 export type RecipientTier = "careers" | "named" | "general";
 /** unique: a fact held for this school alone. none: the letter is written without a hook. group: a shared inbox. */
@@ -42,6 +43,12 @@ export interface Recipient {
   city: string | null;
   /** Best (lowest) country_rank across the schools this address covers. */
   rank: number | null;
+  /** How many schools in this country are ranked, so a rank can be read as a share (3 of 40). */
+  rankOf: number | null;
+  /** The best-placed school's rank as a share of its country, 0–1 (smaller is better). */
+  rankShare: number | null;
+  /** What the rank was decided on, in words. */
+  rankBasis: string | null;
   contactName: string | null;
   factQuality: FactQuality;
   subject: string;
@@ -98,12 +105,21 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string, s
     }
   }
 
+  // How many schools each country has ranked, to turn a rank into a share.
+  const rankedIn = new Map<string, number>();
+  for (const s of allSchools) if (s.country && s.country_rank != null) rankedIn.set(s.country, (rankedIn.get(s.country) ?? 0) + 1);
+
   const recipients: Recipient[] = [];
   for (const [email, { tier, schools }] of groups) {
     const rank = schools.reduce<number | null>(
       (best, s) => (s.country_rank != null && (best == null || s.country_rank < best) ? s.country_rank : best),
       null,
     );
+    // The best-placed of the schools this address covers, and what put it there.
+    const placed = schools.filter((s) => s.country_rank != null).sort((a, b) => a.country_rank! - b.country_rank!)[0];
+    const rankOf = placed?.country ? (rankedIn.get(placed.country) ?? null) : null;
+    const rankShare = placed && rankOf ? placed.country_rank! / rankOf : null;
+    const rankBasis = placed?.rank_basis ? (RANK_BASIS_LABEL[placed.rank_basis as keyof typeof RANK_BASIS_LABEL] ?? null) : null;
     const rec = sentLog.get(email);
     const keys = new Set(schools.map((s) => s.school_key));
     const applications = [...decided.applied.values()]
@@ -120,6 +136,9 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string, s
       country: commonValue(schools.map((s) => s.country)) ?? (schools.length > 1 ? "Multiple" : null),
       city: commonValue(schools.map((s) => s.city)),
       rank,
+      rankOf,
+      rankShare,
+      rankBasis,
       lastSent: rec,
       skipped: skipLog.get(email),
       monthsSinceSent: monthsSinceSent(rec),
