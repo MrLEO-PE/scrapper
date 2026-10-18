@@ -594,5 +594,17 @@
     "via": "careers-page scan (address named for hiring): https://sisschools.org/career",
     "found": "2026-10-16",
     "note": "SIS Myanmar — Myanmar"
+  },
+  "hong-kong-education-bureau|hong-kong": {
+    "email": "jobs@itseducation.asia",
+    "via": "careers-page scan (address named for hiring): https://itseducation.asia/vacancies.htm",
+    "found": "2026-10-17",
+    "note": "Hong Kong Education Bureau — Hong Kong"
+  },
+  "alkev-private-schools|turkey": {
+    "email": "cv@alkev.k12.tr",
+    "via": "careers-page scan (address the page says to send applications to — a named person, check): https://www.alkev.k12.tr/en/human-resources/",
+    "found": "2026-10-17",
+    "note": "Alkev Private Schools — Turkey"
   }
 }

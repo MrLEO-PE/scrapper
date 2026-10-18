@@ -33,6 +33,7 @@
     "site": "node --experimental-strip-types --no-warnings src/cli.ts site",
     "health": "node --experimental-strip-types --no-warnings src/cli.ts health",
     "alerts": "node --experimental-strip-types --no-warnings src/cli.ts alerts",
+    "address-book": "node --experimental-strip-types --no-warnings src/cli.ts address-book",
     "hr-scan": "node --experimental-strip-types --no-warnings src/cli.ts hr-scan",
     "db": "node --experimental-strip-types --no-warnings src/cli.ts db",
     "track":"node --experimental-strip-types --no-warnings src/cli.ts track"

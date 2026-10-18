@@ -1,0 +1,724 @@
+{
+  "//": "Application forms linked from a school's careers pages (found by hr-scan --forms). Each says which page it came from.",
+  "ruamrudee-international-school|thailand": {
+    "kind": "online",
+    "url": "https://forms.gle/qYMiDc9kVM9YHaZQ8",
+    "page": "https://www.rism.ac.th/community/work-ris/",
+    "found": "2026-10-17",
+    "note": "Ruamrudee International School — Thailand"
+  },
+  "wells-international-school-chonburi-campus|thailand": {
+    "kind": "pdf",
+    "url": "https://wellsnewwebsite.com/wp-content/uploads/2025/01/Job-Application-Form.pdf",
+    "page": "https://wellsnewwebsite.com/work-with-us/",
+    "found": "2026-10-17",
+    "note": "Wells International School – Chonburi Campus — Thailand"
+  },
+  "international-community-school-bangkok|thailand": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSdeYNEdc25jKygLd1jHjor5_A24LaEq-oYpp-Z6h0AAEBjYSg/viewform?usp=dialog",
+    "page": "https://www.ics.ac.th/employment-opportunities",
+    "found": "2026-10-17",
+    "note": "International Community School Bangkok — Thailand"
+  },
+  "wells-international-school|thailand": {
+    "kind": "pdf",
+    "url": "https://wells.ac.th/wp-content/uploads/2025/06/Job-Application-Form%20(June%2012%202025).pdf",
+    "page": "https://wells.ac.th/job-openings/",
+    "found": "2026-10-17",
+    "note": "Wells International School — Thailand"
+  },
+  "chiang-mai-international-school|thailand": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLScvi7sMEjiMVcbNWcXAVjPetlEb7ReIRv95QoVJLYoddbla8w/viewform",
+    "page": "https://cmis.ac.th/about/employment",
+    "found": "2026-10-17",
+    "note": "Chiang Mai International School — Thailand"
+  },
+  "international-christian-school-nonthaburi|thailand": {
+    "kind": "online",
+    "url": "https://forms.gle/s2874fh8u6B7DG8KA",
+    "page": "https://icsn.ac.th/about-icsn/employment/",
+    "found": "2026-10-17",
+    "note": "International Christian School Nonthaburi — Thailand"
+  },
+  "al-ittihad-private-school-jumeira|united-arab-emirates": {
+    "kind": "online",
+    "url": "https://form.jotform.com/250230805969056",
+    "page": "https://arabian-edu.com/jumeirah/careers",
+    "found": "2026-10-17",
+    "note": "Al Ittihad Private School - Jumeira — United Arab Emirates"
+  },
+  "shrewsbury-international-school-india|india": {
+    "kind": "pdf",
+    "url": "https://www.shrewsburyindia.in/site/templates/pdf-file/SISI-Application-Form-26-05-25.pdf",
+    "page": "https://www.shrewsburyindia.in/shrewsbury-international-school-india/job-vacancies/",
+    "found": "2026-10-17",
+    "note": "Shrewsbury International School India — India"
+  },
+  "daly-college-indore|india": {
+    "kind": "pdf",
+    "url": "https://www.dalycollege.org/pdf/Application-Format.pdf",
+    "page": "https://www.dalycollege.org/career-guidance.php",
+    "found": "2026-10-17",
+    "note": "Daly College Indore — India"
+  },
+  "bedford-school-mohali|india": {
+    "kind": "online",
+    "url": "https://bedfordschoolmohali.com/staff-application-form/",
+    "page": "https://bedfordschoolmohali.com/work-with-us/",
+    "found": "2026-10-17",
+    "note": "Bedford School Mohali — India"
+  },
+  "shiv-nadar-school-faridabad|india": {
+    "kind": "online",
+    "url": "https://forms.gle/cv6xC2A44iYehKuf9",
+    "page": "https://shivnadarschool.edu.in/careers",
+    "found": "2026-10-17",
+    "note": "Shiv Nadar School Faridabad — India"
+  },
+  "hebron-school|india": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSd5Os7_6pXv_SbActh5RwqTzlUvzEgXDO10unPIAP-2jv19Kg/viewform",
+    "page": "https://www.hebronooty.org/about-hebron/vacancies",
+    "found": "2026-10-17",
+    "note": "Hebron School — India"
+  },
+  "apeejay-school-international|india": {
+    "kind": "online",
+    "url": "https://apeejay.formstack.com/forms/employment_application_form_ib",
+    "page": "https://intl.apeejay.edu/careers/",
+    "found": "2026-10-17",
+    "note": "Apeejay School International — India"
+  },
+  "miri-piri-academy|india": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSecx4FGzmSvVY93aAXKRocpuI7EWEY0W4aGMw6BL1CYIRXPcw/viewform",
+    "page": "https://miripiriacademy.org/careers",
+    "found": "2026-10-17",
+    "note": "Miri Piri Academy — India"
+  },
+  "kodaikanal-international-school|india": {
+    "kind": "word",
+    "url": "https://resources.finalsite.net/files/t_file_download/v1667807568/kisin/krvjrwuyigv5gsz6tp47/KIS-Academic-Position-Application-Form.docx",
+    "page": "https://www.kis.in/careers/open-positions/choir-director-voice-teacher",
+    "found": "2026-10-17",
+    "note": "Kodaikanal International School — India"
+  },
+  "billabong-high-international-school-noida|india": {
+    "kind": "online",
+    "url": "https://forms.gle/3VY7gjRSv68w3Wp59",
+    "page": "https://www.billabonghighschoolnoida.com/career/",
+    "found": "2026-10-17",
+    "note": "Billabong High International School Noida — India"
+  },
+  "qingdao-amerasia-international-school|china": {
+    "kind": "online",
+    "url": "https://forms.office.com/Pages/ResponsePage.aspx?id=lxQtrvvRjUe7ymNlvEGJRZGdSMiMQeJFoBlIcYfCjaBUMjRCSTRYVDAyT0g3U0tSVzdaTUoxQ1lZQyQlQCN0PWcu",
+    "page": "https://qingdaoamerasia.org/job-application/",
+    "found": "2026-10-17",
+    "note": "Qingdao Amerasia International School — China"
+  },
+  "bombay-international-school-gilbert-campus|india": {
+    "kind": "online",
+    "url": "https://forms.gle/Hxk7D1R9a8PNYN7Q6",
+    "page": "https://bis.edu.in/admissions-and-financial-aid/chance-vacancies",
+    "found": "2026-10-17",
+    "note": "Bombay International School - Gilbert Campus — India"
+  },
+  "shanghai-livingston-american-school|china": {
+    "kind": "online",
+    "url": "https://forms.office.com/r/beStHQ64Tg",
+    "page": "https://www.laschina.org/employment/",
+    "found": "2026-10-17",
+    "note": "Shanghai Livingston American School — China"
+  },
+  "beijing-city-international-school|china": {
+    "kind": "online",
+    "url": "https://bcisedu-my.sharepoint.com/:w:/g/personal/ann_teng_ycedu_cn/IQCgxl2xVaEDRIzByd4Jmdq7ARsX3C8tajoLqrFD4pegqKU",
+    "page": "https://www.bcis.cn/community/employment",
+    "found": "2026-10-17",
+    "note": "Beijing City International School — China"
+  },
+  "qsi-international-school-shenzhen|china": {
+    "kind": "online",
+    "url": "https://forms.office.com/e/QNniXWGqj2",
+    "page": "https://www.qsi.org/careers",
+    "found": "2026-10-17",
+    "note": "QSI International School of Shenzhen — China"
+  },
+  "3e-international-school|china": {
+    "kind": "word",
+    "url": "https://3einternationalschool.org/wp-content/uploads/2023/02/3eInternationalSchoolJobApplicationFormEnglish.doc",
+    "page": "https://3einternationalschool.org/career/",
+    "found": "2026-10-17",
+    "note": "3e International School — China"
+  },
+  "ningbo-huamao-international-school|china": {
+    "kind": "online",
+    "url": "https://forms.office.com/r/sbBbBg6gqj",
+    "page": "https://www.nbhis.com/career/",
+    "found": "2026-10-17",
+    "note": "Ningbo Huamao International School — China"
+  },
+  "nanchang-international-school|china": {
+    "kind": "word",
+    "url": "http://www.wes-cwa.org/wp-content/uploads/2018/01/Teacher-Application-Form-2018-9.docx",
+    "page": "https://www.wes-ncis.org/join-us",
+    "found": "2026-10-17",
+    "note": "Nanchang International School — China"
+  },
+  "guangzhou-grace-academy|china": {
+    "kind": "word",
+    "url": "http://www.gzgrace.net/documents/staffApplication.docx",
+    "page": "http://www.gzgrace.net/employment.html",
+    "found": "2026-10-17",
+    "note": "Guangzhou Grace Academy — China"
+  },
+  "british-school-malaga|spain": {
+    "kind": "online",
+    "url": "https://tally.so/r/3EWoyl",
+    "page": "https://www.britishschoolmalaga.com/trabaja-con-nosotros",
+    "found": "2026-10-17",
+    "note": "British School of Málaga — Spain"
+  },
+  "igb-international-school|malaysia": {
+    "kind": "online",
+    "url": "https://forms.gle/5GxoJa3FDGWQVVVn9",
+    "page": "https://igbis.edu.my/admissions/scholarship/",
+    "found": "2026-10-17",
+    "note": "IGB International School — Malaysia"
+  },
+  "international-school-kuala-lumpur|malaysia": {
+    "kind": "online",
+    "url": "https://forms.gle/AJAeWP5GSkXNVgWL6",
+    "page": "https://www.iskl.edu.my/about-us/careers-at-iskl",
+    "found": "2026-10-17",
+    "note": "The International School of Kuala Lumpur — Malaysia"
+  },
+  "kolej-tuanku-ja-afar|malaysia": {
+    "kind": "word",
+    "url": "https://www.ktj.edu.my/userfiles/ktjmvc/documents/07-community/vacancies-job-application-form-2022.docx",
+    "page": "https://www.ktj.edu.my/ktj-community/careers",
+    "found": "2026-10-17",
+    "note": "Kolej Tuanku Ja'afar — Malaysia"
+  },
+  "dalat-international-school|malaysia": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLScnFE5gietcrniMGqSxIPlSUjQZFBQdST9SpU5SmlJ4C4uPrg/viewform",
+    "page": "https://www.dalat.org/about-us/employment",
+    "found": "2026-10-17",
+    "note": "Dalat International School — Malaysia"
+  },
+  "kingsgate-international-school|malaysia": {
+    "kind": "pdf",
+    "url": "https://www.kingsgate.edu.my/wp-content/uploads/2021/12/kgis_job_application.pdf",
+    "page": "https://www.kingsgate.edu.my/working-with-us/",
+    "found": "2026-10-17",
+    "note": "Kingsgate International School — Malaysia"
+  },
+  "help-international-school-kuala-lumpur|malaysia": {
+    "kind": "pdf",
+    "url": "https://his.edu.my/storage/2026/02/HIS_Employment-Application-Form.pdf",
+    "page": "https://his.edu.my/careershis/",
+    "found": "2026-10-17",
+    "note": "HELP International School - Kuala Lumpur — Malaysia"
+  },
+  "help-international-school|malaysia": {
+    "kind": "pdf",
+    "url": "https://his.edu.my/storage/2026/02/HIS_Employment-Application-Form.pdf",
+    "page": "https://his.edu.my/careershis/",
+    "found": "2026-10-17",
+    "note": "Help International School — Malaysia"
+  },
+  "international-islamic-school-malaysia-kuantan|malaysia": {
+    "kind": "online",
+    "url": "https://my20.awfatech.com/main/app/job/job_reg.php?sysapp=iium",
+    "page": "https://iium-schools.edu.my/v3/career/",
+    "found": "2026-10-17",
+    "note": "International Islamic School Malaysia - Kuantan — Malaysia"
+  },
+  "spectrum-international-school|malaysia": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSeVFGjgbV0rxp_xM1ERYptrExiM_zQOO_C8WdrQP5tKgWHoNQ/viewform",
+    "page": "https://spectrumiis.edu.my/career/",
+    "found": "2026-10-17",
+    "note": "Spectrum International School — Malaysia"
+  },
+  "iss-international-school|singapore": {
+    "kind": "online",
+    "url": "https://forms.gle/Pr6t9CyfPjcV8UJw9",
+    "page": "https://www.iss.edu.sg/careers/",
+    "found": "2026-10-17",
+    "note": "ISS International School — Singapore"
+  },
+  "le-petite-ecole-singapore|singapore": {
+    "kind": "online",
+    "url": "https://forms.gle/n52x6AyFqEmi3b1e9",
+    "page": "https://www.lpesingapore.com/en/activites-extrascolaires/camp-de-vacances/",
+    "found": "2026-10-17",
+    "note": "Le Petite Ecole Singapore — Singapore"
+  },
+  "gess|singapore": {
+    "kind": "online",
+    "url": "https://jobs.lever.co/gess/6b5907a5-3364-450a-8c17-77d21d1cacfd",
+    "page": "https://www.gess.edu.sg/en/our-school/careers",
+    "found": "2026-10-17",
+    "note": "GESS — Singapore"
+  },
+  "chatsworth-international-school|singapore": {
+    "kind": "pdf",
+    "url": "https://www.chatsworth.com.sg/sites/default/files/2024-08/QP12-F03%20Employment%20Form%20%28Acad%20Rev%2014%29-Editable.pdf",
+    "page": "https://www.chatsworth.com.sg/contact/careers",
+    "found": "2026-10-17",
+    "note": "Chatsworth International School — Singapore"
+  },
+  "american-school-hong-kong|hong-kong": {
+    "kind": "online",
+    "url": "https://www.esoleducation.com/careers/vacancies/application-form",
+    "page": "https://www.esoleducation.com/careers",
+    "found": "2026-10-17",
+    "note": "American School Hong Kong — Hong Kong"
+  },
+  "hakuba-international-school|japan": {
+    "kind": "online",
+    "url": "https://form.jotform.com/262768632524060",
+    "page": "https://www.hakuba-is.jp/employment-1",
+    "found": "2026-10-17",
+    "note": "Hakuba International School — Japan"
+  },
+  "rugby-school-japan|japan": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSfG_9OCCXm-akmJ_CsnSImIL-xTXSnv6Awubs170DzElD3z8A/viewform?usp=dialog",
+    "page": "https://rugbyschooljapan.ed.jp/work-with-us/",
+    "found": "2026-10-17",
+    "note": "Rugby School Japan — Japan"
+  },
+  "tokyo-international-school|japan": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSeP-LW7YK5f45CT-mJWFh8Z3qAQTF2eQs1Xn0PmbolcO7BXXA/viewform",
+    "page": "https://tokyois.com/community/join-us/",
+    "found": "2026-10-17",
+    "note": "Tokyo International School — Japan"
+  },
+  "international-school-eindhoven-ise|netherlands": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSf9BgUvAMYnwL7Dl4XRHgSi4W-XgBO8mPz62ad4hiRz80ABJQ/viewform?usp=dialog",
+    "page": "https://www.isecampus.nl/our-school/ise-vacancies/",
+    "found": "2026-10-17",
+    "note": "International School Eindhoven (ISE) — Netherlands"
+  },
+  "american-school-in-japan|japan": {
+    "kind": "online",
+    "url": "https://forms.gle/GrFXzexcNMAHTB58A",
+    "page": "https://www.asij.ac.jp/employment/employment-home",
+    "found": "2026-10-17",
+    "note": "The American School in Japan — Japan"
+  },
+  "saint-maur-international-school|japan": {
+    "kind": "online",
+    "url": "https://forms.gle/pwgzMDUq4SnMucJA9",
+    "page": "https://www.stmaur.ac.jp/about-us/people/job-openings-at-saint-maur-international-school",
+    "found": "2026-10-17",
+    "note": "Saint Maur International School — Japan"
+  },
+  "nucb-international-college|japan": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSdU6qFNo0DIvY4gBJGafz5NG0afpFNeTXLTw1eWsaHXsCi_IA/viewform",
+    "page": "https://ic.nucba.ac.jp/college/recruit/",
+    "found": "2026-10-17",
+    "note": "NUCB International College — Japan"
+  },
+  "nucb-international-junior-senior-high-school|japan": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSf9aeev4QfRJDkyX-nyhJ4_ELkP38zjFVbA6buOTq9qZ1UQjg/viewform",
+    "page": "https://www.nucba.ac.jp/university/recruit/",
+    "found": "2026-10-17",
+    "note": "NUCB International Junior and Senior High School — Japan"
+  },
+  "fukuoka-international-school|japan": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLScHW9IsBnVM1__OsMHhJb9QOsKHcDnq0iF4-GQKNZgyGyMuwA/viewform",
+    "page": "https://www.fis.ed.jp/about/work-at-fis",
+    "found": "2026-10-17",
+    "note": "Fukuoka International School — Japan"
+  },
+  "shinagawa-international-school|japan": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSeYl9ZhJM-kf8d4GW_kAdJvIUR1x3Bb9NcBJd5IDOKCMl9Q0Q/viewform",
+    "page": "https://sistokyo.jp/about-us/working-with-us/",
+    "found": "2026-10-17",
+    "note": "Shinagawa International School — Japan"
+  },
+  "new-international-school-japan|japan": {
+    "kind": "word",
+    "url": "https://docs.google.com/document/d/1SRuO4tw82V2Qn7riYOb9TR1MggrVPpaFESwIee74eDg/copy",
+    "page": "https://www.newis.ed.jp/employment/overview-of-recruitment",
+    "found": "2026-10-17",
+    "note": "New International School of Japan — Japan"
+  },
+  "enishi-international-school|japan": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLScHLTefSOQp6tABXi84FCDAfUSpdq2CXJanUii5EIU3wpHCGA/viewform",
+    "page": "https://enishi.ac.jp/about/employment/",
+    "found": "2026-10-17",
+    "note": "Enishi International School — Japan"
+  },
+  "international-school-sacred-heart|japan": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSf5K0HuDn_EzByTmKn6wMal4r-MMYr7yP_6Jt2ZvQ1pIYyeXw/viewform",
+    "page": "https://www.issh.ac.jp/about/employment/application-process",
+    "found": "2026-10-17",
+    "note": "International School of the Sacred Heart — Japan"
+  },
+  "seisen-international-school|japan": {
+    "kind": "online",
+    "url": "https://forms.gle/52Ny92ruAig9Zd4T6",
+    "page": "https://www.seisen.com/join-us/employment",
+    "found": "2026-10-17",
+    "note": "Seisen International School — Japan"
+  },
+  "john-mcglashan-college|new-zealand": {
+    "kind": "pdf",
+    "url": "https://www.mcglashan.school.nz/files/1791843397_Teaching%20Staff%20Application%20Form%20-%20Teacher%20of%20History%20and%20English%20(F-T,%20Parental%20Leave).pdf",
+    "page": "https://www.mcglashan.school.nz/our-people/employment-opportunites",
+    "found": "2026-10-17",
+    "note": "John McGlashan College — New Zealand"
+  },
+  "saigon-south-international-school|vietnam": {
+    "kind": "online",
+    "url": "https://forms.gle/KknqvqNpe56tBpY77",
+    "page": "https://www.ssis.edu.vn/careers",
+    "found": "2026-10-17",
+    "note": "Saigon South International School — Vietnam"
+  },
+  "american-school|vietnam": {
+    "kind": "word",
+    "url": "https://cdn.prod.website-files.com/67b29cf84f50923c6d9ad188/67b29cf84f50923c6d9ad457_Tas-%20Application-Form.doc",
+    "page": "https://www.tas.edu.vn/falculty/employment-opportunities",
+    "found": "2026-10-17",
+    "note": "The American School — Vietnam"
+  },
+  "st-paul-american-school-hanoi|vietnam": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLScyglwsFPu_DsPLRapsB50ScnB1GRJrNUUQLXcQiVE2nv41-g/viewform",
+    "page": "https://stpaulhanoi.com/join-our-team/",
+    "found": "2026-10-17",
+    "note": "St. Paul American School Hanoi — Vietnam"
+  },
+  "vietnam-finland-international-school|vietnam": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSeY_VICBeN_P6ejodkV65CKYLqdPzXB87-Rv49FyHksjqSe4A/viewform",
+    "page": "https://vfis.tdtu.edu.vn/index.php/employment/Employment-Opportunities",
+    "found": "2026-10-17",
+    "note": "Vietnam Finland International School — Vietnam"
+  },
+  "ais-indonesia-jakarta|indonesia": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSfU38kvvVXfw-J_lROqZAuC92SNugQOUHBD50-dhoGkbDSD1g/viewform",
+    "page": "https://www.ais-indonesia.com/careers",
+    "found": "2026-10-17",
+    "note": "AIS Indonesia - Jakarta — Indonesia"
+  },
+  "united-nations-international-school-hanoi|vietnam": {
+    "kind": "online",
+    "url": "https://forms.gle/AW8v4mdtXbToBghh9",
+    "page": "https://www.unishanoi.org/community/externalplc",
+    "found": "2026-10-17",
+    "note": "United Nations International School of Hanoi — Vietnam"
+  },
+  "canggu-community-school|indonesia": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLScAyBDie2QSGIph6nUp3-EIPxy3mEZySMtNQLu-jDNWNUBEtQ/viewform",
+    "page": "https://www.ccsbali.com/our-community/employment",
+    "found": "2026-10-17",
+    "note": "Canggu Community School — Indonesia"
+  },
+  "ais-indonesia-bali|indonesia": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/1LJHlWMjdZ5EYd6GuYbk2zxSpPo5w_yC7YWZgfayDwQc/viewform?edit_requested=true",
+    "page": "https://www.ais-indonesia.com/career-bali",
+    "found": "2026-10-17",
+    "note": "AIS Indonesia - Bali — Indonesia"
+  },
+  "proed-global-school|indonesia": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSdORM2uw2K_Ga5WVQMj_PWDHOJTYCUznIkOBLzEV0ovB_h46w/viewform",
+    "page": "https://proedschool.com/careers/",
+    "found": "2026-10-17",
+    "note": "ProEd Global School — Indonesia"
+  },
+  "french-school-jakarta|indonesia": {
+    "kind": "word",
+    "url": "https://frenchschooljakarta.com/wp-content/uploads/2026/02/Formulaire-de-candidature-Enseignant-Contrat-Local-26-27.docx",
+    "page": "https://frenchschooljakarta.com/recruitment/",
+    "found": "2026-10-17",
+    "note": "French School Jakarta — Indonesia"
+  },
+  "sekolah-global-indo-asia|indonesia": {
+    "kind": "pdf",
+    "url": "https://www.sgiaedu.org/_files/ugd/5a6529_e6b7c98ab9854fdbaea4db70d58f8ccb.pdf",
+    "page": "https://www.sgiaedu.org/employment",
+    "found": "2026-10-17",
+    "note": "Sekolah Global Indo-Asia — Indonesia"
+  },
+  "kharisma-bangsa-school|indonesia": {
+    "kind": "online",
+    "url": "https://forms.gle/nb8TcnPFVr6niQ8B6",
+    "page": "https://kbs.sch.id/careers",
+    "found": "2026-10-17",
+    "note": "Kharisma Bangsa School — Indonesia"
+  },
+  "southville-international-school-colleges|philippines": {
+    "kind": "online",
+    "url": "https://southville.wufoo.com/forms/zrz21rm1hvs7rf/",
+    "page": "https://www.southville.edu.ph/teaching-jobs-in-the-philippines/",
+    "found": "2026-10-17",
+    "note": "Southville International School and Colleges — Philippines"
+  },
+  "everest-academy-manila|philippines": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSeG3kHoBgK6AmUtyvE7JPpdeq0Ij1KCYYUB2jqkK0Lffqza3A/viewform",
+    "page": "https://www.everestmanila.com/contact/careers",
+    "found": "2026-10-17",
+    "note": "Everest Academy Manila — Philippines"
+  },
+  "dominican-international-school-taipei|taiwan": {
+    "kind": "word",
+    "url": "https://www.dishs.tp.edu.tw/aboutus/Teacher%20application%20form.docx",
+    "page": "https://www.dishs.tp.edu.tw/careers.html",
+    "found": "2026-10-17",
+    "note": "Dominican International School Taipei — Taiwan"
+  },
+  "hsinchu-international-academy-hia|taiwan": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSdHOZ3eKPf7FFepmAaJvnQu9uCNSQ7ZorDgaPdWeUOv-w9G3Q/viewform?usp=publish-editor",
+    "page": "https://www.hia.com.tw/careers",
+    "found": "2026-10-17",
+    "note": "Hsinchu International Academy (HIA) — Taiwan"
+  },
+  "lycee-international-francais-de-taipei|taiwan": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSdhJHD57ElYHCw1SNkVmMXteLHMV85QJ_Imr_irNxL0qs8kGg/viewform",
+    "page": "https://lift.tw/en/careers/",
+    "found": "2026-10-17",
+    "note": "Lycée International Français de Taipei — Taiwan"
+  },
+  "yuteh-international-school|taiwan": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSfrUKqHtIXQk3gz3UdVsu5ZygR7bvfticfxtdzvAb_O-eQK3Q/viewform",
+    "page": "https://www.yuteh.ntpc.edu.tw/p/426-1000-46.php?Lang=en",
+    "found": "2026-10-17",
+    "note": "Yuteh International School — Taiwan"
+  },
+  "international-bilingual-school-at-hsinchu-science-park-ibsh|taiwan": {
+    "kind": "online",
+    "url": "https://forms.gle/Vxed6V9KEGq1aS36A",
+    "page": "https://sites.google.com/ibsh.tw/ibsh-admission-application/home",
+    "found": "2026-10-17",
+    "note": "International Bilingual School at Hsinchu Science Park (IBSH) — Taiwan"
+  },
+  "wells-international-school-yangon-campus|myanmar": {
+    "kind": "word",
+    "url": "https://wells.edu.mm/wp-content/uploads/2022/03/Job-Application-Form-Wells.docx",
+    "page": "https://wells.edu.mm/jobs/",
+    "found": "2026-10-17",
+    "note": "Wells International School - Yangon Campus — Myanmar"
+  },
+  "covenant-international-school|myanmar": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSdFerHhFp_3xmYVpt1bMXuOwVNcOiB-heSTD8j8VHq5oXymJg/viewform",
+    "page": "https://covenantyangon.com/about-us/join-us/",
+    "found": "2026-10-17",
+    "note": "Covenant International School — Myanmar"
+  },
+  "logos-international-school|cambodia": {
+    "kind": "word",
+    "url": "https://logoscambodia.org/files/application_form2026-2027.docx",
+    "page": "https://logoscambodia.org/careers.php",
+    "found": "2026-10-17",
+    "note": "Logos International School — Cambodia"
+  },
+  "hope-international-school|cambodia": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSc0QgJf3i6mXQ8WS_NISQ0XHQmJJOwakmk8jbNIkEIoHeL26w/viewform",
+    "page": "https://www.hope.edu.kh/jobs/",
+    "found": "2026-10-17",
+    "note": "HOPE International School — Cambodia"
+  },
+  "gecko-garden-school|cambodia": {
+    "kind": "online",
+    "url": "https://forms.gle/6nqVrHgPozwCnWsL6",
+    "page": "https://www.geckogardenschool.org/careers",
+    "found": "2026-10-17",
+    "note": "Gecko Garden School — Cambodia"
+  },
+  "korea-international-school-jeju-campus|south-korea": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLScjHPbXwO2sNNrU0SwKhWoEfrUjATW3WZxq2FpTZEhHfVuTwg/viewform",
+    "page": "https://kis.ac/careers/",
+    "found": "2026-10-17",
+    "note": "Korea International School Jeju Campus — South Korea"
+  },
+  "gyeonggi-suwon-international-school|south-korea": {
+    "kind": "online",
+    "url": "https://form.jotform.com/11182911540",
+    "page": "https://www.gsis.sc.kr/community/employment",
+    "found": "2026-10-17",
+    "note": "Gyeonggi Suwon International School — South Korea"
+  },
+  "korea-foreign-school|south-korea": {
+    "kind": "online",
+    "url": "https://forms.gle/imFf7umwgZuYVewU8",
+    "page": "https://koreaforeign.org/career",
+    "found": "2026-10-17",
+    "note": "Korea Foreign School — South Korea"
+  },
+  "korea-international-school-pangyo-campus|south-korea": {
+    "kind": "online",
+    "url": "https://form.jotform.com/202118033692448",
+    "page": "https://www.kis.or.kr/connect/employment",
+    "found": "2026-10-17",
+    "note": "Korea International School Pangyo Campus — South Korea"
+  },
+  "north-london-collegiate-school-jeju|south-korea": {
+    "kind": "word",
+    "url": "https://www.nlcsjeju.co.kr/wp-content/uploads/2026/01/NLCS-Jeju-Application-Form.docx",
+    "page": "https://www.nlcsjeju.co.kr/employment/support-staff-vacancies/",
+    "found": "2026-10-17",
+    "note": "North London Collegiate School Jeju — South Korea"
+  },
+  "redbridge-international-school|uzbekistan": {
+    "kind": "online",
+    "url": "https://forms.gle/aXyRTifeVzEF5GBQA",
+    "page": "https://redbridge.uz/news/vacancies-are-opened",
+    "found": "2026-10-17",
+    "note": "Redbridge International School — Uzbekistan"
+  },
+  "sky-international-school|kyrgyzstan": {
+    "kind": "online",
+    "url": "https://forms.gle/drVf7WUgmubFcJCR9",
+    "page": "https://sis.edu.kg/careers/",
+    "found": "2026-10-17",
+    "note": "Sky International School — Kyrgyzstan"
+  },
+  "international-school-pemba|mozambique": {
+    "kind": "online",
+    "url": "https://form.jotform.com/212712192460549",
+    "page": "https://woodroseschool.co.mz/careers",
+    "found": "2026-10-17",
+    "note": "International School of Pemba — Mozambique"
+  },
+  "gimnasio-del-norte-international-school|colombia": {
+    "kind": "online",
+    "url": "https://form.jotform.com/232705247713050",
+    "page": "https://www.gimnasiodelnorte.edu.co/extrabajadores/",
+    "found": "2026-10-17",
+    "note": "Gimnasio del Norte International School — Colombia"
+  },
+  "gimnasio-del-norte-school|colombia": {
+    "kind": "online",
+    "url": "https://form.jotform.com/232705247713050",
+    "page": "https://www.gimnasiodelnorte.edu.co/extrabajadores/",
+    "found": "2026-10-17",
+    "note": "Gimnasio del Norte School — Colombia"
+  },
+  "cloud-forest-school|costa-rica": {
+    "kind": "online",
+    "url": "https://forms.gle/NisJ5D1vo1JMMWKU8",
+    "page": "https://cloudforestschool.org/volunteer-opportunities/",
+    "found": "2026-10-17",
+    "note": "Cloud Forest School — Costa Rica"
+  },
+  "colegio-jorge-washington|colombia": {
+    "kind": "online",
+    "url": "https://www.jotform.com/assign/232434859055663/RDFnM1ZyalpjNll6RXFzRFA2Y2Z0SFVVNE0yRWpEYWJldm85Qi9sTFdITVpuNjVsaERja3FZZWx2d0cyaHErZSswSGRXMGF0VmpiYTAzZHFPcXVJVFRoUXBJcFphTW45MC9semFNMGxVQW5BdkkyK2NOMExOdXNsNWwxNUVlUG8=",
+    "page": "https://cojowa.edu.co/jobs",
+    "found": "2026-10-17",
+    "note": "Colegio Jorge Washington — Colombia"
+  },
+  "alliance-academy-international|ecuador": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSf1XIigZgRbS6QVKGOGQpf_bsG_nNJr7sWwFlCjsOb0d9kMNg/viewform?usp=dialog",
+    "page": "https://alliance.k12.ec/en/work-with-us/",
+    "found": "2026-10-17",
+    "note": "Alliance Academy International — Ecuador"
+  },
+  "somerset-college-gold-coast|australia": {
+    "kind": "online",
+    "url": "https://somersetemployment.wufoo.com/forms/m1tir1na0lmqtgt/",
+    "page": "https://www.somerset.qld.edu.au/our-college/employment-opportunities",
+    "found": "2026-10-17",
+    "note": "Somerset College - Gold Coast — Australia"
+  },
+  "santa-maria-college|australia": {
+    "kind": "online",
+    "url": "https://9rq7ku50alm.typeform.com/to/ZPWuE5GB",
+    "page": "https://www.santamaria.wa.edu.au/employment/",
+    "found": "2026-10-17",
+    "note": "Santa Maria College — Australia"
+  },
+  "kardinia-international-college|australia": {
+    "kind": "pdf",
+    "url": "https://media.digistormhosting.com.au/kic-au-vic-287-website-2022/content/Application-for-Employment-Form-Nov-2025.pdf?v=1764115185",
+    "page": "https://www.kardinia.vic.edu.au/about/employment/current-employment-opportunities",
+    "found": "2026-10-17",
+    "note": "Kardinia International College — Australia"
+  },
+  "st-gregory-s-college-campbelltown|australia": {
+    "kind": "pdf",
+    "url": "https://www.stgregs.nsw.edu.au/documents/141/Employment_Application_Form_23102019_ObqqVDY.pdf",
+    "page": "https://www.stgregs.nsw.edu.au/explore/employment/",
+    "found": "2026-10-17",
+    "note": "St Gregory's College Campbelltown — Australia"
+  },
+  "golden-grove-lutheran-primary-school|australia": {
+    "kind": "pdf",
+    "url": "https://www.goldengrove.sa.edu.au/wp-content/uploads/2024/06/Employment-Application-and-Privacy-Collection-Notice.pdf",
+    "page": "https://www.goldengrove.sa.edu.au/parents-community/employment-opportunities/employment-opportunities/",
+    "found": "2026-10-17",
+    "note": "Golden Grove Lutheran Primary School — Australia"
+  },
+  "istanbul-international-community-school|turkey": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSduCOtDBDEeQrMwjSSsQHf3Rzckb_8o-ny_rDT556aDg5pbPQ/viewform",
+    "page": "https://www.iics.k12.tr/employment/",
+    "found": "2026-10-17",
+    "note": "Istanbul International Community School — Turkey"
+  },
+  "mef-international-school-istanbul|turkey": {
+    "kind": "pdf",
+    "url": "https://www.mefis.k12.tr/istanbul/downloads/mef-is-istanbul-application-form-2026-2027.pdf",
+    "page": "https://www.mefis.k12.tr/istanbul/human-resources/vacancies/",
+    "found": "2026-10-17",
+    "note": "MEF International School Istanbul — Turkey"
+  },
+  "qsi-international-school-dili|timor-leste": {
+    "kind": "online",
+    "url": "https://forms.office.com/e/QNniXWGqj2",
+    "page": "https://www.qsi.org/careers",
+    "found": "2026-10-17",
+    "note": "QSI International School of Dili — Timor-Leste"
+  },
+  "international-school-suva-iss-fiji|fiji": {
+    "kind": "online",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLScYCox0Vln2lzJ4sZB7UoFw7RI_f3xkkxsZEXaHSOCp71P2hA/viewform",
+    "page": "https://iss.school.fj/join/teach-work-at-iss/",
+    "found": "2026-10-17",
+    "note": "International School Suva (ISS Fiji) — Fiji"
+  },
+  "international-school-seychelles|seychelles": {
+    "kind": "pdf",
+    "url": "http://iss.sc/wp-content/uploads/2025/01/Application-form-for-employment-at-ISS.pdf",
+    "page": "http://iss.sc/vacancies/",
+    "found": "2026-10-17",
+    "note": "International School Seychelles — Seychelles"
+  },
+  "british-school-paris|france": {
+    "kind": "pdf",
+    "url": "https://www.britishschool.fr/wp-content/uploads/2024/07/V2-Teaching-Application-fillable-form-2021.pdf",
+    "page": "https://www.britishschool.fr/employment-opportunities/current-vacancies/",
+    "found": "2026-10-17",
+    "note": "The British School of Paris — France"
+  }
+}

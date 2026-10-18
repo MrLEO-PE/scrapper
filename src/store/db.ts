@@ -21,6 +21,9 @@ import { salaryToUsdAverage } from "../enrich/salary.ts";
 import { benchmarkAverage } from "../enrich/benchmarks.ts";
 import type { Job, Provenance, Salary, SchoolProfile, SourceId } from "../core/types.ts";
 import { knownCareerEmail } from "../enrich/knownemails.ts";
+import { addressesFor, recordAddresses } from "../addressbook.ts";
+import { classifyEmail } from "../enrich/email.ts";
+import { sameDomain } from "../enrich/careerscan.ts";
 
 export type JobStatus = "open" | "stale" | "closed";
 
@@ -803,6 +806,13 @@ export function upsertSchool(
       p.fees?.low ?? null, p.fees?.high ?? null, p.fees?.currency ?? null,
       markEnriched ? (p.enrichedAt ?? now) : null, now,
     );
+
+  // The columns above keep one best address; the address book keeps every one ever seen.
+  recordAddresses(
+    schoolKeyToUse,
+    [p.schoolEmail?.value, p.careerEmail?.value, p.contactEmail?.value, ...(p.allEmails ?? []).map((e) => e.email)],
+    "crawl",
+  );
 }
 
 export interface SchoolRow {
@@ -825,6 +835,8 @@ export interface SchoolRow {
   contact_name: string | null;
   contact_role: string | null;
   contact_email: string | null;
+  /** Every address ever seen for this school, from the address book. It never shrinks. */
+  known_addresses?: string[];
   school_hook: string | null;
   pe_hook: string | null;
   emails_json: string | null;
@@ -941,6 +953,38 @@ export function getSchools(keys?: string[]): Map<string, SchoolRow> {
   for (const r of rows) {
     const byHand = knownCareerEmail(r.school_key);
     if (byHand) r.career_email = byHand.email;
+
+    // Every address ever seen, whichever one the last crawl picked.
+    const seen = addressesFor(r.school_key).map((a) => a.e);
+    r.known_addresses = seen;
+    if (!seen.length) continue;
+
+    // Who to write to, in this order: (1) the best HR / recruitment address on file,
+    // (2) failing that, the best of any address on file. An address the crawl picked
+    // yields to a better one found earlier or by another route; nothing is deleted,
+    // because the book keeps them all.
+    const site = r.website ? (/^https?:/i.test(r.website) ? r.website : `https://${r.website}`) : null;
+    // Only addresses on the school's own web domain can replace or fill a choice. Without that
+    // check a record that was once merged with a neighbour (two campuses of one group, a
+    // directory page) could hand the school someone else's address. Group inboxes stay as
+    // the stored column has them, and every address stays in the book either way.
+    const pool = site ? seen.map((e) => classifyEmail(e, "", "html")).filter((c) => sameDomain(c.email, site)) : [];
+    if (!pool.length) continue;
+    const rank = (c: { score: number }) => c.score;
+
+    if (!byHand) {
+      const hr = pool.filter((c) => c.kind === "careers" || c.kind === "hr").sort((a, b) => rank(b) - rank(a))[0];
+      const current = r.career_email ? classifyEmail(r.career_email, "", "html") : undefined;
+      const currentIsHr = current && (current.kind === "careers" || current.kind === "hr");
+      if (hr && (!currentIsHr || hr.score > current!.score)) r.career_email = hr.email;
+    }
+    if (!r.career_email && !r.contact_email && !r.school_email) {
+      const any = [...pool].sort((a, b) => rank(b) - rank(a))[0];
+      if (any) r.school_email = any.email;
+    } else if (!r.school_email) {
+      const general = pool.filter((c) => c.kind === "info" || c.kind === "admin").sort((a, b) => rank(b) - rank(a))[0];
+      if (general) r.school_email = general.email;
+    }
   }
   return new Map(rows.map((r) => [r.school_key, r]));
 }

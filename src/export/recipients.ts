@@ -30,6 +30,9 @@ import { ledgerState } from "../ledger.ts";
 import { loadSentLog, monthsSinceSent, type SentRecord } from "../sentlog.ts";
 import { loadSkipLog, type SkipRecord } from "../skiplog.ts";
 import { RANK_BASIS_LABEL } from "../match/packagevalue.ts";
+import { knownForm, type FormKind } from "../enrich/knownforms.ts";
+import { classifyEmail } from "../enrich/email.ts";
+import { queryJobs } from "../store/db.ts";
 
 export type RecipientTier = "careers" | "named" | "general";
 /** unique: a fact held for this school alone. none: the letter is written without a hook. group: a shared inbox. */
@@ -66,6 +69,10 @@ export interface Recipient {
   lastSent: SentRecord | undefined;
   /** Marked not interested, from the permanent record. */
   skipped: SkipRecord | undefined;
+  /** Every other address on file for these schools. Any of them reaches the school, and a letter can be forwarded from it. */
+  others: { email: string; kind: string; score: number }[];
+  /** The school's application form to fill in alongside the letter, when one is known. */
+  form: { kind: FormKind; url: string; school: string } | undefined;
   monthsSinceSent: number | null;
 }
 
@@ -109,6 +116,13 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string, s
   const rankedIn = new Map<string, number>();
   for (const s of allSchools) if (s.country && s.country_rank != null) rankedIn.set(s.country, (rankedIn.get(s.country) ?? 0) + 1);
 
+  // Forms attached to a school's own adverts, for schools whose careers page links none.
+  const advertForms = new Map<string, { kind: FormKind; url: string }>();
+  for (const j of queryJobs({ peOnly: false, status: "any" })) {
+    if (j.school_key && j.app_form_url && (j.app_form === "word" || j.app_form === "pdf" || j.app_form === "online") && !advertForms.has(j.school_key))
+      advertForms.set(j.school_key, { kind: j.app_form, url: j.app_form_url });
+  }
+
   const recipients: Recipient[] = [];
   for (const [email, { tier, schools }] of groups) {
     const rank = schools.reduce<number | null>(
@@ -141,6 +155,20 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string, s
       rankBasis,
       lastSent: rec,
       skipped: skipLog.get(email),
+      others: [...new Set(schools.flatMap((s) => s.known_addresses ?? []))]
+        .filter((a) => a !== email)
+        .map((a) => {
+          const c = classifyEmail(a, "", "html");
+          return { email: a, kind: c.kind, score: c.score };
+        })
+        .sort((a, b) => b.score - a.score || a.email.localeCompare(b.email)),
+      form: (() => {
+        for (const s of schools) {
+          const f = knownForm(s.school_key) ?? advertForms.get(s.school_key);
+          if (f) return { kind: f.kind, url: f.url, school: s.name };
+        }
+        return undefined;
+      })(),
       monthsSinceSent: monthsSinceSent(rec),
     };
 

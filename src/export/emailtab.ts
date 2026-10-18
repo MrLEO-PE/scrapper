@@ -9,6 +9,7 @@
  */
 
 import type { Recipient } from "./recipients.ts";
+import { FORM_LABEL } from "../enrich/knownforms.ts";
 
 const esc = (s: unknown): string =>
   String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -67,7 +68,24 @@ export function emailTabBody(recipients: Recipient[]): string {
     <a class="em-btn" href="${esc(gmailComposeUrl(r.email, r.subject, r.body))}" target="_blank" rel="noopener">open in Gmail</a>`
       : `<span class="em-warn">NEEDS: ${esc(r.missing.join(", "))}</span>`;
 
-    return `  <li class="em-item" data-email="${esc(r.email)}" data-country="${esc(r.country ?? "")}" data-tier="${esc(r.tier)}" data-fact="${esc(r.factQuality)}" data-applied-at="${esc(sentDate)}" data-skipped-at="${esc(skipDate)}" data-recent="${r.appliedRecently ? "1" : "0"}" data-rank="${r.rank ?? ""}" data-share="${r.rankShare != null ? r.rankShare.toFixed(4) : ""}" data-idx="${idx}">
+    // The school's own form, to fill in beside the letter. Opens in its own tab.
+    const formLink = r.form
+      ? `<a class="em-btn em-form" href="${esc(r.form.url)}" target="_blank" rel="noopener" title="${esc(r.form.school)} asks for this form with an application">📄 application form (${esc(FORM_LABEL[r.form.kind])})</a>`
+      : "";
+
+    // Every other address on file. Nothing is dropped: any of them reaches the school.
+    const KIND: Record<string, string> = { careers: "careers", hr: "HR", principal: "principal", info: "info", admin: "admin", other: "" };
+    const chip = (o: Recipient["others"][number]) =>
+      `<a class="em-addr" href="mailto:${esc(o.email)}">${esc(o.email)}</a>${KIND[o.kind] ? ` <i>${esc(KIND[o.kind]!)}</i>` : ""}`;
+    const shown = r.others.slice(0, 5);
+    const rest = r.others.slice(5);
+    const othersHtml = r.others.length
+      ? `<p class="nr-meta em-others">other addresses on file (any of these reaches the school and can be forwarded): ${shown.map(chip).join(" · ")}${
+          rest.length ? ` <details class="em-more"><summary>+${rest.length} more</summary>${rest.map(chip).join(" · ")}</details>` : ""
+        }</p>`
+      : "";
+
+    return `  <li class="em-item" data-email="${esc(r.email)}" data-country="${esc(r.country ?? "")}" data-tier="${esc(r.tier)}" data-fact="${esc(r.factQuality)}" data-applied-at="${esc(sentDate)}" data-skipped-at="${esc(skipDate)}" data-recent="${r.appliedRecently ? "1" : "0"}" data-form="${r.form ? "1" : "0"}" data-rank="${r.rank ?? ""}" data-share="${r.rankShare != null ? r.rankShare.toFixed(4) : ""}" data-idx="${idx}">
     <label class="tick"><input type="checkbox" class="em-pick" data-mark="rcpt|${esc(r.email)}"><span class="box" aria-hidden="true"></span></label>
     <div>
       <p class="nr-name"><a class="em-mailto" href="mailto:${esc(r.email)}">${esc(r.email)}</a>
@@ -85,6 +103,8 @@ export function emailTabBody(recipients: Recipient[]): string {
         r.skippedCount ? `${r.skippedCount} role${r.skippedCount === 1 ? "" : "s"} marked not interested` : "",
       ].filter(Boolean).join(" · ")}</p>` : ""}
       ${r.flags.length ? `<p class="nr-meta em-warn">check: ${esc(r.flags.join(" · "))}</p>` : ""}
+      ${othersHtml}
+      ${r.form ? `<p class="nr-meta em-warn">this school asks for an application form — fill it in and attach it to the email: ${formLink}</p>` : ""}
       ${body}
     </div>
   </li>`;
@@ -144,6 +164,7 @@ export function emailTabBody(recipients: Recipient[]): string {
     <option value="skipped">Not interested</option>
     <option value="all">All</option>
   </select>
+  <label class="em-check"><input type="checkbox" id="emFormOnly"> has an application form</label>
   <label class="em-check"><input type="checkbox" id="emHideApplied" checked> hide schools I applied to in the last 60 days</label>
 </div>
 
@@ -192,6 +213,12 @@ export const EMAIL_TAB_CSS = `
   button.em-mark.em-m-skip.done { border-color: var(--muted); background: color-mix(in srgb, var(--muted) 20%, transparent); }
   li.em-item.em-applied { border-left: 3px solid #1f883d; background: color-mix(in srgb, #1f883d 8%, transparent); }
   li.em-item.em-skipped { opacity: .55; }
+  .em-others { font-size: 12px; }
+  .em-others i { font-style: normal; font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+  .em-others a.em-addr { color: inherit; }
+  details.em-more { display: inline; }
+  details.em-more summary { display: inline; cursor: pointer; color: var(--muted); }
+  a.em-form { border-color: var(--warn); color: var(--warn); font-weight: 600; margin: 0 0 0 4px; }
   .em-preview { margin: 6px 0; }
   .em-preview summary { cursor: pointer; font-size: 12.5px; color: var(--muted); }
   .em-preview pre { white-space: pre-wrap; font: 12.5px/1.5 ui-monospace, monospace; background: var(--head); border: 1px solid var(--line); border-radius: 6px; padding: 10px; margin: 6px 0 0; }
@@ -222,6 +249,7 @@ export const EMAIL_TAB_SCRIPT = `
   var sortSel = document.getElementById("emSort");
   var readyOnly = document.getElementById("emReady");
   var statusSel = document.getElementById("emStatus");
+  var formOnly = document.getElementById("emFormOnly");
   var hideApplied = document.getElementById("emHideApplied");
   var counter = document.getElementById("emCounter");
 
@@ -326,7 +354,7 @@ export const EMAIL_TAB_SCRIPT = `
       var want = statusSel.value;
       var matchesStatus = want === "all" || (li.dataset.state || "undecided") === want;
       var matchesApplied = !hideApplied.checked || li.dataset.recent !== "1";
-      var show = matchesText && matchesCountry && matchesTier && matchesReady && matchesStatus && matchesApplied && matchesRank;
+      var show = matchesText && matchesCountry && matchesTier && matchesReady && matchesStatus && matchesApplied && matchesRank && (!formOnly.checked || li.dataset.form === "1");
       li.style.display = show ? "" : "none";
       if (show) visible++;
     });
@@ -335,7 +363,7 @@ export const EMAIL_TAB_SCRIPT = `
   }
 
   [q, country, tier].forEach(function (el) { el.addEventListener("input", applyFilters); });
-  [readyOnly, statusSel, hideApplied, rankSel].forEach(function (el) { el.addEventListener("change", applyFilters); });
+  [readyOnly, statusSel, hideApplied, rankSel, formOnly].forEach(function (el) { el.addEventListener("change", applyFilters); });
   // Ordering: the page is built best-country-rank first within each country; this reorders in place.
   var original = items.slice();
   function applySort() {

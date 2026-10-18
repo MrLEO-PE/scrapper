@@ -189,7 +189,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f data/jobs.db
+          git add -f data/jobs.db data/address-book.jsonl
 
           if git diff --staged --quiet; then
             echo "Database unchanged — nothing to commit."

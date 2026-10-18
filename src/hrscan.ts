@@ -15,6 +15,8 @@ import { log } from "./core/logger.ts";
 import { mapLimit } from "./core/http.ts";
 import { getSchools, type SchoolRow } from "./store/db.ts";
 import { scanSchool, type Candidate } from "./enrich/careerscan.ts";
+import { FORMS_PATH, knownForm, resetForms, type FormKind } from "./enrich/knownforms.ts";
+import { recordAddresses } from "./addressbook.ts";
 
 const PATH = join(process.cwd(), "config", "school-emails.json");
 
@@ -25,6 +27,15 @@ export interface HrScanOptions {
   limit?: number;
   concurrency?: number;
   dryRun?: boolean;
+  /** Also look for each school's application form, and scan schools that already have an HR address. */
+  forms?: boolean;
+}
+
+export interface FormHit {
+  school: SchoolRow;
+  kind: FormKind;
+  url: string;
+  page: string;
 }
 
 export interface HrScanHit {
@@ -46,21 +57,27 @@ export function targets(opts: HrScanOptions = {}): SchoolRow[] {
   for (const list of byCountry.values()) {
     const ranked = list.sort((a, b) => (a.country_rank ?? 0) - (b.country_rank ?? 0));
     const n = Math.max(1, Math.ceil(ranked.length * share));
-    out.push(...ranked.slice(0, n).filter((s) => !s.career_email && s.website));
+    // Looking for forms means visiting schools that already have an address too.
+    out.push(...ranked.slice(0, n).filter((s) => (opts.forms || !s.career_email) && s.website));
   }
   return opts.limit ? out.slice(0, opts.limit) : out;
 }
 
-export async function runHrScan(opts: HrScanOptions = {}): Promise<{ scanned: number; hits: HrScanHit[] }> {
+export async function runHrScan(opts: HrScanOptions = {}): Promise<{ scanned: number; hits: HrScanHit[]; formHits: FormHit[] }> {
   const list = targets(opts);
   log.step(`Scanning ${list.length} schools' careers pages`);
   const hits: HrScanHit[] = [];
+  const formHits: FormHit[] = [];
   let done = 0;
 
   await mapLimit(list, opts.concurrency ?? 6, async (school) => {
     try {
       const r = await scanSchool(school.website!);
-      if (r.best) hits.push({ school, best: r.best, others: r.others });
+      // Nothing seen is thrown away, whether or not it is the address chosen.
+      recordAddresses(school.school_key, r.addresses, "careers-page scan");
+      // An address is only wanted where the school has none yet.
+      if (r.best && !school.career_email) hits.push({ school, best: r.best, others: r.others });
+      if (opts.forms && r.form && !knownForm(school.school_key)) formHits.push({ school, kind: r.form.kind as FormKind, url: r.form.url!, page: r.form.page });
     } catch (err) {
       log.debug(`${school.name}: ${(err as Error).message}`);
     }
@@ -81,5 +98,16 @@ export async function runHrScan(opts: HrScanOptions = {}): Promise<{ scanned: nu
     }
     writeFileSync(PATH, JSON.stringify(file, null, 2) + "\n");
   }
-  return { scanned: list.length, hits };
+  if (!opts.dryRun && formHits.length) {
+    const file = (existsSync(FORMS_PATH) ? JSON.parse(readFileSync(FORMS_PATH, "utf8")) : {}) as Record<string, unknown>;
+    if (!file["//"]) file["//"] = "Application forms linked from a school's careers pages (found by hr-scan --forms). Each says which page it came from.";
+    const day = new Date().toISOString().slice(0, 10);
+    for (const { school, kind, url, page } of formHits) {
+      if (file[school.school_key]) continue;
+      file[school.school_key] = { kind, url, page, found: day, note: `${school.name} — ${school.country}` };
+    }
+    writeFileSync(FORMS_PATH, JSON.stringify(file, null, 2) + "\n");
+    resetForms();
+  }
+  return { scanned: list.length, hits, formHits };
 }

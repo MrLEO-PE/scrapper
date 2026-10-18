@@ -679,14 +679,34 @@ async function main(): Promise<void> {
       break;
     }
 
+    case "address-book": {
+      // Every address ever seen for a school; nothing is removed from it.
+      // npm run address-book -- status | backfill <db...> | history
+      const ab = await import("./addressbook.ts");
+      const sub = args.positional[0];
+      if (sub === "history") {
+        const r = await ab.backfillFromGitHistory(str(args, "ref") ?? "origin/main");
+        log.ok(`replayed ${r.versions} committed databases: ${r.added} addresses added to the book`);
+      } else if (sub === "backfill" && args.positional.length > 1) {
+        for (const f of args.positional.slice(1)) log.ok(`${f}: ${await ab.backfillFromDb(f, `file ${f.split(/[\/]/).pop()}`)} added`);
+      } else if (sub !== "status") log.error("npm run address-book -- status | backfill <db...> | history");
+      const s = ab.addressBookStatus();
+      log.plain(`  address book: ${s.addresses} addresses across ${s.schools} schools`);
+      break;
+    }
+
     case "hr-scan": {
       // npm run hr-scan -- [--top 35] [--country Thailand] [--limit N] [--dry-run]
       const { runHrScan } = await import("./hrscan.ts");
       const r = await runHrScan({
         top: num(args, "top"), country: str(args, "country"), limit: num(args, "limit"),
-        concurrency: num(args, "concurrency"), dryRun: bool(args, "dry-run"),
+        concurrency: num(args, "concurrency"), dryRun: bool(args, "dry-run"), forms: bool(args, "forms"),
       });
       log.step(`Found an HR address for ${r.hits.length} of ${r.scanned} schools${bool(args, "dry-run") ? " (dry run — nothing saved)" : ""}`);
+      if (bool(args, "forms")) {
+        log.step(`Found an application form for ${r.formHits.length} schools`);
+        for (const f of r.formHits) log.plain(`  ${(f.school.country ?? "").padEnd(14)} ${f.school.name.slice(0, 40).padEnd(40)} ${f.kind.padEnd(6)} ${f.url}`);
+      }
       for (const h of r.hits.sort((a, b) => (a.school.country ?? "").localeCompare(b.school.country ?? "") || (a.school.country_rank ?? 0) - (b.school.country_rank ?? 0)))
         log.plain(`  ${(h.school.country ?? "").padEnd(14)} ${String(h.school.country_rank ?? "").padStart(3)}  ${h.school.name.slice(0, 44).padEnd(44)} ${h.best.email}  [${h.best.kind}]`);
       break;

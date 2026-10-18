@@ -1,0 +1,5 @@
+# Append-only logs: when two copies each add lines, keep both rather than conflict.
+data/address-book.jsonl merge=union
+data/sent-log.jsonl merge=union
+data/skip-log.jsonl merge=union
+data/applications.jsonl merge=union

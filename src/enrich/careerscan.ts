@@ -22,6 +22,8 @@
 import { fetchText } from "../core/http.ts";
 import { decodeCloudflareEmails, jsonLdEmails } from "./email.ts";
 import { htmlToText } from "../core/text.ts";
+import { detectApplicationForm } from "../match/appform.ts";
+import type { ApplicationForm } from "../core/types.ts";
 
 /** An address that is about hiring, not about the staff list or the teaching programme. */
 const STRONG_URL =
@@ -178,10 +180,60 @@ export function careerLinks(html: string, base: string): string[] {
     .slice(0, 5);
 }
 
+/** Every link on a page with its words, for finding a form to download. */
+export function pageLinks(html: string, base: string): { url: string; text: string }[] {
+  const out: { url: string; text: string }[] = [];
+  for (const m of html.matchAll(/<a\b[^>]*?href=["']([^"'#]+)["'][^>]*>(?=([\s\S]{0,200}))/gi)) {
+    if (/^(mailto|tel|javascript):/i.test(m[1]!)) continue;
+    try {
+      out.push({ url: new URL(m[1]!, base).href, text: htmlToText((m[2] ?? "").split(/<\/a>/i)[0] ?? "").slice(0, 100) });
+    } catch {
+      /* not a link */
+    }
+  }
+  return out;
+}
+
+/** Words that make a link the form itself, not a page about applying. */
+const APPLICATION_FORM_WORDS = /\b(application\s+form|form\s+of\s+application|application\s+for\s+employment|employment\s+application|staff\s+application|teacher\s+application|job\s+application\s+form|candidate\s+(application|details)\s+form)\b/i;
+const NOT_FORM_WORDS = /\b(admission|admissions|enrol|enrolment|enrollment|student|students|pupil|scholarship|parent|parents|visit|tour|summer|camp|holiday|club|clubs|trial|non[\s-]?teaching|support[\s-]+staff|waitlist|sign[_\s-]?in|register\s+your\s+child)\b/i;
+/** Student-admissions platforms: whatever their link says, the form is for a family. */
+const STUDENT_PLATFORM = /openapply|fsenrollment|ravenna|veracross|schoolmint|sycamore|isams|gradelink|enrolmy|admissionsplus|myschoolapp/i;
+
+/** A hosted form service: the link itself is the form. */
+const FORM_SERVICE = /docs\.google\.com\/(forms|document)|forms\.gle|forms\.office\.com|sharepoint\.com|jotform|typeform|tally\.so|formstack|wufoo|airtable|smartsheet|fillout/i;
+/** Words that put a plain page of a school's own site on the staff side. */
+const STAFF_WORDS = /staff|teacher|teaching|employ|job|career|recruit|vacanc|faculty|educator|applicant|candidate|work/i;
+
+/** An application form linked from a careers page: a file to fill in, or an online form. */
+export function formOnPage(html: string, pageUrl: string): (ApplicationForm & { page: string }) | undefined {
+  // Forms for students and parents are not what a teacher fills in.
+  const links = pageLinks(html, pageUrl).filter((l) => !NOT_FORM_WORDS.test(`${l.text} ${l.url}`) && !STUDENT_PLATFORM.test(l.url));
+  const found = detectApplicationForm({ links });
+  // Only a form with an address to open counts: "a form exists somewhere" cannot be clicked.
+  // A plain page of the school's own site called "application form" is usually for families unless it says staff.
+  const isStaffy = (url: string, words?: string) => FORM_SERVICE.test(url) || /\.(pdf|docx?|odt|rtf)(\?|$)/i.test(url) || STAFF_WORDS.test(`${url} ${words ?? ""}`);
+  if (found.kind !== "none" && found.url && isStaffy(found.url, found.evidence)) return { ...found, page: pageUrl };
+
+  // A link worded as the form itself, even where the address has no file extension
+  // (a Drive file, a download script, a Google Doc).
+  for (const l of links) {
+    if (!APPLICATION_FORM_WORDS.test(l.text) || NOT_FORM_WORDS.test(l.text)) continue;
+    if (!(FORM_SERVICE.test(l.url) || /\.(pdf|docx?|odt|rtf)(\?|$)/i.test(l.url) || STAFF_WORDS.test(`${l.url} ${l.text}`))) continue;
+    const kind: ApplicationForm["kind"] = /\.docx?(\?|$)|\.odt(\?|$)|\.rtf(\?|$)|\/document\//i.test(l.url) ? "word" : /\.pdf(\?|$)/i.test(l.url) ? "pdf" : "online";
+    return { kind, url: l.url, evidence: l.text, page: pageUrl };
+  }
+  return undefined;
+}
+
 export interface ScanResult {
   best?: Candidate;
   others: Candidate[];
   pagesRead: number;
+  /** The school's application form, when its careers pages link one. */
+  form?: ApplicationForm & { page: string };
+  /** Every address seen on the pages read, hiring or not. All of them are kept. */
+  addresses: string[];
 }
 
 export async function scanSchool(site: string): Promise<ScanResult> {
@@ -203,7 +255,7 @@ export async function scanSchool(site: string): Promise<ScanResult> {
     try {
       origin = new URL(site).origin;
     } catch {
-      return { others: [], pagesRead: pages.length };
+      return { others: [], pagesRead: pages.length, addresses: [] };
     }
     const dir = site.endsWith("/") ? site : site + "/";
     for (const p of GUESS_PATHS) {
@@ -221,6 +273,13 @@ export async function scanSchool(site: string): Promise<ScanResult> {
       if (!prev || c.score > prev.score) byEmail.set(c.email, c);
     }
   }
+  // Downloadable files beat online forms, and a form on a careers page beats one on the homepage.
+  // A form on the homepage is as likely to be for families as for staff, so only careers pages count.
+  const forms = pages.filter((p) => p.career).map((p) => ({ f: formOnPage(p.html, p.url), career: true })).filter((x) => x.f);
+  const rank = (x: (typeof forms)[number]) => (x.f!.kind === "online" ? 0 : 2) + (x.career ? 1 : 0);
+  const form = forms.sort((a, b) => rank(b) - rank(a))[0]?.f;
+
   const ranked = [...byEmail.values()].sort((a, b) => b.score - a.score || (a.kind === "hr" ? -1 : 1));
-  return { best: ranked[0], others: ranked.slice(1), pagesRead: pages.length };
+  const addresses = [...new Set(pages.flatMap((p) => addressesOn(p.html)))];
+  return { best: ranked[0], others: ranked.slice(1), pagesRead: pages.length, form, addresses };
 }

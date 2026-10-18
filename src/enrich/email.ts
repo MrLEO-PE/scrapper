@@ -69,10 +69,14 @@ const KIND_RULES: { re: RegExp; kind: EmailKind; score: number }[] = [
   { re: /^(?:rh|drh|ik)(?:$|[._-])/i, kind: "hr", score: 0.85 },
   // Departmental abbreviations schools actually use: recdept, recruit-dept.
   { re: /^(?:rec|recruit(?:ment)?|hiring)[._-]?(?:dept|department|team|office)\b/i, kind: "careers", score: 0.93 },
-  { re: /^(?:hr|humanresources|human\.resources|people|peopleteam|personnel|hrdept|hr\.dept|hrteam)/i, kind: "hr", score: 0.92 },
+  // "hr" and "people" must stand alone or be followed by a separator: hradmissionsadminassistant@ is a
+  // run-on of several desks, not the HR inbox, and must not outrank ism-recruit@.
+  { re: /^(?:hr(?:$|[._\d-])|humanresources|human\.resources|people(?:$|[._-])|peopleteam|personnel|hrdept|hr\.dept|hrteam)/i, kind: "hr", score: 0.92 },
   { re: /(?:recruit|vacanc|career|hiring|employment)/i, kind: "careers", score: 0.88 },
   { re: /^(?:hr|people|personnel)[._-]/i, kind: "hr", score: 0.85 },
   { re: /(?:^|[._-])hr(?:$|[._-])/i, kind: "hr", score: 0.8 },
+  // hrmanager@, hrassistant@: an HR desk, but below an address that says recruitment outright.
+  { re: /^hr[a-z]/i, kind: "hr", score: 0.7 },
   { re: /^(?:principal|headteacher|head\.teacher|headmaster|headmistress|director|superintendent|ceo)/i, kind: "principal", score: 0.6 },
   /*
    * Admissions is the commonest address a school publishes and the commonest
@@ -92,6 +96,9 @@ const CAREERS_CONTEXT = /(?:career|vacanc|recruit|job|employment|work-with|join-
 
 export function classifyEmail(email: string, foundAt: string, via: string): DiscoveredEmail {
   const local = email.split("@")[0] ?? "";
+  // A careers counsellor helps pupils choose universities: never a hiring address,
+  // whichever route the address arrived by.
+  if (STUDENT_CAREERS_ADDRESS.test(local)) return { email: email.toLowerCase(), kind: "other", score: 0.1, foundAt, via };
   let kind: EmailKind = "other";
   let score = 0.25;
 
