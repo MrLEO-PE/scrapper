@@ -32,6 +32,50 @@ function gmailComposeUrl(to: string, subject: string, body: string): string {
   return `https://mail.google.com/mail/?${params.toString()}`;
 }
 
+/**
+ * Everything the letter builder needs about one school, as plain text.
+ *
+ * The first lines are exactly what was being pasted by hand — address, tier, fact
+ * status; school; place and rank; the checks — so the builder's instructions keep
+ * working. What follows is extra: the job, the school's site, who to address, the
+ * other addresses on file, the form, and what has already happened with this school.
+ */
+export function briefText(r: Recipient, metaLine: string): string {
+  const when = (iso: string): string => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  const lines: string[] = [
+    `${r.email} ${TIER_LABEL[r.tier]} ${FACT_LABEL[r.factQuality]}`,
+    "",
+    r.schools.map((s) => s.name).join(" / "),
+    "",
+    metaLine,
+  ];
+  if (r.flags.length) lines.push("", `check: ${r.flags.join(" · ")}`);
+  if (r.missing.length) lines.push("", `NEEDS: ${r.missing.join(", ")}`);
+
+  const b = r.brief;
+  const more: string[] = [];
+  more.push(b.jobs.length
+    ? `Job: ${b.jobs.map((j) => `${j.title}${r.schools.length > 1 ? ` (${j.school})` : ""} — ${j.url}${j.deadline ? ` — closes ${when(j.deadline)}` : ""}`).join(" | ")}`
+    : "Job: PE Teacher (no advertised role — a speculative application)");
+  if (b.website) more.push(`Website: ${b.website}`);
+  if (b.careersPage) more.push(`Careers page: ${b.careersPage}`);
+  if (b.principal) more.push(`Principal: ${b.principal}`);
+  if (b.curriculum.length) more.push(`Curriculum: ${b.curriculum.join(", ")}`);
+  if (b.schoolFact) more.push(`Fact about the school (from its own site): ${b.schoolFact}`);
+  if (b.peFact) more.push(`Fact about its PE / sport (from its own site): ${b.peFact}`);
+  if (r.others.length) more.push(`Other addresses on file: ${r.others.map((o) => o.email + (o.kind !== "other" ? ` (${o.kind})` : "")).join(", ")}`);
+  if (r.form) more.push(`Application form to fill in: ${FORM_LABEL[r.form.kind]} — ${r.form.url}`);
+  const history = [
+    ...r.applications.map((a) => `applied ${when(a.at)}: ${a.title}`),
+    r.lastSent ? `last emailed ${when(r.lastSent.date)}` : "",
+    r.skipped ? `marked not interested ${when(r.skipped.date)}` : "",
+    r.skippedCount ? `${r.skippedCount} advertised role(s) marked not interested` : "",
+  ].filter(Boolean);
+  if (history.length) more.push(`History: ${history.join(" · ")}`);
+  lines.push("", ...more);
+  return lines.join("\n");
+}
+
 export function emailTabBody(recipients: Recipient[]): string {
   const countries = [...new Set(recipients.map((r) => r.country).filter((c): c is string => !!c))].sort();
 
@@ -85,6 +129,8 @@ export function emailTabBody(recipients: Recipient[]): string {
         }</p>`
       : "";
 
+    const brief = briefText(r, meta);
+
     return `  <li class="em-item" data-email="${esc(r.email)}" data-country="${esc(r.country ?? "")}" data-tier="${esc(r.tier)}" data-fact="${esc(r.factQuality)}" data-applied-at="${esc(sentDate)}" data-skipped-at="${esc(skipDate)}" data-recent="${r.appliedRecently ? "1" : "0"}" data-form="${r.form ? "1" : "0"}" data-rank="${r.rank ?? ""}" data-share="${r.rankShare != null ? r.rankShare.toFixed(4) : ""}" data-idx="${idx}">
     <label class="tick"><input type="checkbox" class="em-pick" data-mark="rcpt|${esc(r.email)}"><span class="box" aria-hidden="true"></span></label>
     <div>
@@ -96,6 +142,7 @@ export function emailTabBody(recipients: Recipient[]): string {
         <button type="button" class="em-mark em-m-applied" title="Record that you sent your application to this address">mark applied</button>
         <button type="button" class="em-mark em-m-skip" title="Hide this address from your working list">not interested</button>
       </p>
+      <p class="nr-meta"><button type="button" class="em-btn primary em-copy em-brief" data-body="${esc(brief)}" title="One click: the address, school, place, rank, checks, job, website, principal, curriculum, other addresses, form and history — ready to paste into your letter builder">copy school data</button></p>
       <p class="nr-meta">${schoolLine}</p>
       ${meta ? `<p class="nr-meta">${meta}</p>` : ""}
       ${r.applications.length || r.skippedCount ? `<p class="nr-meta em-history${r.appliedRecently ? " em-recent" : ""}">${r.appliedRecently ? "⚠ you applied here recently — " : ""}${[

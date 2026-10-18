@@ -71,6 +71,18 @@ export interface Recipient {
   skipped: SkipRecord | undefined;
   /** Every other address on file for these schools. Any of them reaches the school, and a letter can be forwarded from it. */
   others: { email: string; kind: string; score: number }[];
+  /** What the letter builder needs to know about the school, gathered in one place. */
+  brief: {
+    website: string | null;
+    careersPage: string | null;
+    curriculum: string[];
+    /** Open PE vacancies at these schools, from the job boards. */
+    jobs: { title: string; url: string; deadline: string | null; school: string }[];
+    /** Who to address, and how sure that is. Null for a shared inbox. */
+    principal: string | null;
+    schoolFact: string | null;
+    peFact: string | null;
+  };
   /** The school's application form to fill in alongside the letter, when one is known. */
   form: { kind: FormKind; url: string; school: string } | undefined;
   monthsSinceSent: number | null;
@@ -123,6 +135,13 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string, s
       advertForms.set(j.school_key, { kind: j.app_form, url: j.app_form_url });
   }
 
+  // Open PE vacancies by school, for the brief that goes to the letter builder.
+  const openJobs = new Map<string, { title: string; url: string; deadline: string | null }[]>();
+  for (const j of queryJobs({ peOnly: true, status: "open" })) {
+    if (!j.school_key) continue;
+    openJobs.set(j.school_key, [...(openJobs.get(j.school_key) ?? []), { title: j.title, url: j.url, deadline: j.deadline_at }]);
+  }
+
   const recipients: Recipient[] = [];
   for (const [email, { tier, schools }] of groups) {
     const rank = schools.reduce<number | null>(
@@ -155,6 +174,22 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string, s
       rankBasis,
       lastSent: rec,
       skipped: skipLog.get(email),
+      brief: {
+        website: schools.find((s) => s.website)?.website ?? null,
+        careersPage: schools.find((s) => s.careers_url)?.careers_url ?? null,
+        curriculum: [...new Set(schools.flatMap((s) => { try { return s.curriculum_json ? (JSON.parse(s.curriculum_json) as string[]) : []; } catch { return []; } }))],
+        jobs: schools.flatMap((s) => (openJobs.get(s.school_key) ?? []).map((j) => ({ ...j, school: s.name }))),
+        principal: (() => {
+          if (schools.length !== 1) return null;
+          const pf = principalFor(schools[0]!);
+          if (!pf.principal) return null;
+          return pf.principalSource?.kind === "verified"
+            ? `${pf.principal} (confirmed on the school's own page)`
+            : `${pf.principal} — NOT confirmed (read from ${pf.principalSource?.where ?? "a job advert"}); check the school's own page before greeting by name`;
+        })(),
+        schoolFact: schools.length === 1 ? trustedSchoolHook(schools[0]!.school_hook) : null,
+        peFact: schools.length === 1 ? trustedPeHook(schools[0]!.pe_hook) : null,
+      },
       others: [...new Set(schools.flatMap((s) => s.known_addresses ?? []))]
         .filter((a) => a !== email)
         .map((a) => {
