@@ -23,15 +23,15 @@ const complete = {
 
 test("follows the model's order and wording of subject, greeting and opening", () => {
   const d = draftEmail(complete);
-  assert.equal(d.subject, "LEO SEVIN - Application Secondary PE Teacher");
+  assert.equal(d.subject, "Leo Sevin — Application: Secondary PE Teacher");
   const lines = d.body.split("\n");
   assert.equal(lines[0], "Dear Principal Anna Reyes and the HR Team,");
   assert.match(lines[2]!, /^I am applying for the Secondary PE Teacher position at Harbour Pine International School\. /);
   assert.match(lines[2]!, /8 years of experience/);
   assert.match(d.body, /I noticed a self-review at the end of each unit\./);
-  assert.match(d.body, /Here is what I would bring:/);
+  assert.match(d.body, /WHAT I WOULD BRING/);
   assert.match(d.body, /My contract ends in July 2027, so I can start in August 2027\./);
-  assert.match(d.body, /Kind regards,\nLeo SEVIN$/);
+  assert.match(d.body, /Kind regards,\nLeo SEVIN\nCoordinator and Physical Education Teacher$/);
 });
 
 test("no name found means the generic greeting, never a placeholder", () => {
@@ -75,12 +75,17 @@ test("never claims what the profile does not: no PYP, MYP, football or swimming 
   assert.doesNotMatch(d.body, /PYP|MYP|football|skiing|swimming/i);
 });
 
-test("the IGCSE tools bullet appears only when IGCSE or Cambridge is relevant", () => {
-  assert.match(draftEmail(complete).body, /IGCSE tools\./);
+test("the IGCSE Specialist bullet appears only when IGCSE or Cambridge is relevant, and there are always three bullets", () => {
+  const igcse = draftEmail(complete).body;
+  assert.match(igcse, /IGCSE Specialist\./);
+  assert.doesNotMatch(igcse, /Programmes and events\./);
+  assert.equal((igcse.match(/^• /gm) ?? []).length, 3);
   const plain = draftEmail({ ...complete, advertText: "Whole school PE.", curriculum: ["American"], peHook: "the sports hall" });
-  assert.doesNotMatch(plain.body, /IGCSE tools\./);
-  assert.match(plain.body, /PE assessment\./);
-  assert.match(plain.body, /Programme and events\./);
+  assert.doesNotMatch(plain.body, /IGCSE Specialist\./);
+  assert.match(plain.body, /Holistic assessment\./);
+  assert.match(plain.body, /Online tools\./);
+  assert.match(plain.body, /Programmes and events\./);
+  assert.equal((plain.body.match(/^• /gm) ?? []).length, 3);
 });
 
 test("the cell is the letter itself", () => {
@@ -102,7 +107,7 @@ test("tidies a shouted job title without mangling its acronyms", () => {
 
 test("the letter and subject use the tidied title", () => {
   const d = draftEmail({ ...complete, role: "PE TEACHER - SECONDARY" });
-  assert.equal(d.subject, "LEO SEVIN - Application PE Teacher - Secondary");
+  assert.equal(d.subject, "Leo Sevin — Application: PE Teacher - Secondary");
   assert.match(d.body, /PE Teacher - Secondary position/);
   assert.doesNotMatch(d.body, /PE TEACHER - SECONDARY/);
 });

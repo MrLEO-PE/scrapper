@@ -10,11 +10,11 @@ import { groupSpeculativeEmail, schoolFact, speculativeEmail } from "../src/expo
 
 test("opens with the speculative line, then who I am, with no role named", () => {
   const d = speculativeEmail({ school: "Harbour Pine International School", peHook: "the 25 metre pool" });
-  assert.equal(d.subject, "LEO SEVIN - Speculative application, PE Teacher");
-  assert.match(d.body, /introduce myself as a Physical Education teacher/);
-  assert.match(d.body, /Harbour Pine International School\. I am a PE teacher with 8 years/);
+  assert.equal(d.subject, "Leo Sevin — Application: PE Teacher");
+  // The instructions: say it is an application for a PE position, then who I am.
+  assert.match(d.body, /I am applying for a PE position at Harbour Pine International School\. I am a PE teacher with 8 years/);
   assert.match(d.body, /I noticed the 25 metre pool\./);
-  assert.doesNotMatch(d.body, /position at/);
+  assert.doesNotMatch(d.body, /writing speculatively|keep me in mind/);
 });
 
 test("a school fact is used only when one is held; accreditation and roll are never said back", () => {
@@ -58,4 +58,46 @@ test("schoolFact reports whether anything verified is held, without being used a
   assert.equal(schoolFact({ school: "X" }), null);
   assert.match(schoolFact({ school: "X", accreditation: "CIS, WASC" })!, /accredited by CIS and WASC/);
   assert.equal(schoolFact({ school: "X", schoolHook: "was founded in 1974" }), "X was founded in 1974");
+});
+
+// --- the new letter standard ---------------------------------------------------
+
+import { buildLetter, themeOf } from "../src/export/email.ts";
+
+test("the formatted version bolds the keywords and the plain version has no markers", () => {
+  const d = speculativeEmail({ school: "Harbour Pine", peHook: "the 25 metre pool" });
+  assert.doesNotMatch(d.body, /\*\*/);
+  for (const bold of ["8 years of experience", "PE coordination", "Cambridge IGCSE PE", "WHAT I WOULD BRING", "Holistic assessment.", "Online tools.", "fourth year of coordination", "5 core skills holistic assessment with levels 1 to 4", "August 2027"]) {
+    assert.ok(d.marked.includes(`**${bold}**`), `${bold} should be bold`);
+  }
+  assert.equal(d.marked.replace(/\*\*/g, ""), d.body);
+});
+
+test("the line after a school's own fact answers in kind: innovation, responsibility, holistic, understanding", () => {
+  assert.equal(themeOf("labs opened to primary students"), "innovation");
+  assert.equal(themeOf("students take responsibility for their learning"), "responsibility");
+  assert.equal(themeOf("a holistic, whole-child approach"), "holistic");
+  assert.equal(themeOf("conceptual understanding and inquiry"), "understanding");
+  assert.equal(themeOf("a 25 metre pool"), null);
+  const d = buildLetter({ schools: ["X"], peHook: "labs opened to primary students" });
+  assert.match(d.body, /I noticed labs opened to primary students\. I bring that spirit to PE/);
+});
+
+test("the letter is signed in full and the website is one link", () => {
+  const d = speculativeEmail({ school: "X", peHook: "the sports hall" });
+  assert.match(d.body, /Kind regards,\nLeo SEVIN\nCoordinator and Physical Education Teacher$/);
+  assert.equal((d.body.match(/my website: https:\/\/mrleo-pe\.github\.io\/CV\//g) ?? []).length, 1);
+});
+
+test("a group letter says PE positions, not a speculative introduction", () => {
+  const d = groupSpeculativeEmail({ schools: ["A School", "B School"] });
+  assert.match(d.body, /I am applying for PE positions across your schools: A School and B School\./);
+});
+
+test("a fact that was cut off mid-sentence is left out, and flagged, not said back", () => {
+  const d = speculativeEmail({ school: "X", peHook: "your sports programme covering rugby or hockey, having taught Physical Education as" });
+  assert.doesNotMatch(d.body, /I noticed/);
+  assert.ok(d.flags.some((f) => /cut off/.test(f)));
+  const fine = speculativeEmail({ school: "X", peHook: "your sports programme covering rugby and hockey" });
+  assert.match(fine.body, /I noticed your sports programme covering rugby and hockey\./);
 });

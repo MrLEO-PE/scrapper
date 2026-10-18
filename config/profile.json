@@ -5,25 +5,30 @@
   "website": "https://mrleo-pe.github.io/CV/",
   "websiteLabel": "my website",
   "signOff": "Kind regards",
-  "intro": "I am a PE teacher with 8 years of experience, including PE coordination and Cambridge IGCSE PE. I currently teach at Crescendo-HELP International School in Malaysia.",
-  "bridge": "I build my own digital tools to make progress visible to students and teachers in one place. Here is what I would bring:",
-  "bulletsWhenNoHook": "Here is what I would bring:",
+  "intro": "I am a PE teacher with **8 years of experience**, including **PE coordination** and **Cambridge IGCSE PE**. I currently teach at Crescendo-HELP International School in Malaysia.",
+  "bridge": "I improve and modernise PE with **online tools** that students and teachers use every day.",
+  "bulletsWhenNoHook": "",
   "bullets": [
     {
       "key": "assessment",
-      "text": "PE assessment. I co-wrote expectations for each sport and year group on four levels. In my self-assessment app, students rate themselves at the first and last lesson of each unit and I assess them at the first, middle and last. They earn house points for their performance and for the accuracy of their self-assessment, so progress is measured and rewarded."
+      "text": "**Holistic assessment.** In my **fourth year of coordination**, I use a **5 core skills holistic assessment with levels 1 to 4** that sets clear expectations for every sport and year group. In my self-assessment app, students rate themselves at the first and last lesson of a unit, and I assess them at the first, middle and last."
     },
     {
-      "key": "events",
-      "text": "Programme and events. At Saigon Star I led PE programming and assessment across the UK, IPC and IMYC curricula and introduced a House Team system. I now organise events in the JSAC and FOBISIA circuits."
+      "key": "tools",
+      "text": "**Online tools.** I build **online tools** for students and teachers: a gym app where students calculate their repetition maximum and start a training plan linked to their sport, plus bleep test and athletics trackers with house points."
     },
     {
       "key": "igcse",
       "when": "igcse|cambridge",
-      "text": "IGCSE tools. My online IGCSE PE workbook covers all 11 chapters of the Collins Cambridge IGCSE PE book: 187 questions checked against it, auto-marked quizzes and a leaderboard. My gym training app lets students calculate their repetition maximum (RM) easily and accurately, then start a muscular training plan with a clear intention linked to their sport."
+      "text": "**IGCSE Specialist.** I created an online workbook from the 11 chapters of the Collins Cambridge IGCSE PE book, with 187 checked questions, auto-marked quizzes and a leaderboard."
+    },
+    {
+      "key": "events",
+      "unless": "igcse|cambridge",
+      "text": "**Programmes and events.** At Saigon Star I led PE programming and assessment across the UK, IPC and IMYC curricula and introduced a House Team system. I organise events in the JSAC and FOBISIA circuits."
     }
   ],
-  "availability": "My contract ends in July 2027, so I can start in August 2027.",
+  "availability": "My contract ends in July 2027, so I can start in **August 2027**.",
   "availableFrom": "2027-08",
   "websiteLine": "You can see my teaching style, videos and apps on {website}",
   "closing": "Thank you for your time. I would welcome a short call to discuss how I could contribute to your PE department.",
@@ -51,11 +56,20 @@
     }
   ],
   "applyOpening": "I am applying for the {role} position at {school}.",
-  "speculativeOpening": "I am writing speculatively to introduce myself as a Physical Education teacher, and to ask that you keep me in mind for future PE openings at {school}.",
-  "groupOpening": "I am writing speculatively to introduce myself as a Physical Education teacher, about opportunities across your schools: {school}.",
+  "speculativeOpening": "I am applying for a PE position at {school}.",
+  "groupOpening": "I am applying for PE positions across your schools: {school}.",
   "adBridges": {
-    "assessment": "That is the system I have built: clear levels for each sport and year group, and a self-assessment app where students rate themselves and I record my own assessment.",
+    "assessment": "That is the system I have built: a **5 core skills holistic assessment with levels 1 to 4** for each sport and year group, and a self-assessment app where students rate themselves and I record my own assessment.",
     "events": "That is what I do now: I organise events in the JSAC and FOBISIA circuits, and at Saigon Star I led PE programming and introduced a House Team system.",
-    "igcse": "I teach Cambridge IGCSE PE, and I built an online IGCSE PE workbook and a gym training app for my students."
+    "igcse": "I teach Cambridge IGCSE PE, and I built an **online** IGCSE workbook and a gym training app for my students."
+  },
+  "subjectName": "Leo Sevin",
+  "title": "Coordinator and Physical Education Teacher",
+  "bringHeading": "WHAT I WOULD BRING",
+  "bridges": {
+    "innovation": "I bring that spirit to PE, with **online tools** that students and teachers use every day.",
+    "responsibility": "I bring the same trust to PE: my self-assessment app puts students in charge of their own progress.",
+    "holistic": "My **5 core skills holistic assessment with levels 1 to 4** is built on the same idea.",
+    "understanding": "My **online tools** help students understand why they move and train as they do, not only how."
   }
 }

@@ -108,6 +108,7 @@ export function emailTabBody(recipients: Recipient[]): string {
     const body = r.body
       ? `<details class="em-preview"><summary>preview letter</summary><pre>${esc(r.body)}</pre></details>
     <button type="button" class="em-btn primary em-copy" data-body="${esc(r.body)}">copy body</button>
+    <button type="button" class="em-btn primary em-copy-fmt" data-marked="${esc(r.marked)}" title="Copies the letter with its bold words and a working link, to paste straight into Gmail">copy formatted</button>
     <button type="button" class="em-btn em-copy" data-body="${esc(r.email)}">copy address</button>
     <a class="em-btn" href="${esc(gmailComposeUrl(r.email, r.subject, r.body))}" target="_blank" rel="noopener">open in Gmail</a>`
       : `<span class="em-warn">NEEDS: ${esc(r.missing.join(", "))}</span>`;
@@ -442,7 +443,48 @@ export const EMAIL_TAB_SCRIPT = `
     }).catch(function () { /* clipboard unavailable — mailto/select-all still work */ });
   }
 
+  // The letter as formatted text: bold where it is bold, and "my website" as a real link, so
+  // pasting it into Gmail keeps both. Plain text rides along for any app that wants it.
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function inline(s) {
+    return esc(s)
+      .replace(/\\*\\*(.+?)\\*\\*/g, "<b>$1</b>")
+      .replace(/my website: (https?:\\/\\/[^\\s<]+)/, function (m, u) { return '<a href="' + u + '">my website</a>'; });
+  }
+  function toHtml(marked) {
+    var out = [], bullets = [], para = [];
+    function flushPara() { if (para.length) { out.push("<p>" + para.join("<br>") + "</p>"); para = []; } }
+    function flushBullets() { if (bullets.length) { out.push("<ul>" + bullets.join("") + "</ul>"); bullets = []; } }
+    marked.split("\\n").forEach(function (line) {
+      if (line.indexOf("\\u2022 ") === 0) { flushPara(); bullets.push("<li>" + inline(line.slice(2)) + "</li>"); return; }
+      flushBullets();
+      if (line === "") { flushPara(); return; }
+      para.push(inline(line));
+    });
+    flushPara(); flushBullets();
+    return '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#222">' + out.join("") + "</div>";
+  }
+  function copyFormatted(btn, marked) {
+    var plain = marked.replace(/\\*\\*/g, ""), html = toHtml(marked);
+    var done = function () {
+      var original = btn.textContent;
+      btn.textContent = "copied!";
+      btn.classList.add("copied");
+      setTimeout(function () { btn.textContent = original; btn.classList.remove("copied"); }, 1400);
+    };
+    if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+      navigator.clipboard.write([new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([plain], { type: "text/plain" })
+      })]).then(done).catch(function () { copyText(btn, plain); });
+    } else {
+      copyText(btn, plain);
+    }
+  }
+
   list.addEventListener("click", function (e) {
+    var fmt = e.target.closest(".em-copy-fmt");
+    if (fmt) { copyFormatted(fmt, fmt.dataset.marked); return; }
     var btn = e.target.closest(".em-copy");
     if (!btn) return;
     copyText(btn, btn.dataset.body);

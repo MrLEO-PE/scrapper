@@ -32,14 +32,28 @@ export interface Bullet {
   key: string;
   /** Only used when the school's curriculum or advert matches this pattern. */
   when?: string;
+  /** Left out when the school's curriculum or advert matches this pattern (so exactly three bullets remain). */
+  unless?: string;
+  /** Words between ** ** are bold in the formatted version and plain in the plain one. */
   text: string;
 }
+
+/** What a school's own fact is about, so the line that follows it can answer in kind. */
+export type HookTheme = "innovation" | "responsibility" | "holistic" | "understanding";
 
 export interface Profile {
   name: string;
   website: string;
   websiteLabel: string;
   signOff: string;
+  /** The line under the name. */
+  title?: string;
+  /** How my name reads in a subject line. */
+  subjectName?: string;
+  /** Heading above the bullets. */
+  bringHeading?: string;
+  /** What follows a fact about the school, by what the fact is about. */
+  bridges?: Partial<Record<HookTheme, string>>;
   /** Who I am, in two short sentences. */
   intro: string;
   /** Closes the hook: what I already do, then what I would add. */
@@ -63,6 +77,8 @@ export interface Profile {
 export interface DraftEmail {
   /** The finished message, ready to paste. */
   body: string;
+  /** The same message with ** around the words that are bold, for the formatted copy. */
+  marked: string;
   subject: string;
   /** Only ever non-empty when no letter could be written at all. */
   missing: string[];
@@ -186,37 +202,59 @@ function listed(items: string[]): string {
   return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
+/** What a school's fact is about. First match wins; nothing matches, no theme, and the general bridge is used. */
+const THEMES: { theme: HookTheme; re: RegExp }[] = [
+  { theme: "innovation", re: /innovat|technolog|digital|\bSTEM\b|\blab(?:s|oratories)?\b|robot|coding|\bAI\b|research|forward[- ]think/i },
+  { theme: "responsibility", re: /responsib|independen|agency|leadership|service|self[- ]?(?:manage|direct|review|assess)|autonom|student[- ]led|take (?:the )?lead/i },
+  { theme: "holistic", re: /holistic|whole[- ]?(?:child|person)|well-?being|all-round|balanced|character/i },
+  { theme: "understanding", re: /inquir|conceptual|critical thinking|deep(?:er)? (?:understanding|learning)|understand/i },
+];
+
+export function themeOf(text: string): HookTheme | null {
+  return THEMES.find((x) => x.re.test(text))?.theme ?? null;
+}
+
+const plainOf = (marked: string): string => marked.replace(/\*\*/g, "");
+
 /**
  * The one builder behind every letter, so the three kinds cannot drift apart.
+ *
+ * Written to Leo_Sevin_Cover_Letter_Instructions: open with the position, then who I am; a
+ * short hook that is one verified fact about the school, bridged to what I already do;
+ * three bold-led bullets; availability and the website; a short close; the full sign-off.
  */
 export function buildLetter(i: LetterInputs): DraftEmail {
   const profile = loadProfile();
-  if (!profile) return { body: "", subject: "", missing: ["config/profile.json is missing"], flags: [] };
+  if (!profile) return { body: "", marked: "", subject: "", missing: ["config/profile.json is missing"], flags: [] };
 
   const flags: string[] = [];
   const group = i.schools.length > 1;
   const schoolText = listed(i.schools);
   const role = i.role ? tidyRole(i.role) : "";
 
-  const subject = role
-    ? `${profile.name.toUpperCase()} - Application ${role}`
-    : `${profile.name.toUpperCase()} - Speculative application, PE Teacher`;
+  // A stored fact that stops on a joining word ("…having taught Physical Education as") was cut off
+  // when it was read. Said back to a principal it is a broken sentence, so it is left out.
+  const dangling = /\b(?:as|a|an|the|of|and|or|to|in|for|with|at|by|on|from|that|which|is|are|such)\s*$/i;
+  const whole = (h?: string | null): string | null => (h && !dangling.test(h.trim()) ? h : null);
+  const peHook = whole(i.peHook);
+  const schoolHook = whole(i.schoolHook);
+  if ((i.peHook && !peHook) || (i.schoolHook && !schoolHook)) flags.push("a stored fact about this school was cut off mid-sentence, so it was left out — add one from their own site");
 
-  // Greeting. A name only when we hold one; never a placeholder.
+  const subject = `${profile.subjectName ?? profile.name} — Application: ${role || "PE Teacher"}`;
+
+  // Greeting. A name only when we hold one that a person confirmed; never a placeholder.
   let greeting = "Dear Principal and the HR Team,";
   if (!group && i.principal) {
     const src = i.principalSource;
     const name = bareName(i.principal);
     if (src?.kind === "verified") {
-      // A person confirmed this name, on the page named here, on the date shown.
       greeting = `Dear Principal ${name} and the HR Team,`;
     } else {
       /*
-       * Never used. Reading a name off a page by pattern cannot be made certain
-       * — menu words, the next line of text, a deputy — and a wrong name in an
-       * application is worse than none, so the greeting stays "Dear Principal"
-       * until a person confirms it. The candidate is offered in the flags with
-       * where it was read, so confirming takes a moment.
+       * Never used. Reading a name off a page by pattern cannot be made certain — menu words,
+       * the next line of text, a deputy — and a wrong name in an application is worse than none,
+       * so the greeting stays "Dear Principal" until a person confirms it. The candidate is
+       * offered in the flags with where it was read, so confirming takes a moment.
        */
       const where = src?.kind === "school-page" && src.where ? `read from ${src.where}` : src?.kind === "advert" ? "found only in a job advert" : "of unrecorded source";
       flags.push(`possible principal "${name}" (${where}) is NOT used — not confirmed. Check it on the school's own page; if right, run: npm run verify-name`);
@@ -234,29 +272,34 @@ export function buildLetter(i: LetterInputs): DraftEmail {
   const advert = i.advertText ?? "";
 
   /*
-   * The hook: one real fact, then what I would add.
+   * The hook: one real fact, then what I already do and would add.
    *
-   * For an application the best fact is a duty from the advert itself, quoted
-   * exactly — it is this job, in the school's own words, and it is answered
-   * with the strength that fits it. Failing that, a fact read off the school's
-   * own pages; failing that, no hook, and the flags say so. A group inbox has
-   * no single school to say a fact about, so it gets none.
+   * For an application the best fact is a duty from the advert itself, quoted exactly. Failing
+   * that, a fact read off the school's own pages, answered by the bridge that fits what the
+   * fact is about (innovation, student responsibility, holistic assessment, deep understanding).
+   * Failing that, no hook, and the flags say so. A group inbox has no single school to say a
+   * fact about, so it gets none.
    */
   const duty = !group && role ? pickDuty(advert) : null;
+  const bridgeFor = (fact: string): string => {
+    const theme = themeOf(fact);
+    return (theme && profile.bridges?.[theme]) || profile.bridge;
+  };
   const hook = group
     ? null
     : duty
-      ? `One line in your advert stood out: "${duty.sentence}." ${profile.adBridges[duty.key]} ${profile.bulletsWhenNoHook}`
-      : i.peHook
-        ? `I noticed ${i.peHook}. ${profile.bridge}`
-        : i.schoolHook
-          ? `${i.schools[0]} ${i.schoolHook}. ${profile.bridge}`
+      ? `One line in your advert stood out: "${duty.sentence}." ${profile.adBridges[duty.key]}`
+      : peHook
+        ? `I noticed ${peHook}. ${bridgeFor(peHook)}`
+        : schoolHook
+          ? `${i.schools[0]} ${schoolHook}. ${bridgeFor(schoolHook)}`
           : null;
   if (!hook && !group) flags.push("no specific fact found for this school — add one from their own site before sending");
 
-  const evidence = `${(i.curriculum ?? []).join(" ")} ${advert} ${i.peHook ?? ""}`;
+  const evidence = `${(i.curriculum ?? []).join(" ")} ${advert} ${peHook ?? ""}`;
   const bullets = profile.bullets
     .filter((b) => !b.when || new RegExp(b.when, "i").test(evidence))
+    .filter((b) => !b.unless || !new RegExp(b.unless, "i").test(evidence))
     // The strength that answers the advert's line goes first.
     .sort((a, b) => Number(b.key === duty?.key) - Number(a.key === duty?.key))
     .map((b) => `• ${b.text}`);
@@ -268,13 +311,13 @@ export function buildLetter(i: LetterInputs): DraftEmail {
     for (const gap of fit.gaps) flags.push(`advert asks for ${gap}, which is not in my profile`);
   }
 
-  const body = [
+  const marked = [
     greeting,
     "",
     `${opening} ${profile.intro}`,
     "",
-    hook ?? profile.bulletsWhenNoHook,
-    "",
+    ...(hook ? [hook, ""] : []),
+    `**${profile.bringHeading ?? "WHAT I WOULD BRING"}**`,
     ...bullets,
     "",
     `${profile.availability} ${fill(profile.websiteLine, { website: `${profile.websiteLabel}: ${profile.website}` })}`,
@@ -283,11 +326,11 @@ export function buildLetter(i: LetterInputs): DraftEmail {
     "",
     `${profile.signOff},`,
     profile.name,
+    ...(profile.title ? [profile.title] : []),
   ].join("\n");
 
-  return { body, subject, missing: [], flags };
+  return { body: plainOf(marked), marked, subject, missing: [], flags };
 }
-
 // ---- the three kinds of letter -------------------------------------------
 
 export interface EmailInputs {
@@ -354,7 +397,7 @@ export interface GroupInputs {
  * an address that reads for all of them.
  */
 export function groupSpeculativeEmail(i: GroupInputs): DraftEmail {
-  if (i.schools.length < 2) return { body: "", subject: "", missing: ["not a group address"], flags: [] };
+  if (i.schools.length < 2) return { body: "", marked: "", subject: "", missing: ["not a group address"], flags: [] };
   return buildLetter({ schools: i.schools });
 }
 

@@ -49,10 +49,10 @@ test("nothing matching means no hook, never a guess", () => {
 test("the letter quotes the duty and answers it with the strength that fits", () => {
   const d = draftEmail({ role: "PE Teacher", school: "PBISS International School", advertText: pbiss });
   assert.match(d.body, /One line in your advert stood out: "Assess and monitor student progress, providing constructive feedback to support development\."/);
-  assert.match(d.body, /That is the system I have built: clear levels/);
+  assert.match(d.body, /That is the system I have built: a 5 core skills holistic assessment with levels 1 to 4/);
   // The matching strength is the first bullet.
-  assert.ok(d.body.indexOf("• PE assessment.") < d.body.indexOf("• Programme and events."));
-  assert.equal((d.body.match(/Here is what I would bring:/g) ?? []).length, 1);
+  assert.ok(d.body.indexOf("• Holistic assessment.") < d.body.indexOf("• Online tools."));
+  assert.equal((d.body.match(/WHAT I WOULD BRING/g) ?? []).length, 1);
   assert.ok(!d.flags.some((f) => /no specific fact/.test(f)));
 });
 

@@ -54,3 +54,12 @@ test("the extras appear only when they exist", () => {
   assert.match(text, /Job: PE Teacher — https:\/\/x\/y/);
   assert.doesNotMatch(briefText(base, "x"), /Website:|Principal:|Other addresses|Application form/);
 });
+
+import { EMAIL_TAB_SCRIPT, EMAIL_TAB_CSS } from "../src/export/emailtab.ts";
+
+test("the Email tab's script is valid JavaScript once it is written into the page", () => {
+  // A backslash lost inside a template literal once broke every button and filter on the tab at once.
+  assert.doesNotThrow(() => new Function(EMAIL_TAB_SCRIPT));
+  assert.ok(EMAIL_TAB_SCRIPT.includes("function copyFormatted"));
+  assert.ok(EMAIL_TAB_CSS.length > 100);
+});

@@ -56,6 +56,8 @@ export interface Recipient {
   factQuality: FactQuality;
   subject: string;
   body: string;
+  /** The same letter with ** around the words that are bold, for the formatted copy. */
+  marked: string;
   /** Non-empty only when no letter could be written at all. */
   missing: string[];
   /** Things to check before sending; never part of the body. */
@@ -219,6 +221,7 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string, s
         factQuality: "group",
         subject: draft.subject,
         body: draft.body,
+        marked: draft.marked,
         missing: draft.missing,
         flags: draft.flags,
       });
@@ -246,6 +249,7 @@ export function buildRecipients(allSchools: SchoolRow[], sentLogPath?: string, s
       factQuality: schoolHook || peHook ? "unique" : "none",
       subject: draft.subject,
       body: draft.body,
+      marked: draft.marked,
       missing: draft.missing,
       flags: draft.flags,
     });
