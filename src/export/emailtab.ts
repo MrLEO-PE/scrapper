@@ -109,7 +109,7 @@ export function emailTabBody(recipients: Recipient[]): string {
       ? `<details class="em-preview"><summary>preview letter</summary><pre>${esc(r.body)}</pre></details>
     <button type="button" class="em-btn primary em-copy-fmt" data-marked="${esc(r.marked)}" title="Copies the letter with its bold words and 'my website' as a working link; plain text rides along">copy body</button>
     <button type="button" class="em-btn em-copy" data-body="${esc(r.email)}">copy address</button>
-    <a class="em-btn em-gmail" data-marked="${esc(r.marked)}" href="${esc(gmailComposeUrl(r.email, r.subject, ""))}" target="_blank" rel="noopener" title="Opens Gmail with the address and subject filled in and copies the letter: press Ctrl+V in the body to paste it with the link">open in Gmail (then Ctrl+V)</a>`
+    <a class="em-btn em-gmail" data-marked="${esc(r.marked)}" data-empty="${esc(gmailComposeUrl(r.email, r.subject, ""))}" href="${esc(gmailComposeUrl(r.email, r.subject, r.body))}" target="_blank" rel="noopener" title="Copies the letter with its link first, then opens Gmail with address and subject filled: press Ctrl+V in the body. If copying is blocked, Gmail opens with the plain-text letter instead.">open in Gmail (then Ctrl+V)</a>`
       : `<span class="em-warn">NEEDS: ${esc(r.missing.join(", "))}</span>`;
 
     // The school's own form, to fill in beside the letter. Opens in its own tab.
@@ -463,19 +463,22 @@ export const EMAIL_TAB_SCRIPT = `
     flushPara(); flushBullets();
     return '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#222">' + out.join("") + "</div>";
   }
-  function copyFormatted(btn, marked) {
+  function copyFormatted(btn, marked, onDone, onFail) {
     var plain = marked.replace(/\\*\\*/g, ""), html = toHtml(marked);
     var done = function () {
       var original = btn.textContent;
       btn.textContent = "copied!";
       btn.classList.add("copied");
       setTimeout(function () { btn.textContent = original; btn.classList.remove("copied"); }, 1400);
+      if (onDone) onDone();
     };
     if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
       navigator.clipboard.write([new ClipboardItem({
         "text/html": new Blob([html], { type: "text/html" }),
         "text/plain": new Blob([plain], { type: "text/plain" })
-      })]).then(done).catch(function () { copyText(btn, plain); });
+      })]).then(done).catch(function () { if (onFail) onFail(); else copyText(btn, plain); });
+    } else if (onFail) {
+      onFail();
     } else {
       copyText(btn, plain);
     }
@@ -483,7 +486,15 @@ export const EMAIL_TAB_SCRIPT = `
 
   list.addEventListener("click", function (e) {
     var gm = e.target.closest(".em-gmail");
-    if (gm) copyFormatted(gm, gm.dataset.marked); // the link still opens; the letter is on the clipboard
+    if (gm) {
+      // Copy first and open Gmail only once the clipboard holds the letter: a tab opened at the same
+      // moment takes focus and the browser then refuses the write, which left a plain-text paste.
+      e.preventDefault();
+      copyFormatted(gm, gm.dataset.marked,
+        function () { window.open(gm.dataset.empty, "_blank", "noopener"); },
+        function () { window.open(gm.href, "_blank", "noopener"); });
+      return;
+    }
     var fmt = e.target.closest(".em-copy-fmt");
     if (fmt) { copyFormatted(fmt, fmt.dataset.marked); return; }
     var btn = e.target.closest(".em-copy");
