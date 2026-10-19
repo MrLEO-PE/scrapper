@@ -49,11 +49,26 @@ const ORGS: [RegExp, string][] = [
   [/\bCIS\b|Council of International Schools/, "the Council of International Schools"],
 ];
 
+const GENERIC = /^(?:international|school|academy|college|the|of|and|for|in|at|christian|british|american|primary|secondary|high|private|preparatory|world|day|boarding|state|public|independent|catholic|national|local|new|first|our|every|each|german|french|baccalaureate|cambridge|council|diploma|programme|primary|years)$/i;
+
+/** A quote that names some other school ("Yantai Huasheng International School…") says nothing about this one. */
+function namesAnotherSchool(quote: string, schoolName: string): boolean {
+  const mine = new Set(schoolName.toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 2 && !GENERIC.test(w)));
+  for (const m of quote.matchAll(/((?:[A-Z][\w'\u2019-]+ )+)(?:International )?(?:School|Academy|College)\b/g)) {
+    const words = m[1]!.toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 2 && !GENERIC.test(w));
+    if (words.length && !words.some((w) => mine.has(w))) return true;
+  }
+  return false;
+}
+
 /** The phrase that follows the school's name in the letter, or null when the quote does not earn one. */
 export function shapeFact(quote: string, schoolName: string): string | null {
   // Not English: a letter in English must not quote a language the reader may not share.
   if (/[㐀-鿿À-ÿ]/.test(quote)) return null;
   if (/\b(?:candidate|pending|seeking|applying)\b/i.test(quote)) return null;
+  // A tutoring or language centre is not a school a PE letter can be written to.
+  if (/\b(?:english|language|tutor\w*|learning cent(?:re|er)|recruit\w*|consult\w*|agency)\b/i.test(schoolName)) return null;
+  if (namesAnotherSchool(quote, schoolName)) return null;
 
   const accredited = /accredit/i.test(quote) ? ORGS.find(([re]) => re.test(quote)) : undefined;
   if (accredited) return `is accredited by ${accredited[1]}`;
@@ -99,6 +114,9 @@ export async function importFacts(files: string[], apply: boolean): Promise<void
       counts[status] = (counts[status] ?? 0) + 1;
       report.push([status, r.key, hook, reason, r.quote, r.url].map(q).join(","));
     };
+    // Cowork writes the country slug hyphenated ("south-korea"); the key holds a space.
+    const key = school.get(r.key) ? r.key : r.key.replace(/|(.*)$/, (_m, c: string) => "|" + c.replace(/-/g, " "));
+    r.key = key;
     const s = school.get(r.key) as { name: string; school_hook: string | null; provenance_json: string | null } | undefined;
     if (!s) { note("rejected", "", "school_key not in the database"); continue; }
     if (r.type === "none") { note("skipped", "", "collector found nothing"); continue; }
