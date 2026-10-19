@@ -31,7 +31,7 @@
   "availability": "My contract ends in July 2027, so I can start in **August 2027**.",
   "availableFrom": "2027-08",
   "websiteLine": "You can see my teaching style, videos and apps on {website}",
-  "closing": "Thank you for your time. I would welcome a short call to discuss how I could contribute to your PE department.",
+  "closing": "I have attached my CV. Thank you for your time. I would welcome a short call to discuss how I could contribute to your PE department.",
   "//qualifications": "What you can evidence, used only to flag what an advert asks for that you do not hold. `key` must be one from src/match/fit.ts.",
   "qualifications": [
     {
