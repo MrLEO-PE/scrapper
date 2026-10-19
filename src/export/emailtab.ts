@@ -109,7 +109,7 @@ export function emailTabBody(recipients: Recipient[]): string {
       ? `<details class="em-preview"><summary>preview letter</summary><pre>${esc(r.body)}</pre></details>
     <button type="button" class="em-btn primary em-copy-fmt" data-marked="${esc(r.marked)}" title="Copies the letter with its bold words and 'my website' as a working link; plain text rides along">copy body</button>
     <button type="button" class="em-btn em-copy" data-body="${esc(r.email)}">copy address</button>
-    <a class="em-btn em-gmail" data-marked="${esc(r.marked)}" data-empty="${esc(gmailComposeUrl(r.email, r.subject, ""))}" href="${esc(gmailComposeUrl(r.email, r.subject, r.body))}" target="_blank" rel="noopener" title="Copies the letter with its link first, then opens Gmail with address and subject filled: press Ctrl+V in the body. If copying is blocked, Gmail opens with the plain-text letter instead.">open in Gmail (then Ctrl+V)</a>`
+    <a class="em-btn em-gmail" data-marked="${esc(r.marked)}" href="${esc(gmailComposeUrl(r.email, r.subject, r.body))}" target="_blank" rel="noopener" title="Opens Gmail with address, subject and letter filled in. The formatted letter (bold + 'my website' link) is also copied: click in the body, Ctrl+A, Ctrl+V to swap it in.">open in Gmail</a>`
       : `<span class="em-warn">NEEDS: ${esc(r.missing.join(", "))}</span>`;
 
     // The school's own form, to fill in beside the letter. Opens in its own tab.
@@ -491,7 +491,9 @@ export const EMAIL_TAB_SCRIPT = `
       // moment takes focus and the browser then refuses the write, which left a plain-text paste.
       e.preventDefault();
       copyFormatted(gm, gm.dataset.marked,
-        function () { window.open(gm.dataset.empty, "_blank", "noopener"); },
+        // Gmail's compose link only takes plain text, so the body is always pre-filled plain;
+        // the formatted copy on the clipboard is the upgrade, not a requirement.
+        function () { window.open(gm.href, "_blank", "noopener"); },
         function () { window.open(gm.href, "_blank", "noopener"); });
       return;
     }
