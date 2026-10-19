@@ -53,9 +53,10 @@ export function writeReadyQueue(
   schools: SchoolRow[],
   cvPath: string | undefined,
   limit: number,
-): { ready: number; notReady: number; cvOk: boolean; path: string } {
+): { ready: number; readyTotal: number; notReady: number; cvOk: boolean; path: string } {
   const recipients = buildRecipients(schools);
-  const ready = recipients.filter((r) => !notReadyReason(r)).slice(0, limit);
+  const readyAll = recipients.filter((r) => !notReadyReason(r));
+  const ready = readyAll.slice(0, limit);
   const cvOk = !!cvPath && existsSync(cvPath);
 
   const queue = {
@@ -78,5 +79,5 @@ export function writeReadyQueue(
     })),
   };
   writeFileSync(READY_QUEUE_PATH, JSON.stringify(queue, null, 2));
-  return { ready: ready.length, notReady: recipients.length - ready.length, cvOk, path: READY_QUEUE_PATH };
+  return { ready: ready.length, readyTotal: readyAll.length, notReady: recipients.length - readyAll.length, cvOk, path: READY_QUEUE_PATH };
 }

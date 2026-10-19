@@ -70,10 +70,12 @@ export function shapeFact(quote: string, schoolName: string): string | null {
   if (/\b(?:english|language|tutor\w*|learning cent(?:re|er)|recruit\w*|consult\w*|agency)\b/i.test(schoolName)) return null;
   if (namesAnotherSchool(quote, schoolName)) return null;
 
+  // "Accredited Member (WASC) Status by COBIS" does not say who accredited whom.
+  if (/COBIS/i.test(quote)) return null;
   const accredited = /accredit/i.test(quote) ? ORGS.find(([re]) => re.test(quote)) : undefined;
   if (accredited) return `is accredited by ${accredited[1]}`;
 
-  if (/\bIB World School\b/i.test(quote)) return "is an IB World School";
+  if (/\b(?:IB|International Baccalaureate) world school\b/i.test(quote)) return "is an IB World School";
 
   const founded = /\b(founded|established)\b[^.]{0,30}?\b((?:18|19|20)\d{2})\b/i.exec(quote);
   if (founded) {
@@ -115,7 +117,7 @@ export async function importFacts(files: string[], apply: boolean): Promise<void
       report.push([status, r.key, hook, reason, r.quote, r.url].map(q).join(","));
     };
     // Cowork writes the country slug hyphenated ("south-korea"); the key holds a space.
-    const key = school.get(r.key) ? r.key : r.key.replace(/|(.*)$/, (_m, c: string) => "|" + c.replace(/-/g, " "));
+    const key = school.get(r.key) ? r.key : (([name, country]) => (country === undefined ? name! : `${name}|${country.replace(/-/g, " ")}`))(r.key.split("|"));
     r.key = key;
     const s = school.get(r.key) as { name: string; school_hook: string | null; provenance_json: string | null } | undefined;
     if (!s) { note("rejected", "", "school_key not in the database"); continue; }

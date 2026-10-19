@@ -937,7 +937,7 @@ async function main(): Promise<void> {
       const targets = targetCountries();
       const schools = [...getSchools().values()].filter((s) => isTargetCountry(s.country, targets));
       const r = writeReadyQueue(schools, cv, Number(str(args, "limit") ?? 15));
-      log.ok(`${r.ready} letters ready, ${r.notReady} still need a person  ->  ${r.path}`);
+      log.ok(`${r.readyTotal} letters ready in all (${r.ready} queued today), ${r.notReady} still need a person  ->  ${r.path}`);
       if (!r.cvOk) log.warn(`CV not found${cv ? ` at ${cv}` : ""} - pass --cv "full path to CV.pdf" or set CV_PATH`);
       break;
     }
