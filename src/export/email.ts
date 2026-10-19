@@ -62,6 +62,8 @@ export interface Profile {
   adBridges: Record<StrengthKey, string>;
   /** Used instead of the bridge when no fact about the school was found. */
   bulletsWhenNoHook: string;
+  /** About me, never about the school: said when no fact about the school was found. */
+  noFactLine?: string;
   bullets: Bullet[];
   availability: string;
   /** YYYY-MM — the earliest month I can start. */
@@ -294,7 +296,9 @@ export function buildLetter(i: LetterInputs): DraftEmail {
         : schoolHook
           ? `${i.schools[0]} ${schoolHook}. ${bridgeFor(schoolHook)}`
           : null;
-  if (!hook && !group) flags.push("no specific fact found for this school — add one from their own site before sending");
+  // No fact: a line about me, not a claim about them, so nothing here can be wrong about the school.
+  const shownHook = hook ?? (!group ? profile.noFactLine ?? null : null);
+  if (!hook && !group && !profile.noFactLine) flags.push("no specific fact found for this school — add one from their own site before sending");
 
   const evidence = `${(i.curriculum ?? []).join(" ")} ${advert} ${peHook ?? ""}`;
   const bullets = profile.bullets
@@ -316,7 +320,7 @@ export function buildLetter(i: LetterInputs): DraftEmail {
     "",
     `${opening} ${profile.intro}`,
     "",
-    ...(hook ? [hook, ""] : []),
+    ...(shownHook ? [shownHook, ""] : []),
     `**${profile.bringHeading ?? "WHAT I WOULD BRING"}**`,
     ...bullets,
     "",

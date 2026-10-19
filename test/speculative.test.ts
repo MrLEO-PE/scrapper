@@ -25,7 +25,7 @@ test("a school fact is used only when one is held; accreditation and roll are ne
     studentCount: 1200,
   });
   assert.doesNotMatch(d.body, /CIS|WASC|1,?200|accredit/);
-  assert.ok(d.flags.some((f) => /no specific fact/.test(f)));
+  assert.match(d.body, /take responsibility for their own progress/);
   assert.ok(d.body, "the letter is still written");
 });
 

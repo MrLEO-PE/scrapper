@@ -48,7 +48,7 @@ test("no fact about the school: the letter is still written, and says so in its 
   const d = draftEmail({ ...complete, peHook: null, schoolHook: null });
   assert.ok(d.body);
   assert.doesNotMatch(d.body, /I noticed/);
-  assert.ok(d.flags.some((f) => /no specific fact/.test(f)));
+  assert.match(d.body, /take responsibility for their own progress/); // a line about me stands in; no claim about the school
 });
 
 test("a flag is never written into the letter", () => {
