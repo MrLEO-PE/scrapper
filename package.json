@@ -30,6 +30,7 @@
     "schedule": "node --experimental-strip-types --no-warnings src/cli.ts schedule",
     "test": "node --experimental-strip-types --no-warnings --test test/*.test.ts",
     "report": "node --experimental-strip-types --no-warnings src/cli.ts report",
+    "import-facts": "node --experimental-strip-types --no-warnings src/cli.ts import-facts",
     "ready": "node --experimental-strip-types --no-warnings src/cli.ts ready",
     "site": "node --experimental-strip-types --no-warnings src/cli.ts site",
     "health": "node --experimental-strip-types --no-warnings src/cli.ts health",

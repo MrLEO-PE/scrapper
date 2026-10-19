@@ -50,6 +50,7 @@ import { checkHealth, healthMarkdown, problems } from "./health.ts";
 import { forgetVerified, loadVerified, recordVerified } from "./export/verifiednames.ts";
 import { principalFor } from "./export/factsource.ts";
 import { writeReadyQueue } from "./export/readyqueue.ts";
+import { importFacts } from "./importfacts.ts";
 import { isTargetCountry, targetCountries } from "./directoryconfig.ts";
 import {
   ALL_SOURCES,
@@ -841,6 +842,12 @@ async function main(): Promise<void> {
       log.plain("");
       log.plain('  Open the page, check the name, then:  npm run verify-name -- "school name or key" "Dr Jane Smith"');
       log.plain('  To withdraw one:                        npm run verify-name -- --forget "school name or key"');
+      break;
+    }
+
+    case "import-facts": {
+      if (!args.positional.length) { log.error("give the csv files: npm run import-facts -- facts-found-1.csv ... [--apply]"); process.exitCode = 1; break; }
+      await importFacts(args.positional, bool(args, "apply"));
       break;
     }
 
