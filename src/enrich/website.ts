@@ -209,9 +209,12 @@ export async function crawlSchoolSite(
    * contact page, the staff directory and the PE pages on all but the largest
    * sites, and still cannot hang: the deadline is absolute.
    */
-  const maxPages = opts.maxPages ?? 25;
+  const maxPages = opts.maxPages ?? 40;
   const maxPdfs = opts.maxPdfs ?? 6;
-  const deadline = Date.now() + (opts.budgetMs ?? 240_000);
+  let deadline = Date.now() + (opts.budgetMs ?? 480_000);
+  // A letter with no school fact is a form letter, so a school with neither hook
+  // when the budget runs out gets one more stretch — once — to reach its PE pages.
+  let extended = false;
   // School sites are unreliable; one quick retry, then move on.
   const net = { retries: 1, soft: true as const, fresh: opts.fresh };
 
@@ -253,7 +256,12 @@ export async function crawlSchoolSite(
   // headcount proxy here and nowhere else.
   let staffText = "";
 
-  while (frontier.length && findings.pagesVisited < maxPages && Date.now() < deadline) {
+  while (frontier.length && findings.pagesVisited < maxPages) {
+    if (Date.now() >= deadline) {
+      if (extended || findings.schoolHook || findings.peHook) break;
+      extended = true;
+      deadline = Date.now() + (opts.budgetMs ?? 480_000) / 2;
+    }
     frontier.sort((a, b) => b.score - a.score);
     const next = frontier.shift()!;
     if (visited.has(next.url)) continue;

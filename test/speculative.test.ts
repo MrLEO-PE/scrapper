@@ -10,7 +10,7 @@ import { groupSpeculativeEmail, schoolFact, speculativeEmail } from "../src/expo
 
 test("opens with the speculative line, then who I am, with no role named", () => {
   const d = speculativeEmail({ school: "Harbour Pine International School", peHook: "the 25 metre pool" });
-  assert.equal(d.subject, "Leo Sevin — Application: PE Teacher");
+  assert.equal(d.subject, "Leo Sevin — Application: PE Teacher — Harbour Pine International School");
   // The instructions: say it is an application for a PE position, then who I am.
   assert.match(d.body, /I am applying for a PE position at Harbour Pine International School\. I am a PE teacher with 8 years/);
   assert.match(d.body, /I noticed the 25 metre pool\./);
@@ -67,7 +67,7 @@ import { buildLetter, themeOf } from "../src/export/email.ts";
 test("the formatted version bolds the keywords and the plain version has no markers", () => {
   const d = speculativeEmail({ school: "Harbour Pine", peHook: "the 25 metre pool" });
   assert.doesNotMatch(d.body, /\*\*/);
-  for (const bold of ["8 years of experience", "PE coordination", "Cambridge IGCSE PE", "WHAT I WOULD BRING", "Holistic assessment.", "Online tools.", "fourth year of coordination", "5 core skills holistic assessment with levels 1 to 4", "August 2027"]) {
+  for (const bold of ["8 years of experience", "PE coordination", "Cambridge IGCSE PE", "WHAT I WOULD BRING", "Holistic assessment.", "Online tools.", "4 years as PE coordinator", "5 core skills holistic assessment with levels 1 to 4", "August 2027"]) {
     assert.ok(d.marked.includes(`**${bold}**`), `${bold} should be bold`);
   }
   assert.equal(d.marked.replace(/\*\*/g, ""), d.body);

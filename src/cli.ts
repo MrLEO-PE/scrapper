@@ -49,6 +49,8 @@ import { readLedger } from "./ledger.ts";
 import { checkHealth, healthMarkdown, problems } from "./health.ts";
 import { forgetVerified, loadVerified, recordVerified } from "./export/verifiednames.ts";
 import { principalFor } from "./export/factsource.ts";
+import { writeReadyQueue } from "./export/readyqueue.ts";
+import { isTargetCountry, targetCountries } from "./directoryconfig.ts";
 import {
   ALL_SOURCES,
   printStats,
@@ -327,6 +329,7 @@ USAGE
   npm run scrape                     pull vacancies from all boards
   npm run enrich                     build school profiles (website, PDFs, emails)
   npm run export                     write the sheet
+  npm run ready -- --cv <file>       write data/ready-queue.json: letters needing no edit, for Gmail
   npm run run-all                    scrape + enrich + export
   npm run fields                     show which columns are ticked
   npm run locations                  show / tick countries and cities
@@ -919,6 +922,16 @@ async function main(): Promise<void> {
       if (alerts.length && bool(args, "mark")) markAlerted(alerts.map((a) => a.job.id));
       // Exit 1 when there is nothing to report, so a workflow can skip quietly.
       if (!alerts.length) process.exitCode = 1;
+      break;
+    }
+
+    case "ready": {
+      const cv = str(args, "cv") ?? process.env.CV_PATH;
+      const targets = targetCountries();
+      const schools = [...getSchools().values()].filter((s) => isTargetCountry(s.country, targets));
+      const r = writeReadyQueue(schools, cv, Number(str(args, "limit") ?? 15));
+      log.ok(`${r.ready} letters ready, ${r.notReady} still need a person  ->  ${r.path}`);
+      if (!r.cvOk) log.warn(`CV not found${cv ? ` at ${cv}` : ""} - pass --cv "full path to CV.pdf" or set CV_PATH`);
       break;
     }
 

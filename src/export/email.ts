@@ -240,7 +240,7 @@ export function buildLetter(i: LetterInputs): DraftEmail {
   const schoolHook = whole(i.schoolHook);
   if ((i.peHook && !peHook) || (i.schoolHook && !schoolHook)) flags.push("a stored fact about this school was cut off mid-sentence, so it was left out — add one from their own site");
 
-  const subject = `${profile.subjectName ?? profile.name} — Application: ${role || "PE Teacher"}`;
+  const subject = `${profile.subjectName ?? profile.name} — Application: ${role || "PE Teacher"}${group ? "" : ` — ${schoolText}`}`;
 
   // Greeting. A name only when we hold one that a person confirmed; never a placeholder.
   let greeting = "Dear Principal and the HR Team,";

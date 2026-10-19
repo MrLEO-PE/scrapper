@@ -126,8 +126,10 @@ const SCHOOL_HOOK_PATTERNS: { re: RegExp; shape: (m: RegExpExecArray) => string 
   },
   {
     // "an IB World School offering all three programmes"
-    re: /\b(?:is\s+)?an?\s+(IB\s+World\s+School[\w\s,'’-]{0,60})/,
-    shape: (m) => `is ${m[1]!.trim()}`,
+    // Only the label and a plain duration: the free-running tail used to swallow half a sentence
+    // ("IB World School for more than 30 years and during this time we have develop").
+    re: /\b(?:is\s+)?an?\s+(IB\s+World\s+School(?:\s+for\s+(?:more\s+than\s+|over\s+)?\d{1,3}\s+years)?)/,
+    shape: (m) => `is an ${m[1]!.trim()}`,
   },
   {
     /*

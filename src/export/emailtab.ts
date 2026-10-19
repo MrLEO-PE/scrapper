@@ -107,10 +107,9 @@ export function emailTabBody(recipients: Recipient[]): string {
 
     const body = r.body
       ? `<details class="em-preview"><summary>preview letter</summary><pre>${esc(r.body)}</pre></details>
-    <button type="button" class="em-btn primary em-copy" data-body="${esc(r.body)}">copy body</button>
-    <button type="button" class="em-btn primary em-copy-fmt" data-marked="${esc(r.marked)}" title="Copies the letter with its bold words and a working link, to paste straight into Gmail">copy formatted</button>
+    <button type="button" class="em-btn primary em-copy-fmt" data-marked="${esc(r.marked)}" title="Copies the letter with its bold words and 'my website' as a working link; plain text rides along">copy body</button>
     <button type="button" class="em-btn em-copy" data-body="${esc(r.email)}">copy address</button>
-    <a class="em-btn" href="${esc(gmailComposeUrl(r.email, r.subject, r.body))}" target="_blank" rel="noopener">open in Gmail</a>`
+    <a class="em-btn em-gmail" data-marked="${esc(r.marked)}" href="${esc(gmailComposeUrl(r.email, r.subject, ""))}" target="_blank" rel="noopener" title="Opens Gmail with the address and subject filled in and copies the letter: press Ctrl+V in the body to paste it with the link">open in Gmail (then Ctrl+V)</a>`
       : `<span class="em-warn">NEEDS: ${esc(r.missing.join(", "))}</span>`;
 
     // The school's own form, to fill in beside the letter. Opens in its own tab.
@@ -483,6 +482,8 @@ export const EMAIL_TAB_SCRIPT = `
   }
 
   list.addEventListener("click", function (e) {
+    var gm = e.target.closest(".em-gmail");
+    if (gm) copyFormatted(gm, gm.dataset.marked); // the link still opens; the letter is on the clipboard
     var fmt = e.target.closest(".em-copy-fmt");
     if (fmt) { copyFormatted(fmt, fmt.dataset.marked); return; }
     var btn = e.target.closest(".em-copy");

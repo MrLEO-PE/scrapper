@@ -114,7 +114,7 @@ jobs:
       # the run its database.
       - name: Enrich schools
         run: |
-          ARGS="--concurrency 6 --budget-ms 240000 --max-pages 25 --max-pdfs 6"
+          ARGS="--concurrency 6 --budget-ms 480000 --max-pages 40 --max-pdfs 6"
           ARGS="$ARGS --limit ${{ inputs.enrich_limit || '250' }}"
           node --experimental-strip-types --no-warnings src/cli.ts enrich $ARGS
 

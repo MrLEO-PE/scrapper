@@ -23,7 +23,7 @@ const complete = {
 
 test("follows the model's order and wording of subject, greeting and opening", () => {
   const d = draftEmail(complete);
-  assert.equal(d.subject, "Leo Sevin — Application: Secondary PE Teacher");
+  assert.equal(d.subject, "Leo Sevin — Application: Secondary PE Teacher — Harbour Pine International School");
   const lines = d.body.split("\n");
   assert.equal(lines[0], "Dear Principal Anna Reyes and the HR Team,");
   assert.match(lines[2]!, /^I am applying for the Secondary PE Teacher position at Harbour Pine International School\. /);
@@ -107,7 +107,7 @@ test("tidies a shouted job title without mangling its acronyms", () => {
 
 test("the letter and subject use the tidied title", () => {
   const d = draftEmail({ ...complete, role: "PE TEACHER - SECONDARY" });
-  assert.equal(d.subject, "Leo Sevin — Application: PE Teacher - Secondary");
+  assert.equal(d.subject, "Leo Sevin — Application: PE Teacher - Secondary — Harbour Pine International School");
   assert.match(d.body, /PE Teacher - Secondary position/);
   assert.doesNotMatch(d.body, /PE TEACHER - SECONDARY/);
 });

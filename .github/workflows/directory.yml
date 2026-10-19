@@ -99,7 +99,7 @@ jobs:
         run: |
           node --experimental-strip-types --no-warnings src/cli.ts enrich \
             --limit "${{ inputs.batch || '500' }}" \
-            --concurrency 6 --budget-ms 240000 --max-pages 25 --max-pdfs 6
+            --concurrency 6 --budget-ms 480000 --max-pages 40 --max-pdfs 6
 
       # The write path already refuses to create a duplicate. This is the
       # backstop for rows written before it did, and for a school that only
