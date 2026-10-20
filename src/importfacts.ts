@@ -129,6 +129,9 @@ export async function importFacts(files: string[], apply: boolean): Promise<void
       const quote = r.quote.trim().replace(/[.\s]+$/, "");
       const words = quote.split(/\s+/).length;
       if (/[\u3400-\u9fff\u00c0-\u00ff]/.test(quote) || /\.\.\.|\u2026/.test(quote) || quote.length < 15 || quote.length > 140 || words < 4 || words > 22) { note("review", "", "value quote not English, cut off or too long/short"); continue; }
+      // "states its mission as “Our mission is…”" repeats itself, and a tutoring centre is not a school to write to.
+      if (/\b(?:mission|vision)\b/i.test(quote) || /\b(?:english|language|tutor\w*|learning cent(?:re|er)|recruit\w*|consult\w*|agency)\b/i.test(s.name)) { note("review", "", "quote repeats the word mission/vision, or not a school"); continue; }
+      if (/^I\b/.test(quote)) { note("review", "", "a first-person pupil pledge, not the school speaking"); continue; }
       const kind = r.type === "mission" ? "mission" : r.type === "vision" ? "vision" : "values";
       const vhook = `states its ${kind} as “${quote}”`;
       if (!(await onPage(r.url, quote))) { note("rejected", vhook, "quote not found on the cited page"); continue; }
