@@ -104,6 +104,8 @@ export async function importFacts(files: string[], apply: boolean): Promise<void
   const db = getDb();
   db.exec("PRAGMA busy_timeout = 30000");
   const school = db.prepare("SELECT name, school_hook, provenance_json FROM schools WHERE school_key = ?");
+  // A value the school states itself outranks an accreditation or a founding year, so it replaces them.
+  const override = db.prepare("UPDATE schools SET school_hook = ?, provenance_json = ? WHERE school_key = ?");
   const write = db.prepare("UPDATE schools SET school_hook = ?, provenance_json = ? WHERE school_key = ? AND COALESCE(school_hook,'') = ''");
 
   const report: string[] = ["status,school_key,hook,reason,quote,url"];
@@ -122,6 +124,23 @@ export async function importFacts(files: string[], apply: boolean): Promise<void
     const s = school.get(r.key) as { name: string; school_hook: string | null; provenance_json: string | null } | undefined;
     if (!s) { note("rejected", "", "school_key not in the database"); continue; }
     if (r.type === "none") { note("skipped", "", "collector found nothing"); continue; }
+    if (/^(?:mission|vision|values?)$/.test(r.type)) {
+      // A value the school states itself, kept word for word between quote marks so nothing is paraphrased.
+      const quote = r.quote.trim().replace(/[.\s]+$/, "");
+      const words = quote.split(/\s+/).length;
+      if (/[\u3400-\u9fff\u00c0-\u00ff]/.test(quote) || /\.\.\.|\u2026/.test(quote) || quote.length < 15 || quote.length > 140 || words < 4 || words > 22) { note("review", "", "value quote not English, cut off or too long/short"); continue; }
+      const kind = r.type === "mission" ? "mission" : r.type === "vision" ? "vision" : "values";
+      const vhook = `states its ${kind} as “${quote}”`;
+      if (!(await onPage(r.url, quote))) { note("rejected", vhook, "quote not found on the cited page"); continue; }
+      if (apply) {
+        const prov = { ...(s.provenance_json ? JSON.parse(s.provenance_json) : {}), schoolHook: { confidence: 0.95, source: `school's own words, ${r.url}` } };
+        override.run(vhook, JSON.stringify(prov), r.key);
+      }
+      done.add(r.key);
+      note(apply ? "imported" : "would-import", vhook, "");
+      log.plain(`  ${s.name}  ${vhook}`);
+      continue;
+    }
     if (r.type === "pe") { note("review", "", "PE fact: not auto-imported, read it yourself"); continue; }
     if (s.school_hook) { note("skipped", "", "school already has a fact"); continue; }
     if (done.has(r.key)) { note("skipped", "", "second fact for the same school"); continue; }

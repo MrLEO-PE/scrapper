@@ -45,6 +45,8 @@ const JOINER = /\b(?:as|a|an|the|of|and|or|to|in|for|with|at|by|on|from|that|whi
 
 function cleanSchool(h: string): string | null {
   const t = h.trim();
+  // A mission or values line, quoted word for word from the school's own page (see importfacts.ts).
+  if (/^states its (?:mission|values|vision) as \u201c[^\u201d]{15,140}\u201d$/.test(t)) return t;
   if (/^is (?:an )?IB World School\b/i.test(t)) return "is an IB World School";
   if (/^was (?:founded|established) in (?:18|19|20)\d{2}$/.test(t)) return t;
   if (t.length > 100 || JOINER.test(t) || /[.!?]\s/.test(t) || /\b(?:we|our|us|I)\b/.test(t)) return null;

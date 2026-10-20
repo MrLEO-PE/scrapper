@@ -39,7 +39,7 @@ export interface Bullet {
 }
 
 /** What a school's own fact is about, so the line that follows it can answer in kind. */
-export type HookTheme = "innovation" | "responsibility" | "holistic" | "understanding";
+export type HookTheme = "innovation" | "responsibility" | "holistic" | "understanding" | "community";
 
 export interface Profile {
   name: string;
@@ -210,6 +210,7 @@ const THEMES: { theme: HookTheme; re: RegExp }[] = [
   { theme: "responsibility", re: /responsib|independen|agency|leadership|service|self[- ]?(?:manage|direct|review|assess)|autonom|student[- ]led|take (?:the )?lead/i },
   { theme: "holistic", re: /holistic|whole[- ]?(?:child|person)|well-?being|all-round|balanced|character/i },
   { theme: "understanding", re: /inquir|conceptual|critical thinking|deep(?:er)? (?:understanding|learning)|understand/i },
+  { theme: "community", re: /\bcommunit(?:y|ies)\b|\btogether\b|belong|respect|kindness|compassion|caring|collaborat|inclusive|family/i },
 ];
 
 export function themeOf(text: string): HookTheme | null {
