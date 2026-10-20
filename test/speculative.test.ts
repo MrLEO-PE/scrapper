@@ -101,3 +101,9 @@ test("a fact that was cut off mid-sentence is left out, and flagged, not said ba
   const fine = speculativeEmail({ school: "X", peHook: "your sports programme covering rugby and hockey" });
   assert.match(fine.body, /I noticed your sports programme covering rugby and hockey\./);
 });
+
+test("a value the school states leads, in the school's own words, ahead of a facility", () => {
+  const d = speculativeEmail({ school: "Harbour Pine", peHook: "the sports hall", schoolHook: "states its values as \u201ccaring, responsible global citizens\u201d" });
+  assert.match(d.body, /I was drawn to your values: \u201ccaring, responsible global citizens\u201d\./);
+  assert.doesNotMatch(d.body, /I noticed the sports hall/);
+});

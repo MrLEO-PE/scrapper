@@ -64,6 +64,8 @@ export interface Profile {
   bulletsWhenNoHook: string;
   /** About me, never about the school: said when no fact about the school was found. */
   noFactLine?: string;
+  /** After a school's own value when none of the themes fit it: a link that claims nothing specific. */
+  valueBridge?: string;
   bullets: Bullet[];
   availability: string;
   /** YYYY-MM — the earliest month I can start. */
@@ -288,10 +290,15 @@ export function buildLetter(i: LetterInputs): DraftEmail {
     const theme = themeOf(fact);
     return (theme && profile.bridges?.[theme]) || profile.bridge;
   };
+  // A value the school states itself leads, ahead of a facility or an age: it is the reason to want this school.
+  const value = schoolHook ? /^states its (mission|values|vision) as (.+)$/.exec(schoolHook) : null;
+  const valueLine = !group && value ? `I was drawn to your ${value[1]}: ${value[2]}.` : null;
   const hook = group
     ? null
     : duty
       ? `One line in your advert stood out: "${duty.sentence}." ${profile.adBridges[duty.key]}`
+      : valueLine
+        ? `${valueLine} ${themeOf(schoolHook!) ? bridgeFor(schoolHook!) : profile.valueBridge ?? profile.bridge}`
       : peHook
         ? `I noticed ${peHook}. ${bridgeFor(peHook)}`
         : schoolHook
