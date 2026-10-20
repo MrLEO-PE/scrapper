@@ -448,7 +448,7 @@ export const EMAIL_TAB_SCRIPT = `
   function inline(s) {
     return esc(s)
       .replace(/\\*\\*(.+?)\\*\\*/g, "<b>$1</b>")
-      .replace(/my website: (https?:\\/\\/[^\\s<]+)/, function (m, u) { return '<a href="' + u + '">my website</a>'; });
+      .replace(/my website: (https?:\\/\\/[^\\s<]+)/, function (m, u) { return '<a href="' + u + '">my website</a>.'; });
   }
   function toHtml(marked) {
     var out = [], bullets = [], para = [];

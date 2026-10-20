@@ -23,7 +23,7 @@ export function letterHtml(marked: string): string {
   const inline = (s: string) =>
     esc(s)
       .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
-      .replace(/my website: (https?:\/\/[^\s<]+)/, (_m, u: string) => `<a href="${u}">my website</a>`);
+      .replace(/my website: (https?:\/\/[^\s<]+)/, (_m, u: string) => `<a href="${u}">my website</a>.`);
   const out: string[] = [];
   let para: string[] = [];
   let bullets: string[] = [];
