@@ -43,6 +43,8 @@ export function notReadyReason(r: Recipient): string | null {
   if (r.missing.length) return `no letter: ${r.missing.join("; ")}`;
   if (r.flags.length) return `needs a check: ${r.flags[0]}`;
   if (r.factQuality !== "unique") return "no fact held for this school alone";
+  // An age, an accreditation or a facility is not a reason to want to work somewhere; a value the school states is.
+  if (!r.brief.schoolFact?.startsWith("states its")) return "no value line from the school yet";
   if (r.lastSent) return "already written to";
   if (r.skipped) return "marked not interested";
   if (r.appliedRecently) return "applied within 60 days";
