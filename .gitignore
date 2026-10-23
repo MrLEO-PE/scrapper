@@ -1,6 +1,5 @@
 data/*
 !data/jobs.db
-!data/sent-log.jsonl
 !data/skip-log.jsonl
 !data/address-book.jsonl
 !data/applications.jsonl
