@@ -88,9 +88,10 @@ export function writeReadyQueue(
   // Sent is pre-filled for anyone already written to or ruled out, so the script skips them.
   // One row per school (a group address repeats on each of its schools); E says plainly whether it was sent.
   // shortcut: the sent log keeps the date only, so E has no time for past sends; the script's own D stamp has it.
-  const rows: string[][] = recipients.flatMap((r) => r.schools.map((s) => [
+  // The letter sits on a group's first school only, so the mailer writes to a shared address once.
+  const rows: string[][] = recipients.flatMap((r) => r.schools.map((s, i) => [
     s.name, r.email,
-    r.missing.length || r.flags.length ? "" : r.body,
+    i > 0 || r.missing.length || r.flags.length ? "" : r.body,
     r.lastSent ? r.lastSent.date : r.skipped ? "not interested" : "",
     r.lastSent ? `yes, ${r.lastSent.date}` : "no",
   ]));
