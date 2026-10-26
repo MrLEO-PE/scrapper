@@ -84,7 +84,15 @@ export function writeReadyQueue(
   writeFileSync(READY_QUEUE_PATH, JSON.stringify(queue, null, 2));
   // For the Apps Script mailer: tab "Schools", columns by position A School, B Email, C Letter, D Sent (left empty).
   const cell = (s: string) => `"${s.replace(/"/g, '""')}"`;
-  writeFileSync(SHEET_QUEUE_PATH, ["School,Email,Letter,Sent", ...readyAll.map((r) =>
-    [r.schools.map((s) => s.name).join(" / "), r.email, r.body, ""].map(cell).join(","))].join("\n"));
+  // Every school: a letter only when nothing is missing or flagged, so the mailer never sends a broken one;
+  // Sent is pre-filled for anyone already written to or ruled out, so the script skips them.
+  const covered = new Set(recipients.flatMap((r) => r.schools.map((s) => s.name)));
+  const rows = recipients.map((r) => [
+    r.schools.map((s) => s.name).join(" / "), r.email,
+    r.missing.length || r.flags.length ? "" : r.body,
+    r.lastSent ? r.lastSent.date : r.skipped ? "not interested" : "",
+  ]);
+  for (const s of schools) if (!covered.has(s.name)) rows.push([s.name, "", "", ""]);
+  writeFileSync(SHEET_QUEUE_PATH, ["School,Email,Letter,Sent", ...rows.map((r) => r.map(cell).join(","))].join("\n"));
   return { ready: ready.length, readyTotal: readyAll.length, notReady: recipients.length - readyAll.length, cvOk, path: READY_QUEUE_PATH };
 }
