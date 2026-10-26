@@ -86,13 +86,16 @@ export function writeReadyQueue(
   const cell = (s: string) => `"${s.replace(/"/g, '""')}"`;
   // Every school: a letter only when nothing is missing or flagged, so the mailer never sends a broken one;
   // Sent is pre-filled for anyone already written to or ruled out, so the script skips them.
-  const covered = new Set(recipients.flatMap((r) => r.schools.map((s) => s.name)));
-  const rows = recipients.map((r) => [
-    r.schools.map((s) => s.name).join(" / "), r.email,
+  // One row per school (a group address repeats on each of its schools); E says plainly whether it was sent.
+  // shortcut: the sent log keeps the date only, so E has no time for past sends; the script's own D stamp has it.
+  const rows: string[][] = recipients.flatMap((r) => r.schools.map((s) => [
+    s.name, r.email,
     r.missing.length || r.flags.length ? "" : r.body,
     r.lastSent ? r.lastSent.date : r.skipped ? "not interested" : "",
-  ]);
-  for (const s of schools) if (!covered.has(s.name)) rows.push([s.name, "", "", ""]);
-  writeFileSync(SHEET_QUEUE_PATH, ["School,Email,Letter,Sent", ...rows.map((r) => r.map(cell).join(","))].join("\n"));
+    r.lastSent ? `yes, ${r.lastSent.date}` : "no",
+  ]));
+  const covered = new Set(recipients.flatMap((r) => r.schools.map((s) => s.school_key)));
+  for (const s of schools) if (!covered.has(s.school_key)) rows.push([s.name, "", "", "", "no"]);
+  writeFileSync(SHEET_QUEUE_PATH, ["School,Email,Letter,Sent,Already sent", ...rows.map((r) => r.map(cell).join(","))].join("\n"));
   return { ready: ready.length, readyTotal: readyAll.length, notReady: recipients.length - readyAll.length, cvOk, path: READY_QUEUE_PATH };
 }
