@@ -131,7 +131,7 @@ export function emailTabBody(recipients: Recipient[]): string {
 
     const brief = briefText(r, meta);
 
-    return `  <li class="em-item" data-email="${esc(r.email)}" data-country="${esc(r.country ?? "")}" data-tier="${esc(r.tier)}" data-fact="${esc(r.factQuality)}" data-applied-at="${esc(sentDate)}" data-skipped-at="${esc(skipDate)}" data-recent="${r.appliedRecently ? "1" : "0"}" data-form="${r.form ? "1" : "0"}" data-rank="${r.rank ?? ""}" data-share="${r.rankShare != null ? r.rankShare.toFixed(4) : ""}" data-idx="${idx}">
+    return `  <li class="em-item" data-email="${esc(r.email)}" data-schools="${esc(JSON.stringify(names))}" data-flagged="${r.flags.length ? "1" : "0"}"data-country="${esc(r.country ?? "")}" data-tier="${esc(r.tier)}" data-fact="${esc(r.factQuality)}" data-applied-at="${esc(sentDate)}" data-skipped-at="${esc(skipDate)}" data-recent="${r.appliedRecently ? "1" : "0"}" data-form="${r.form ? "1" : "0"}" data-rank="${r.rank ?? ""}" data-share="${r.rankShare != null ? r.rankShare.toFixed(4) : ""}" data-idx="${idx}">
     <label class="tick"><input type="checkbox" class="em-pick" data-mark="rcpt|${esc(r.email)}"><span class="box" aria-hidden="true"></span></label>
     <div>
       <p class="nr-name"><a class="em-mailto" href="mailto:${esc(r.email)}">${esc(r.email)}</a>
@@ -219,6 +219,7 @@ export function emailTabBody(recipients: Recipient[]): string {
   <button type="button" class="em-btn" id="emSelectAll">select all visible</button>
   <button type="button" class="em-btn" id="emSelectNone">clear selection</button>
   <button type="button" class="em-btn primary" id="emCopyAll">copy visible addresses</button>
+  <button type="button" class="em-btn primary" id="emSheetCsv" title="Downloads every school as School, Email, Letter, Sent, Already sent for the Google Sheets mailer">download Sheet CSV</button>
   <button type="button" class="em-btn" id="emExport" title="Download your applied / not-interested marks, then run: npm run import-marks -- marks.json">export marks</button>
   <span class="em-check" style="margin-left:4px">one address per line, for a BCC or a mail-merge list — your call whether they get one shared body or the pre-rendered one each</span>
 </div>
@@ -528,6 +529,29 @@ export const EMAIL_TAB_SCRIPT = `
   if (copyAll) copyAll.addEventListener("click", function () {
     var addresses = visibleItems().map(function (li) { return li.dataset.email; });
     copyText(copyAll, addresses.join("\\n"));
+  });
+
+  // One row per school for the Sheets mailer; the letter sits on a group's first school only,
+  // so a shared address is written to once. Reads the page, so browser marks count as sent.
+  var sheetBtn = document.getElementById("emSheetCsv");
+  if (sheetBtn) sheetBtn.addEventListener("click", function () {
+    var Q = String.fromCharCode(34);
+    function cell(s) { return Q + String(s).split(Q).join(Q + Q) + Q; }
+    var rows = [["School", "Email", "Letter", "Sent", "Already sent"]];
+    items.forEach(function (li) {
+      var pre = li.querySelector(".em-preview pre");
+      var st = stateOf(li);
+      var sent = st.s === "applied" ? st.at : st.s === "skipped" ? "not interested" : "";
+      var names = []; try { names = JSON.parse(li.dataset.schools || "[]"); } catch (e) { /* none */ }
+      names.forEach(function (n, i) {
+        rows.push([n, li.dataset.email, i === 0 && pre && li.dataset.flagged === "0" ? pre.textContent : "", sent, st.s === "applied" ? "yes, " + st.at : "no"]);
+      });
+    });
+    var csv = rows.map(function (r) { return r.map(cell).join(","); }).join("\\n");
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = "sheet-queue.csv";
+    a.click();
   });
 })();
 `;
