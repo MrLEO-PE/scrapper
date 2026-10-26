@@ -15,6 +15,7 @@ import { buildRecipients, type Recipient } from "./recipients.ts";
 import type { SchoolRow } from "../store/db.ts";
 
 export const READY_QUEUE_PATH = join(process.cwd(), "data", "ready-queue.json");
+export const SHEET_QUEUE_PATH = join(process.cwd(), "data", "sheet-queue.csv");
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -81,5 +82,9 @@ export function writeReadyQueue(
     })),
   };
   writeFileSync(READY_QUEUE_PATH, JSON.stringify(queue, null, 2));
+  // For the Apps Script mailer: tab "Schools", columns by position A School, B Email, C Letter, D Sent (left empty).
+  const cell = (s: string) => `"${s.replace(/"/g, '""')}"`;
+  writeFileSync(SHEET_QUEUE_PATH, ["School,Email,Letter,Sent", ...readyAll.map((r) =>
+    [r.schools.map((s) => s.name).join(" / "), r.email, r.body, ""].map(cell).join(","))].join("\n"));
   return { ready: ready.length, readyTotal: readyAll.length, notReady: recipients.length - readyAll.length, cvOk, path: READY_QUEUE_PATH };
 }
