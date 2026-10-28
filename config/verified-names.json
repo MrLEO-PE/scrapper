@@ -1,0 +1,1710 @@
+{
+  "//": "Principals' names a person has checked on the school's own page. A letter greets someone by name only if they are here. See src/export/verifiednames.ts.",
+  "names": {
+    "academia-cotopaxi-american-international-school|ecuador": {
+      "name": "Lural Ramírez",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cotopaxi.k12.ec/about/our-team"
+    },
+    "acg-school-jakarta|indonesia": {
+      "name": "Myles D'airelle",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.jakarta.acgedu.com/our-school/about-us"
+    },
+    "acs-international-singapore|singapore": {
+      "name": "Gavin Kinch",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.acsinternational.edu.sg/en/our-school/principals-message-2/"
+    },
+    "aga-khan-academy-hyderabad|india": {
+      "name": "Dr Jonathan Long",
+      "verifiedOn": "2026-10-28",
+      "source": "http://agakhanacademies.org/hyderabad/meet-faculty"
+    },
+    "aiglon-college|switzerland": {
+      "name": "Nicola Sparrow",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.aiglon.ch/"
+    },
+    "ais-international-school|malaysia": {
+      "name": "Dr. Aravinthan Nagaratnam",
+      "verifiedOn": "2026-10-28",
+      "source": "https://ais-kl.edu.my/welcome-from-principal-of-the-school/"
+    },
+    "aisl-harrow-beijing|china": {
+      "name": "Mr Phil Akerman",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.harrowbeijing.cn/about-us/message-from-the-head/"
+    },
+    "ait-international-school|thailand": {
+      "name": "Mrs. Oluwayemisi Ayoola Thomas",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.aitis.ait.ac.th/about/"
+    },
+    "all-nations-international-school|sri-lanka": {
+      "name": "Mr. Bo Peter Kwon",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.allnations.lk/about-us/history/"
+    },
+    "ambassador-international-academy-mankhool|united-arab-emirates": {
+      "name": "Ms Ruth Burke",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.aiamankhool.com/"
+    },
+    "ambassador-international-academy|united-arab-emirates": {
+      "name": "Mr James Lynch",
+      "verifiedOn": "2026-10-28",
+      "source": "https://aiadubai.com/"
+    },
+    "american-embassy-school|india": {
+      "name": "Rand Harrington",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.aes.ac.in/our-story/directors-welcome"
+    },
+    "american-global-prep-school|cambodia": {
+      "name": "Dr. Harry Hwang",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.agps.school/message-from-the-headmaster"
+    },
+    "american-international-school-abuja|nigeria": {
+      "name": "Greg Hughes",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.aisabuja.org/"
+    },
+    "american-international-school-dhaka|bangladesh": {
+      "name": "John Smithies",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.aisdhaka.org/our-school/from-our-head-of-school"
+    },
+    "american-pacific-international-school|thailand": {
+      "name": "Stacey Gailey",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.apis.ac.th/"
+    },
+    "american-school-bangkok-green-valley-campus|thailand": {
+      "name": "Nisanart Dharmageisirattana",
+      "verifiedOn": "2026-10-28",
+      "source": "https://asbgv.ac.th/leadership-team"
+    },
+    "american-school-dubai|united-arab-emirates": {
+      "name": "Jennifer Sparrow",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.asdubai.org/about/school-leadership"
+    },
+    "american-school-hong-kong|hong-kong": {
+      "name": "Christopher Coates",
+      "verifiedOn": "2026-10-28",
+      "source": "https://ashk.edu.hk"
+    },
+    "antigua-international-school-ais|guatemala": {
+      "name": "Nash Adamson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://antiguais.org/directors-welcome-and-blog/"
+    },
+    "ascot-international-school|thailand": {
+      "name": "Lisa Thorpe",
+      "verifiedOn": "2026-10-28",
+      "source": "https://ascot.ac.th/en/welcome-to-head-of-school/"
+    },
+    "ashiya-international-school|japan": {
+      "name": "Jay Burke",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.aischool.ed.jp/aboutus.php"
+    },
+    "aster-international-school-bangkok|thailand": {
+      "name": "David Figes",
+      "verifiedOn": "2026-10-28",
+      "source": "https://aster.ac.th/welcome/"
+    },
+    "australian-international-school-bangkok|thailand": {
+      "name": "Henri Bemelmans",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.australianisb.ac.th/leadership"
+    },
+    "australian-international-school-malaysia|malaysia": {
+      "name": "Ms Teresa Foard",
+      "verifiedOn": "2026-10-28",
+      "source": "https://aism.edu.my/about-us/our-leadership-team/"
+    },
+    "australian-international-school-phnom-penh|cambodia": {
+      "name": "Scott A. Slabaugh",
+      "verifiedOn": "2026-10-28",
+      "source": "https://aispp.edu.kh/"
+    },
+    "australian-international-school-singapore|singapore": {
+      "name": "Steve Lupton",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.ais.com.sg/"
+    },
+    "axis-international-school|japan": {
+      "name": "Daniel Mahr",
+      "verifiedOn": "2026-10-28",
+      "source": "https://axisk.com/message-from-the-headmaster/"
+    },
+    "bali-island-school|indonesia": {
+      "name": "Dr Heather Millington",
+      "verifiedOn": "2026-10-28",
+      "source": "https://baliinternationalschool.com/welcome-from-head-of-school/"
+    },
+    "bandung-independent-school|indonesia": {
+      "name": "Marci Russell",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.bisedu.or.id/about/head-school-welcome"
+    },
+    "bangkok-grace-international-school|thailand": {
+      "name": "Tae Eun Jung",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.grace.ac.th/about-us/"
+    },
+    "bangkok-international-preparatory-secondary-school|thailand": {
+      "name": "Duncan Stonehouse",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.bangkokprep.ac.th/"
+    },
+    "bangkok-patana-school|thailand": {
+      "name": "Chris Sammons",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.patana.ac.th/life-at-patana/about/academic-leadership/"
+    },
+    "bcis-international-school-phuket|thailand": {
+      "name": "Jeremy Southgate",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.bcisphuket.ac.th/"
+    },
+    "beaconhouse-private-school|united-arab-emirates": {
+      "name": "Matthew Edwards",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.beaconhouse-fhz.ac.ae/pages/message_from_the_principal"
+    },
+    "beanstalk-international-bilingual-school-shunyi|china": {
+      "name": "Ms. Lim Geok Cheng",
+      "verifiedOn": "2026-10-28",
+      "source": "https://shunyi-en.bibs.com.cn/leader.aspx?nid=1&typeid=142"
+    },
+    "beijing-city-international-school|china": {
+      "name": "Tom Egerton",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.bcis.cn/community/leadership"
+    },
+    "beijing-royal-school|china": {
+      "name": "Dr. Wang Guangfa",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.brs.edu.cn/en/from-the-principal-of-school"
+    },
+    "berkeley-academy-multicultural-studies|costa-rica": {
+      "name": "Alex Cortes",
+      "verifiedOn": "2026-10-28",
+      "source": "https://berkeleycr.com/core/leadership/"
+    },
+    "berkeley-academy|costa-rica": {
+      "name": "Alex Cortes",
+      "verifiedOn": "2026-10-28",
+      "source": "https://berkeleycr.com/core/leadership/"
+    },
+    "binus-school-simprug|indonesia": {
+      "name": "Mr. Aaron Wise",
+      "verifiedOn": "2026-10-28",
+      "source": "https://simprug.binus.sch.id/about/principals-welcome"
+    },
+    "bloomingdale-international-school|india": {
+      "name": "Rakesh Pandey",
+      "verifiedOn": "2026-10-28",
+      "source": "https://bloomingdale.edu.in/about"
+    },
+    "branksome-hall-asia|south-korea": {
+      "name": "Claire Berger",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.branksome.asia/about/head-of-schools-message"
+    },
+    "brent-international-school-manila|philippines": {
+      "name": "Mr. Jason Atkins",
+      "verifiedOn": "2026-10-28",
+      "source": "https://brent.edu.ph/about/headmasters-corner/"
+    },
+    "britannica-international-school-budapest|hungary": {
+      "name": "Michael W. Clack",
+      "verifiedOn": "2026-10-28",
+      "source": "https://britannicaschool.hu/about-us/our-principal"
+    },
+    "britannica-international-school-shanghai|china": {
+      "name": "Paul Farrell",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.britannicashanghai.com/"
+    },
+    "british-concordance-international-school|thailand": {
+      "name": "Dr Marc Coleman",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.bcisschool.ac.th/"
+    },
+    "british-embassy-school-ankara-besa|turkey": {
+      "name": "William Phelps",
+      "verifiedOn": "2026-10-28",
+      "source": "https://besaturkey.org"
+    },
+    "british-international-school-ho-chi-minh-city|vietnam": {
+      "name": "Simon Higham",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/bis-hcmc"
+    },
+    "british-international-school-phuket|thailand": {
+      "name": "Simon Meredith",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.bisphuket.ac.th/about-us/administration/"
+    },
+    "british-royal-school|chile": {
+      "name": "Carmen Vera",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.brs.cl"
+    },
+    "british-school-beijing-sanlitun|china": {
+      "name": "Joanne Prabhu",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/bsb-sanlitun"
+    },
+    "british-school-beijing-shunyi|china": {
+      "name": "Bevan Graham",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/bsb-shunyi"
+    },
+    "british-school-caracas|venezuela": {
+      "name": "George Palmer",
+      "verifiedOn": "2026-10-28",
+      "source": "https://tbscaracas.com/message-from-the-head/"
+    },
+    "british-school-in-tokyo|japan": {
+      "name": "Ian Clayton",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.bst.ac.jp/community/senior-leadership-team"
+    },
+    "british-school-jakarta|indonesia": {
+      "name": "Dr Ruth Norris",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.bsj.sch.id/about/principals-welcome"
+    },
+    "british-school-malaga|spain": {
+      "name": "Stefan Rumistrzewicz",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.britishschoolmalaga.com"
+    },
+    "british-school-nanjing|china": {
+      "name": "Matthew Shephard",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/bsn-nanjing"
+    },
+    "british-school-tashkent|uzbekistan": {
+      "name": "Dr André Nel",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/bst-tashkent"
+    },
+    "british-school-yangon|myanmar": {
+      "name": "Gary Willis",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/bsy-yangon"
+    },
+    "british-vietnamese-international-school-hanoi|vietnam": {
+      "name": "Paul Holyome",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/bvis-hanoi"
+    },
+    "british-vietnamese-international-school-ho-chi-minh-city|vietnam": {
+      "name": "Deirdre Grimshaw",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/bvis-hcmc"
+    },
+    "burnside-high-school|new-zealand": {
+      "name": "Scott Haines",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.burnside.school.nz/meet-our-people/"
+    },
+    "cambodia-adventist-international-school|cambodia": {
+      "name": "Mr. Sieng Kimsreng",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cais.edu.kh/principal.html"
+    },
+    "canadian-academy|japan": {
+      "name": "Lindsey Berns",
+      "verifiedOn": "2026-10-28",
+      "source": "https://canacad.ac.jp/discovering/leadership-and-governance"
+    },
+    "canadian-international-school-guangzhou|china": {
+      "name": "Dean Croy",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cisgz.com/aboutus/principal"
+    },
+    "canadian-international-school-phnom-penh|cambodia": {
+      "name": "Ms. Daun Yorke",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.cisp.edu.kh/about-us"
+    },
+    "canadian-international-school-tokyo|japan": {
+      "name": "Kevin Passafiume",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.cisjapan.net/message/"
+    },
+    "canadian-international-school|vietnam": {
+      "name": "Dr. Chandra McGowan",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cis.edu.vn/en/about-us"
+    },
+    "canary-international-school|malaysia": {
+      "name": "Ms Rebecca Lai",
+      "verifiedOn": "2026-10-28",
+      "source": "https://canaryis.edu.my/about-us/"
+    },
+    "charis-international-school|malaysia": {
+      "name": "Dr. Debra Sim",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.charis.edu.my/staff"
+    },
+    "charter-international-school|thailand": {
+      "name": "Neil Elrick",
+      "verifiedOn": "2026-10-28",
+      "source": "https://charter.ac.th/head-of-school-blog/"
+    },
+    "chatsworth-international-school|singapore": {
+      "name": "Dr. Tyler Sherwood",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.chatsworth.com.sg/"
+    },
+    "chengdu-international-school|china": {
+      "name": "Grace Hale",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cdischina.com/about/staff"
+    },
+    "chiang-mai-international-school|thailand": {
+      "name": "Tony Fred",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cmis.ac.th/about"
+    },
+    "chinese-international-school-manila|philippines": {
+      "name": "Angelica Fernandez De Castro",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cismanila.org/about-us/leadership/"
+    },
+    "christian-academy-in-japan|japan": {
+      "name": "David Mawhinney",
+      "verifiedOn": "2026-10-28",
+      "source": "https://caj.ac.jp/about/index.php"
+    },
+    "christian-alliance-international-school|hong-kong": {
+      "name": "Daniel Schick",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.caisbv.edu.hk/hos-welcome/"
+    },
+    "christian-alliance-pc-lau-memorial-international-school|hong-kong": {
+      "name": "Dr. Cora Hui",
+      "verifiedOn": "2026-10-28",
+      "source": "https://capcl.edu.hk/head-of-schools-welcome/"
+    },
+    "clifford-international-school|china": {
+      "name": "Yvan Zebroff",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cliffordschool.org/about-us/principals-message/"
+    },
+    "colegio-altair|peru": {
+      "name": "Daniel Kasnick",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.altair.edu.pe/en/our-school/about-us"
+    },
+    "colegio-americano-de-quito|ecuador": {
+      "name": "Cristina Pachano",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.fcaq.k12.ec/about/leadershipmain"
+    },
+    "colegio-bolivar|colombia": {
+      "name": "Dr. Jessica Marie Gilway",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.colegiobolivar.edu.co/website/our-leadership-the-rector/"
+    },
+    "colegio-cambridge-cali|colombia": {
+      "name": "Patricia Escobar",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cambridgecali.edu.co/our-team/"
+    },
+    "colegio-franklin-delano-roosevelt-american-school-lima|peru": {
+      "name": "Patricia Marshall",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.amersol.edu.pe/who-we-are/superintendents-message"
+    },
+    "colegio-gran-bretana|colombia": {
+      "name": "Joe Jalil Hover",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.cgb.edu.co/"
+    },
+    "colegio-jorge-washington|colombia": {
+      "name": "Nick Glab",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cojowa.edu.co/"
+    },
+    "colegio-la-colina|colombia": {
+      "name": "Jhon Hickey",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.colegiolacolinaclc.edu.co/en"
+    },
+    "colegio-menor-quito|ecuador": {
+      "name": "Monica Chiriboga",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.colegiomenor.edu.ec/about-us/welcome-from-our-general-director-quito"
+    },
+    "colegio-menor|ecuador": {
+      "name": "Krizia Loffredo",
+      "verifiedOn": "2026-10-28",
+      "source": "https://colegiomenor.edu.ec/samborondon"
+    },
+    "colegio-nueva-granada|colombia": {
+      "name": "Dr. Frank Volpe",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.cng.edu/discover-cng/meet-our-director"
+    },
+    "colegio-progresso-bilingue-itu|brazil": {
+      "name": "Elisete Prado",
+      "verifiedOn": "2026-10-28",
+      "source": "https://colegioprogresso.com.br"
+    },
+    "colegio-santa-francisca-romana|colombia": {
+      "name": "Gabriela Casanova",
+      "verifiedOn": "2026-10-28",
+      "source": "https://csfr.edu.co/"
+    },
+    "colegio-terranova-internacional|ecuador": {
+      "name": "Enrique Pérez García",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.colegioterranova.edu.ec/en"
+    },
+    "collegiate-international-school|united-arab-emirates": {
+      "name": "Jonathan Cox",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.collegiate.sch.ae/"
+    },
+    "columbus-school|colombia": {
+      "name": "Ruth Allen",
+      "verifiedOn": "2026-10-28",
+      "source": "https://columbus.edu.co/about-our-superintendent/"
+    },
+    "concordia-international-school-shanghai|china": {
+      "name": "Dr. Eric Semler",
+      "verifiedOn": "2026-10-28",
+      "source": "https://concordiashanghai.org/about/leadership"
+    },
+    "concordian-international-school|thailand": {
+      "name": "Laurent Goetschmann",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.concordian.ac.th/about/"
+    },
+    "cornerstone-international-school|malaysia": {
+      "name": "Monica Xavier",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cornerstone.edu.my/about-us/"
+    },
+    "crescendo-help-international-school|malaysia": {
+      "name": "Mr Myles Jackson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://chis.edu.my/principals-message/"
+    },
+    "dalian-american-international-school|china": {
+      "name": "Dr. Craig Wilson",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.daischina.org/"
+    },
+    "dar-es-salaam-independent-school|tanzania": {
+      "name": "Catherine Shindika",
+      "verifiedOn": "2026-10-28",
+      "source": "https://dis.ac.tz/staff"
+    },
+    "dbs-denla-british-school-bangkok|thailand": {
+      "name": "Jonny Liddell",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.dbsbangkok.ac.th/headmaster-message/"
+    },
+    "dehong-xi-an-school|china": {
+      "name": "Lily Liu",
+      "verifiedOn": "2026-10-28",
+      "source": "https://xian.dehong.cn/our-school/from-our-principal"
+    },
+    "diocesan-boys-school|hong-kong": {
+      "name": "Mr. Cheng Kay Yen Ronnie",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.dbs.edu.hk/index.php?s=dbs&m=profile"
+    },
+    "dubai-english-speaking-school-academic-city|united-arab-emirates": {
+      "name": "Sam Bowen",
+      "verifiedOn": "2026-10-28",
+      "source": "https://dess.sch.ae/dess-academic-city"
+    },
+    "dubai-international-academy-al-barsha|united-arab-emirates": {
+      "name": "David Hicks",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.diabarsha.com/"
+    },
+    "dulwich-college-singapore|singapore": {
+      "name": "David Ingram",
+      "verifiedOn": "2026-10-28",
+      "source": "https://singapore.dulwich.org/"
+    },
+    "dwight-school-hanoi|vietnam": {
+      "name": "Jason Hayter",
+      "verifiedOn": "2026-10-28",
+      "source": "https://dwighthanoi.org/about-dwight-school-hanoi/welcome-to-dwight-school-hanoi/"
+    },
+    "dwight-school-seoul|south-korea": {
+      "name": "Adam Patterson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://dwight.or.kr/"
+    },
+    "edquest-international-school|malaysia": {
+      "name": "Ain Nafiza",
+      "verifiedOn": "2026-10-28",
+      "source": "https://edquest.edu.my/pages/leadership-team"
+    },
+    "ela-murray-international-school|papua-new-guinea": {
+      "name": "Craig Gibson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.temis.iea.ac.pg/about-our-school/senior-leadership-team"
+    },
+    "english-college-dubai|united-arab-emirates": {
+      "name": "Emily Hopkinson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://englishcollegedubai.com/"
+    },
+    "english-school|colombia": {
+      "name": "Mr Adam Bennett",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.englishschool.edu.co/en/discover/welcome/"
+    },
+    "epsom-college-malaysia|malaysia": {
+      "name": "Mrs Avis Parker",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.epsomcollege.edu.my/about-us/welcome-from-headmaster/"
+    },
+    "fairmont-international-school-vietnam|vietnam": {
+      "name": "Allen McInnis",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.fairmontschools.edu.vn/our-school/our-team"
+    },
+    "fukuoka-international-school|japan": {
+      "name": "Brian Freeman",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.fis.ed.jp/about/welcome-from-the-head-of-school"
+    },
+    "garden-international-school-rayong|thailand": {
+      "name": "Ms Jackie Houghton",
+      "verifiedOn": "2026-10-28",
+      "source": "https://gardenrayong.com/about-gis/principals-welcome/"
+    },
+    "garden-international-school|malaysia": {
+      "name": "Peter J. Derby-Crook",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.gardenschool.edu.my/"
+    },
+    "gems-american-academy-qatar-gaaq|qatar": {
+      "name": "Dr Susan Borden",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.gemsamericanacademy-qatar.com/"
+    },
+    "gems-firstpoint-school-villa|united-arab-emirates": {
+      "name": "Rebecca Crean",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.gemsfirstpointschool-dubai.com"
+    },
+    "gems-founders-mizhar-school|united-arab-emirates": {
+      "name": "Mr. Akram Tarik",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.gemsfoundersschool-mizhar.com"
+    },
+    "gems-founders-school-dubai|united-arab-emirates": {
+      "name": "Matthew Burfield",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.gemsfoundersschool-dubai.com/"
+    },
+    "gems-founders-school-masdar-city|united-arab-emirates": {
+      "name": "Albie Huyser",
+      "verifiedOn": "2026-10-28",
+      "source": "https://gemsfoundersschool-masdarcity.com"
+    },
+    "gems-wellington-academy-silicon-oasis|united-arab-emirates": {
+      "name": "Sarah O’Regan",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.gemswellingtonacademy-dso.com/en/welcome-message-from-the-principal"
+    },
+    "gems-wellington-dubai-hills|united-arab-emirates": {
+      "name": "Ann Haydon",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.gemswellington-dubaihills.com/en/"
+    },
+    "german-school-kuala-lumpur|malaysia": {
+      "name": "Oliver Schannath",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.dskl.edu.my/en/abount-us/organization/principal/"
+    },
+    "gig-international-school|singapore": {
+      "name": "Robin Hamilton",
+      "verifiedOn": "2026-10-28",
+      "source": "https://gigis.edu.sg/home/"
+    },
+    "gimnasio-vermont|colombia": {
+      "name": "Raquel Rojas",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.gimnasiovermont.edu.co/en/about-us/staff/"
+    },
+    "global-leaders-international-school|philippines": {
+      "name": "Jeffrey Tan",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.glis.edu.ph/about-us"
+    },
+    "grace-international-school|thailand": {
+      "name": "Andrew Bowers",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.gisthailand.org/"
+    },
+    "grange-school|chile": {
+      "name": "Kate Ingamells-Bland",
+      "verifiedOn": "2026-10-28",
+      "source": "https://grange.cl/"
+    },
+    "greenacre-international-school|thailand": {
+      "name": "Mr Dara Nagle",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.greenacre.ac.th/about-us/head-of-school-welcome"
+    },
+    "guangdong-country-garden-school|china": {
+      "name": "Jason Cheng",
+      "verifiedOn": "2026-10-28",
+      "source": "https://bgy.gd.cn/en/gltdlb.html?lang=en"
+    },
+    "haileybury-almaty|kazakhstan": {
+      "name": "John Coles",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.haileybury.kz/en/astana/welcome-from-headmaster"
+    },
+    "hanoi-international-school|vietnam": {
+      "name": "Bradley Ringrose",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.hisvietnam.com/about-his/welcome-to-his"
+    },
+    "harare-international-school|zimbabwe": {
+      "name": "Dr. Gregory J. Moncada",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.harare-international-school.com/about-his/directors-message"
+    },
+    "harrow-international-school-appi-japan|japan": {
+      "name": "Stephen Tong",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.harrowappi.jp/the-school/message-from-the-head/"
+    },
+    "harrow-international-school-bangkok|thailand": {
+      "name": "James Murphy-O’Connor",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.harrowschool.ac.th/about-us/from-the-head-master"
+    },
+    "harrow-international-school-shanghai|china": {
+      "name": "Christopher McAllister",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.harrowshanghai.cn/the-school/head-masters-welcome/"
+    },
+    "harrow-lide-school-chongqing|china": {
+      "name": "Aaron Lennon",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.harrowchongqing.cn/the-school/senior-leadership-team/"
+    },
+    "havil-international-school|malaysia": {
+      "name": "Priscilla Koh",
+      "verifiedOn": "2026-10-28",
+      "source": "https://havil.edu.my/havil-team/"
+    },
+    "hayat-universal-school-hubs|qatar": {
+      "name": "Alia Hamadani",
+      "verifiedOn": "2026-10-28",
+      "source": "http://hayatschool.com/qatar/qatarmain.htm"
+    },
+    "heathfield-international-school|thailand": {
+      "name": "Joseph Pine",
+      "verifiedOn": "2026-10-28",
+      "source": "https://heathfield.ac.th/welcome-letter/"
+    },
+    "hebron-school|india": {
+      "name": "Richard Naylor",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.hebronooty.org"
+    },
+    "heritage-academy-singapore|singapore": {
+      "name": "Mr Lau Chai Joo",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.heritageacademy.edu.sg/about-us/message-from-the-administrator/"
+    },
+    "hibiscus-international-school|malaysia": {
+      "name": "Halimah Ubaidullah",
+      "verifiedOn": "2026-10-28",
+      "source": "https://hibiscus.edu.my/our-team/"
+    },
+    "hope-international-school|cambodia": {
+      "name": "Adam Ecklund",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.hope.edu.kh/staff/"
+    },
+    "horizon-academy-sendai-campus|japan": {
+      "name": "M.Huseyin Samirtkan",
+      "verifiedOn": "2026-10-28",
+      "source": "https://sendai.horizon.ac.jp/en/about.html"
+    },
+    "horizon-international-bilingual-school|vietnam": {
+      "name": "Noah Park",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.horizon.edu.vn/eng/hanoi/about-us/"
+    },
+    "hua-xia-international-school|malaysia": {
+      "name": "Jaansi Devi",
+      "verifiedOn": "2026-10-28",
+      "source": "https://hxis.huaxia.edu.my/principals-message/"
+    },
+    "hwa-chong-international-school|singapore": {
+      "name": "Linda Lee",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.hcis.edu.sg/"
+    },
+    "ignite-school|united-arab-emirates": {
+      "name": "Mrs. Wedad Saada",
+      "verifiedOn": "2026-10-28",
+      "source": "https://igniteschool.ae/meetourteam"
+    },
+    "international-christian-school-uijeongbu|south-korea": {
+      "name": "Rachel Carpenter",
+      "verifiedOn": "2026-10-28",
+      "source": "https://icsu.kr/director"
+    },
+    "international-community-school|singapore": {
+      "name": "Darryl Harding",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.ics.edu.sg/about-us/leadership-and-governance/administration-team"
+    },
+    "international-school-bangkok|thailand": {
+      "name": "Dr. Daisy Pellant",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.isb.ac.th/about-isb/head-of-school-message"
+    },
+    "international-school-choueifat-6-october|egypt": {
+      "name": "Sarah Hamdy",
+      "verifiedOn": "2026-10-28",
+      "source": "https://isc6october.sabis.net/"
+    },
+    "international-school-eastern-seaboard|thailand": {
+      "name": "So Hyoung An",
+      "verifiedOn": "2026-10-28",
+      "source": "https://ise.ac.th/about-us/senior-leadership-team/"
+    },
+    "international-school-ho-chi-minh-city|vietnam": {
+      "name": "Mr. Marco Longmore",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.ishcmc.com/head-of-school/"
+    },
+    "international-school-laos-isl|laos": {
+      "name": "Mr Bujar Muzhaqi",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.isl.edu.la/"
+    },
+    "international-school-latvia|latvia": {
+      "name": "Dr. Amanda Romey",
+      "verifiedOn": "2026-10-28",
+      "source": "https://isriga.lv/about-isr/message-from-the-director/"
+    },
+    "international-school-moscow|russian-federation": {
+      "name": "Chris Charlton",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/ism-moscow/"
+    },
+    "international-school-sacred-heart|japan": {
+      "name": "Sr Anne Wachter",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.issh.ac.jp/about/welcome"
+    },
+    "international-school-seychelles|seychelles": {
+      "name": "Mrs Elodie Vallantine",
+      "verifiedOn": "2026-10-28",
+      "source": "https://iss.sc/headteacherwelcome/"
+    },
+    "international-schools-north-america-saigon-south|vietnam": {
+      "name": "Dr. Robert Mullins",
+      "verifiedOn": "2026-10-28",
+      "source": "https://sna.edu.vn/message-from-the-head-of-school/"
+    },
+    "international-st-jude-school|costa-rica": {
+      "name": "Kathryn Scanlan",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.stjude.ed.cr/en"
+    },
+    "international-talent-academy|uzbekistan": {
+      "name": "Laziza Yusupova",
+      "verifiedOn": "2026-10-28",
+      "source": "https://ita-school.uz/"
+    },
+    "iqraa-american-school|kuwait": {
+      "name": "Ms. Shaima Al-Farhan",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.iqraa.edu.kw/new_content.php?about_id=37"
+    },
+    "ise-international-school-eastern-seaboard|thailand": {
+      "name": "So Hyoung An",
+      "verifiedOn": "2026-10-28",
+      "source": "https://ise.ac.th/about-us/senior-leadership-team/"
+    },
+    "island-private-school|cyprus": {
+      "name": "Mr. James Kearney",
+      "verifiedOn": "2026-10-28",
+      "source": "https://isl.cy/leadershipteam"
+    },
+    "istanbul-international-community-school|turkey": {
+      "name": "Nicolaas Mostert",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.iics.k12.tr/head-of-school-message/"
+    },
+    "jakarta-intercultural-school|indonesia": {
+      "name": "Maya Nelson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.jisedu.or.id/about/school-leadership"
+    },
+    "josef-schwarz-schule-erlenbach|germany": {
+      "name": "Marius Weinkauf",
+      "verifiedOn": "2026-10-28",
+      "source": "https://josef-schwarz-schule.phorms.de/en/"
+    },
+    "kais-international-school|japan": {
+      "name": "Maha Sadi",
+      "verifiedOn": "2026-10-28",
+      "source": "https://kainternationalschool.com/about-us/"
+    },
+    "kajonkiet-international-school-phuket|thailand": {
+      "name": "Gareth Eynon",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.kisp.academy/portfolio/welcome-from-the-principal/"
+    },
+    "kansai-christian-school|japan": {
+      "name": "Andrew Steward",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.kansaichristianschool.com/about/welcome"
+    },
+    "kaohsiung-american-school|taiwan": {
+      "name": "Dr. Paul E. Ducharme",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.kas.tw/welcome/"
+    },
+    "kellett-school-pok-fu-lam-prep|hong-kong": {
+      "name": "Paul Tough",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.kellettschool.com/defining-kellett/principal-s-welcome"
+    },
+    "kent-college-west-cairo|egypt": {
+      "name": "Mr. Robin Silk",
+      "verifiedOn": "2026-10-28",
+      "source": "https://kentcollegeegypt.com/mr-robin-silk/"
+    },
+    "king-henry-viii-college|malaysia": {
+      "name": "Martin Davis",
+      "verifiedOn": "2026-10-28",
+      "source": "https://kinghenryviii.edu.my/welcome-from-head-of-school"
+    },
+    "king-s-college-international-school-bangkok|thailand": {
+      "name": "Mrs Sarah Raffray",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.kingsbangkok.ac.th/en"
+    },
+    "king-s-college-riyadh|saudi-arabia": {
+      "name": "Jacqueline Doran",
+      "verifiedOn": "2026-10-28",
+      "source": "https://kingscollegeriyadh.com/principals-welcome/"
+    },
+    "king-s-college-school-bahamas|bahamas": {
+      "name": "Matteo Rossetti",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.kingscollegeschool.bs/about-us/our-team"
+    },
+    "king-s-college-wimbledon-ho-chi-minh-city|vietnam": {
+      "name": "Mr. Kieran McLaughlin",
+      "verifiedOn": "2026-10-28",
+      "source": "https://kingshcmc.edu.vn/about-us/message"
+    },
+    "king-s-high-school|new-zealand": {
+      "name": "Nick McIvor",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.kingshigh.school.nz/our-school/rectors-welcome/"
+    },
+    "king-s-school-vattanacville|cambodia": {
+      "name": "Carrie Cameron",
+      "verifiedOn": "2026-10-28",
+      "source": "https://kingsvattanacville.com/"
+    },
+    "kohana-international-school|japan": {
+      "name": "Dr. Nishant Mishra",
+      "verifiedOn": "2026-10-28",
+      "source": "https://kohanainternationalschool.com/principal/"
+    },
+    "korea-international-school-pangyo-campus|south-korea": {
+      "name": "Dr. SunShik Min",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.kis.or.kr/about-us/headmasters-welcome"
+    },
+    "korea-kent-foreign-school|south-korea": {
+      "name": "Mr. Justin Barg",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.kkfs.org/about-kkfs/history/"
+    },
+    "kyoto-international-school|japan": {
+      "name": "Matt Topliss",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.kis.ac.jp/"
+    },
+    "la-paz-community-school-tempisque|costa-rica": {
+      "name": "Abel McClennen",
+      "verifiedOn": "2026-10-28",
+      "source": "https://lapazschool.org/en/about-us/who-we-are"
+    },
+    "la-petite-ecole-ho-chi-minh|vietnam": {
+      "name": "Bertrand Malifarges",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.lpehochiminh.com/en/about/few-words-directors/"
+    },
+    "lady-elizabeth-school|spain": {
+      "name": "Chris Akin",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.ladyelizabethschool.com"
+    },
+    "leman-international-school-chengdu|china": {
+      "name": "Tracy Connor",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/lis-chengdu"
+    },
+    "life-plus|united-arab-emirates": {
+      "name": "Elliot Miller",
+      "verifiedOn": "2026-10-28",
+      "source": "https://yhischina.com/about/staff"
+    },
+    "lycee-francais-de-bali|indonesia": {
+      "name": "Christian-Yves Michelon",
+      "verifiedOn": "2026-10-28",
+      "source": "https://lfbali.com/about-lfb/"
+    },
+    "lycee-international-francais-de-taipei|taiwan": {
+      "name": "Christophe Imard",
+      "verifiedOn": "2026-10-28",
+      "source": "https://lift.tw/en/our-teams/"
+    },
+    "macleans-college|new-zealand": {
+      "name": "Steven Hargreaves",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.macleans.school.nz/about/about-macleans/principals-welcome"
+    },
+    "mahsa-international-school|malaysia": {
+      "name": "Mehala Mohan",
+      "verifiedOn": "2026-10-28",
+      "source": "https://miskl.edu.my/principal-welcome.php"
+    },
+    "makuhari-international-school|japan": {
+      "name": "Anthony Hall",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.mis.ed.jp/about/message/"
+    },
+    "malvern-college-hong-kong|hong-kong": {
+      "name": "Edward Wright",
+      "verifiedOn": "2026-10-28",
+      "source": "https://malverncollege.org.hk/headmasters-welcome/meet-the-headmaster/"
+    },
+    "malvern-college-tokyo|japan": {
+      "name": "Ewan McCallum",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.malverncollegetokyo.jp/about-us/headmasters-welcome/"
+    },
+    "manila-japanese-school|philippines": {
+      "name": "Watanabe Madoka",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.mjs.ph/en/principals-message"
+    },
+    "marist-brothers-international-school|japan": {
+      "name": "Shawn Hutchinson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://marist.ac.jp/message-from-the-head-of-school/"
+    },
+    "markham-college|peru": {
+      "name": "Dr Judy Cooper",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.markham.edu.pe/"
+    },
+    "marlborough-college-malaysia|malaysia": {
+      "name": "Simon Burbury",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.marlboroughcollegemalaysia.org/about-us/masters-welcome/"
+    },
+    "merchiston-academy-songshan-lake|china": {
+      "name": "Benjamin Webster",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.merchistonacademy.cn/en"
+    },
+    "mont-kiara-international-school|malaysia": {
+      "name": "Dr. Matthew Boomhower",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.mkis.edu.my/"
+    },
+    "moreton-bay-boys-college|australia": {
+      "name": "Mr Andrew Holmes",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.mbbc.qld.edu.au/"
+    },
+    "morogoro-international-school|tanzania": {
+      "name": "Lisa Talley",
+      "verifiedOn": "2026-10-28",
+      "source": "https://mis.co.tz/about_mis/school-leadership/"
+    },
+    "morrison-academy-taipei|taiwan": {
+      "name": "Melissa Brabon",
+      "verifiedOn": "2026-10-28",
+      "source": "https://taipei.ma.org.tw/about-us/principals-welcome/"
+    },
+    "muna-british-academy-primary|united-arab-emirates": {
+      "name": "Mr Ian Pugh",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.munabritishacademy.ae/"
+    },
+    "muna-british-academy|united-arab-emirates": {
+      "name": "Mr Ian Pugh",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.munabritishacademy.ae/"
+    },
+    "muscat-international-school-by-amity|oman": {
+      "name": "Mr. David Flint",
+      "verifiedOn": "2026-10-28",
+      "source": "https://mis.edu.om/contact-us"
+    },
+    "nagoya-international-school|japan": {
+      "name": "Matthew Parr",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nis.ac.jp/about/leadership-governance"
+    },
+    "nakornpayap-international-school|thailand": {
+      "name": "Mr. Benjamin Devere White",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nis.ac.th/"
+    },
+    "nansha-college-preparatory-academy|china": {
+      "name": "Stephen Holroyd",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.ncpachina.org/en/about-ncpa/school-profile"
+    },
+    "neerja-modi-school|india": {
+      "name": "Indu Dubey",
+      "verifiedOn": "2026-10-28",
+      "source": "https://nmsindia.org/about-us/our-leadership"
+    },
+    "network-international-school|myanmar": {
+      "name": "Stephen Buckland",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.networkinternationalschool.com/about-us/principals-welcome"
+    },
+    "new-cairo-british-international-school|egypt": {
+      "name": "Paul Joseph",
+      "verifiedOn": "2026-10-28",
+      "source": "https://ncbis.co.uk/about-us/meet-the-principal/"
+    },
+    "nexus-international-school-malaysia|malaysia": {
+      "name": "David Griffiths",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nexus.edu.my/about-nexus/leadership-team/"
+    },
+    "nilai-international-school|malaysia": {
+      "name": "Dr. Thong Weng Hing",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nis.edu.my/about-nis/principal"
+    },
+    "nord-anglia-international-school-dubai|united-arab-emirates": {
+      "name": "Kenny Duncan",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.nordangliaeducation.com/our-schools/dubai"
+    },
+    "nord-anglia-international-school-manila|philippines": {
+      "name": "Alison Fox",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/nais-manila"
+    },
+    "nord-anglia-international-school-shanghai-pudong|china": {
+      "name": "Richard Thompson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/nais-pudong"
+    },
+    "north-london-collegiate-school-jeju|south-korea": {
+      "name": "Henry Wiggins",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nlcsjeju.co.kr"
+    },
+    "north-london-collegiate-school-kobe|japan": {
+      "name": "Matthew Williams",
+      "verifiedOn": "2026-10-28",
+      "source": "https://nlcskobe.jp/"
+    },
+    "north-london-collegiate-school-singapore|singapore": {
+      "name": "Mr Paul Friend",
+      "verifiedOn": "2026-10-28",
+      "source": "https://nlcssingapore.sg/"
+    },
+    "northbridge-international-school-cambodia|cambodia": {
+      "name": "Christopher Short",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/nisc-cambodia"
+    },
+    "northwest-bilingual-school|kuwait": {
+      "name": "Ms. Zeina Sabbagh",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.northwest.edu.kw/superintendent/"
+    },
+    "norwich-international-school|thailand": {
+      "name": "Stephen O’Connor",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.norwichschool.ac.th/our-school/senior-leadership-team/"
+    },
+    "nucb-international-college|japan": {
+      "name": "Robert Chaytor",
+      "verifiedOn": "2026-10-28",
+      "source": "https://ic.nucba.ac.jp/college/leadership/"
+    },
+    "oak-meadow-international-school|thailand": {
+      "name": "Dr. Pakamas Homkor",
+      "verifiedOn": "2026-10-28",
+      "source": "https://oakmeadow.ac.th/pages/leadership-team"
+    },
+    "okinawa-christian-school-international|japan": {
+      "name": "Megan Roe",
+      "verifiedOn": "2026-10-28",
+      "source": "https://ocsi.org/ourschool/leadership/"
+    },
+    "orbix-international-school-klang|malaysia": {
+      "name": "Dr. Chong Yee May",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.orbix.edu.my/about"
+    },
+    "osaka-international-school|japan": {
+      "name": "Kurt Mecklem",
+      "verifiedOn": "2026-10-28",
+      "source": "https://sois.kwansei.ac.jp/osaka-international-school/about/from-the-head-clone"
+    },
+    "osaka-ymca-international-school|japan": {
+      "name": "Yuki Konishi",
+      "verifiedOn": "2026-10-28",
+      "source": "https://oyis.org/about-us/our-leadership/"
+    },
+    "pathways-world-school-gurugram|india": {
+      "name": "Mr. Malcolm Nicolson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.pws.edu.in/"
+    },
+    "pembridge-hall-school|united-kingdom": {
+      "name": "Mrs Sophie Banks",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.pembridgehall.co.uk/our-school/our-team"
+    },
+    "perse-school-singapore|singapore": {
+      "name": "Mark Preece",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.perse.edu.sg/our-team/leadership/"
+    },
+    "picacho-mcgregor-school|mexico": {
+      "name": "Dr. Justin Reynolds",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.cepicacho.edu.mx/inside/principal-message"
+    },
+    "pinehurst-school|new-zealand": {
+      "name": "Mike Waller",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.pinehurst.school.nz/about-our-school/executive-principals-welcome/"
+    },
+    "prasan-gateway-international-school|thailand": {
+      "name": "Ian Brett Windsor",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.pgisphuket.com/meet-our-leaders-and-teachers"
+    },
+    "queen-elizabeth-s-school-dubai-sports-city|united-arab-emirates": {
+      "name": "Mr Dan Clark",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.qedubaisportscity.com/"
+    },
+    "queenwood-school-girls-junior|australia": {
+      "name": "Marise McConaghy",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.queenwood.nsw.edu.au/"
+    },
+    "raffles-american-school|malaysia": {
+      "name": "Dr Alexander Pethan",
+      "verifiedOn": "2026-10-28",
+      "source": "https://raffles-american-school.edu.my/welcome-message/"
+    },
+    "raffles-world-academy|united-arab-emirates": {
+      "name": "Timothy Roberts",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.rwadubai.com/home/"
+    },
+    "rangitoto-college|new-zealand": {
+      "name": "Greg Thornton",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.rangitoto.school.nz/our-school/principals-welcome/"
+    },
+    "rbis-international-school|thailand": {
+      "name": "Giles Mongare",
+      "verifiedOn": "2026-10-28",
+      "source": "https://rbis.ac.th/headmasters-welcome/"
+    },
+    "rd-american-school|singapore": {
+      "name": "Dr. Erica Gale Smeltzer",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.rdas.edu.sg/about-us"
+    },
+    "redcol|colombia": {
+      "name": "Carolina Charry",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cambridge.edu.co"
+    },
+    "regent-international-school-ris|united-arab-emirates": {
+      "name": "Mr. David Williams",
+      "verifiedOn": "2026-10-28",
+      "source": "https://risdubai.com/about/principals-message/"
+    },
+    "regent-s-international-school-bangkok|thailand": {
+      "name": "Carl Mincher",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/risb-bangkok/"
+    },
+    "regents-international-school-pattaya|thailand": {
+      "name": "Amos Turner-Wardell",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/risp-pattaya"
+    },
+    "reigate-grammar-school-istanbul|turkey": {
+      "name": "Duncan Silcock",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.reigategrammar-istanbul.com/headmasters-welcome/"
+    },
+    "reigate-grammar-school-vietnam|vietnam": {
+      "name": "Mr Shaun Fenton",
+      "verifiedOn": "2026-10-28",
+      "source": "https://reigategrammar.edu.vn/"
+    },
+    "renaissance-international-school-saigon|vietnam": {
+      "name": "Mr. Andy Roberts",
+      "verifiedOn": "2026-10-28",
+      "source": "https://renaissance.edu.vn/welcome-message-from-head-of-school/"
+    },
+    "rising-oaks-international-school-bangkok|thailand": {
+      "name": "Mr. Jagnain Singh Malhotra",
+      "verifiedOn": "2026-10-28",
+      "source": "https://roisb.ac.th/about"
+    },
+    "riverside-international-school-primary|czech-republic": {
+      "name": "Graeme Chisholm",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.riversideschool.cz/"
+    },
+    "riverside-school|czechia": {
+      "name": "Graeme Chisholm",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.riversideschool.cz/"
+    },
+    "royal-english-programme-school|thailand": {
+      "name": "Mr. Grant Gibson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://repsbanchang.com/welcome/"
+    },
+    "rushmore-american-school|united-arab-emirates": {
+      "name": "Emma Baker",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.rushmoreamericanschool.ae/our-principal.html"
+    },
+    "safa-community-school|united-arab-emirates": {
+      "name": "Leanne Fridd",
+      "verifiedOn": "2026-10-28",
+      "source": "https://safacommunityschool.com/principals-welcome"
+    },
+    "saigon-international-college|vietnam": {
+      "name": "Ms. To Ha Uyen",
+      "verifiedOn": "2026-10-28",
+      "source": "https://sic.edu.vn/en/welcome-from-sic-principal"
+    },
+    "saint-maur-international-school|japan": {
+      "name": "Mrs Levy",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.stmaur.ac.jp/about-us/people/leadership-team"
+    },
+    "samuel-marsden-collegiate-school|new-zealand": {
+      "name": "Paula Wells",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.marsden.school.nz/"
+    },
+    "satit-bilingual-school-rangsit-university|thailand": {
+      "name": "Mr Wayne Harding",
+      "verifiedOn": "2026-10-28",
+      "source": "https://sbs.ac.th/headmaster/"
+    },
+    "sbs-international-school-chiangmai|thailand": {
+      "name": "Mr. Lee Phillips",
+      "verifiedOn": "2026-10-28",
+      "source": "https://sbscm.ac.th/headmaster/"
+    },
+    "scis|china": {
+      "name": "Daniel D. Eschtruth",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.scis-china.org/about/welcome"
+    },
+    "scots-college|new-zealand": {
+      "name": "Graeme Yule",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.scotscollege.school.nz/about/headmasters-welcome"
+    },
+    "seisen-international-school|japan": {
+      "name": "Colette Rogers",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.seisen.com/about/leadership"
+    },
+    "sek-los-valles-international-school|ecuador": {
+      "name": "Manuel Carrasco",
+      "verifiedOn": "2026-10-28",
+      "source": "https://seklosvalles.ec/en/about-us/"
+    },
+    "sekolah-lentera-kasih|indonesia": {
+      "name": "Jennifer Pernia",
+      "verifiedOn": "2026-10-28",
+      "source": "https://slkbali-lollypop.com/about_us"
+    },
+    "seoul-scholars-international|south-korea": {
+      "name": "Paul Yoon",
+      "verifiedOn": "2026-10-28",
+      "source": "https://seoulscholars.org/about-us-2/"
+    },
+    "sequoia-nova-international-primary-school|thailand": {
+      "name": "Christophe Galian",
+      "verifiedOn": "2026-10-28",
+      "source": "https://sequoia-nova.com/about-sequoia-nova/"
+    },
+    "seri-botani-international-school|malaysia": {
+      "name": "Mr. Andrew Hamilton",
+      "verifiedOn": "2026-10-28",
+      "source": "https://sbis.edu.my/homepage/introduction/"
+    },
+    "shanghai-singapore-international-school|china": {
+      "name": "David Shirley",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.ssis.asia/about-us/core-leadership-team/"
+    },
+    "shanghai-smic-private-school|china": {
+      "name": "Flora Zhuang",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.smicschool.com/about/leadership/"
+    },
+    "shenzhen-college-international-education|china": {
+      "name": "Neil Mobsby",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.scie.com.cn/welcome-from-principal/"
+    },
+    "shrewsbury-international-school-phnom-penh|cambodia": {
+      "name": "Barry Sutherland",
+      "verifiedOn": "2026-10-28",
+      "source": "https://shrewsbury.edu.kh/meet-our-team/"
+    },
+    "siam-singapore-international-school|thailand": {
+      "name": "Ms. Christina Chan",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.siamsingapore.com/"
+    },
+    "singapore-american-school|singapore": {
+      "name": "Tom Boasberg",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.sas.edu.sg/about-us/superintendent"
+    },
+    "singapore-international-school-binh-duong-new-city|vietnam": {
+      "name": "Mr Jonathan James Bosman",
+      "verifiedOn": "2026-10-28",
+      "source": "https://bdnewcity.sis.edu.vn/who-we-are/academic-team/"
+    },
+    "singapore-international-school-can-tho|vietnam": {
+      "name": "Mr. Tran Thanh Tam",
+      "verifiedOn": "2026-10-28",
+      "source": "https://cantho.sis.edu.vn/who-we-are/academic-team/"
+    },
+    "singapore-international-school-danang|vietnam": {
+      "name": "Mr. Bradman Philip McCarthy",
+      "verifiedOn": "2026-10-28",
+      "source": "https://danang.sis.edu.vn/who-we-are/academic-team/"
+    },
+    "singapore-international-school-gamuda-gardens|vietnam": {
+      "name": "Mr Matthew Rawcliffe",
+      "verifiedOn": "2026-10-28",
+      "source": "https://gamudagardens.sis.edu.vn/who-we-are/academic-team/"
+    },
+    "singapore-international-school-saigon-south|vietnam": {
+      "name": "Mr. Donovan Neethling",
+      "verifiedOn": "2026-10-28",
+      "source": "https://saigonsouth.sis.edu.vn/who-we-are/academic-team/"
+    },
+    "singapore-international-school-van-phuc|vietnam": {
+      "name": "Mr. Michael David Ogden",
+      "verifiedOn": "2026-10-28",
+      "source": "https://vanphuc.sis.edu.vn/who-we-are/academic-team/"
+    },
+    "singapore-international-school-vung-tau|vietnam": {
+      "name": "Mr. Timothy Scott Dalzelle",
+      "verifiedOn": "2026-10-28",
+      "source": "https://vungtau.sis.edu.vn/who-we-are/academic-team/"
+    },
+    "southbridge-international-school-cambodia|cambodia": {
+      "name": "Louisa Condorelli",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.sisc.edu.kh/about-us/"
+    },
+    "spectrum-international-school|malaysia": {
+      "name": "Dr. Essra Mahmoud",
+      "verifiedOn": "2026-10-28",
+      "source": "https://spectrumiis.edu.my/meet-the-visionary-leaders/"
+    },
+    "spgs-international-school-bangkok|thailand": {
+      "name": "Leigh O’Hara",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.spgsibangkok.com/headmaster.php"
+    },
+    "springbank-school|new-zealand": {
+      "name": "Tina Hallowes",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.springbank.school.nz/our-school/our-staff"
+    },
+    "st-andrews-international-school-bangkok|thailand": {
+      "name": "Paul Schofield",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.nordangliaeducation.com/sta-bangkok"
+    },
+    "st-andrews-international-school-green-valley|thailand": {
+      "name": "Charles Grayhurst",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.standrewsgreenvalley.com/"
+    },
+    "st-andrews-international-school-sathorn|thailand": {
+      "name": "Helen Coleman",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.standrewssathorn.com/"
+    },
+    "st-andrews-international-school-sukhumvit-107|thailand": {
+      "name": "Caroline Ratcliffe",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.standrewssukhumvit.com/"
+    },
+    "st-christopher-s-international-school|malaysia": {
+      "name": "Martin Towse",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.scips.org.my/working/staff-profiles-2/"
+    },
+    "st-george-madrid|spain": {
+      "name": "Paul Crouch",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.stgeorgemadrid.com/nuestro-colegio/nuestro-equipo"
+    },
+    "st-george-s-college|peru": {
+      "name": "Simon Porter",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.stgeorges.edu.pe/en"
+    },
+    "st-johnsbury-academy-jeju|south-korea": {
+      "name": "Mr. Corey Johnson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.sjajeju.kr/about-st-johnsbury-academy-jeju/head-of-school-message"
+    },
+    "st-joseph-s-institution-international|singapore": {
+      "name": "Matthew O'Shea",
+      "verifiedOn": "2026-10-28",
+      "source": "http://www.sji-international.edu.my/"
+    },
+    "st-michael-s-international-school|japan": {
+      "name": "Gill Tyrer",
+      "verifiedOn": "2026-10-28",
+      "source": "https://smis.org/about/message-from-the-head-of-school/"
+    },
+    "st-paul-s-collegiate-school|new-zealand": {
+      "name": "Ben Skeen",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.stpauls.school.nz/page/headmasters-welcome"
+    },
+    "stamford-american-international-school|singapore": {
+      "name": "Matt Mills",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.sais.edu.sg/"
+    },
+    "stonyhurst-international-school-penang|malaysia": {
+      "name": "Richard Moore",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.stonyhurstpenang.edu.my/principals-welcome/"
+    },
+    "sunmarke-school|united-arab-emirates": {
+      "name": "Mr Nicholas Rickford",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.sunmarke.com/about/leadership/"
+    },
+    "sunnyside-international-school|japan": {
+      "name": "Hisayuki Watanabe",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.sunnyside-international.jp/en/about/message/"
+    },
+    "suzhou-north-america-international-high-school|china": {
+      "name": "Mrs. Lisa Wang",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.sna-itac.com/about-sna"
+    },
+    "swiss-school-beijing|china": {
+      "name": "Esther Lehmann",
+      "verifiedOn": "2026-10-28",
+      "source": "https://ssbj.wab-edu.cn/about-us/"
+    },
+    "swiss-school-in-singapore|singapore": {
+      "name": "Rahel Eckert",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.swiss-school.edu.sg/en/about-the-swiss-school-in-singapore/principals-welcome/"
+    },
+    "taejon-christian-international-school|south-korea": {
+      "name": "Mr. Michael Moimoi",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.tcis.or.kr/lead/school-leadership"
+    },
+    "taipei-adventist-american-school|taiwan": {
+      "name": "Robert Johnston",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.taas.tw/about-us/principals-welcome.cfm"
+    },
+    "taipei-american-school|taiwan": {
+      "name": "Mr. David Frankenberg",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.tas.edu.tw/about/school-leadership"
+    },
+    "tanarata-international-school|malaysia": {
+      "name": "Barnali Guha",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.tanarata.net/about-us/principals-message/"
+    },
+    "tara-pattana-international-school|thailand": {
+      "name": "Mr Chris Parfitt",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.tpis.ac.th"
+    },
+    "thai-international-school|thailand": {
+      "name": "Mr. Chayaphol Leeraphante",
+      "verifiedOn": "2026-10-28",
+      "source": "https://thaiinternationalschool.ac.th/about-tis/"
+    },
+    "tls-academy|singapore": {
+      "name": "Ms Esther Koh",
+      "verifiedOn": "2026-10-28",
+      "source": "https://tlsacademy.org/principals-message-tls-academy-singapore/"
+    },
+    "tokyo-ymca-international-school|japan": {
+      "name": "Christopher Konitz",
+      "verifiedOn": "2026-10-28",
+      "source": "https://tokyo.ymca.or.jp/tyis/about_welcome.html"
+    },
+    "tunku-putra-help-school|malaysia": {
+      "name": "Ms Shirley Harrison",
+      "verifiedOn": "2026-10-28",
+      "source": "https://tphs.edu.my/about"
+    },
+    "tzu-chi-school|indonesia": {
+      "name": "Caroline Widjanarko",
+      "verifiedOn": "2026-10-28",
+      "source": "https://tzuchi.sch.id/about-us/"
+    },
+    "udon-thani-international-school|thailand": {
+      "name": "Dr. Lindsay Stuart",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.udoninternationalschool.com/en/about-us/message-from-the-head-of-school/"
+    },
+    "uia-international-school-tokyo|japan": {
+      "name": "Neil Howie",
+      "verifiedOn": "2026-10-28",
+      "source": "https://uia.jp/about-us/"
+    },
+    "uluwatu-school|indonesia": {
+      "name": "Cherry Saraswati",
+      "verifiedOn": "2026-10-28",
+      "source": "https://uluwatuschool.org/about/welcome/"
+    },
+    "united-nations-international-school-hanoi|vietnam": {
+      "name": "Dr Elizabeth Gale",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.unishanoi.org/about/welcome-from-the-head-of-school"
+    },
+    "united-world-college-south-east-asia|singapore": {
+      "name": "Nick Alchin",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.uwcsea.edu.sg/about/welcome-to-uwcsea"
+    },
+    "universal-american-school-kuwait|kuwait": {
+      "name": "Joan Khaja",
+      "verifiedOn": "2026-10-28",
+      "source": "https://uas.edu.kw/our-school/assistant-superintendents-message/"
+    },
+    "uppingham-hung-yen|vietnam": {
+      "name": "Kirsty J Lowery",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.uppingham.edu.vn/en"
+    },
+    "uskudar-american-academy|turkey": {
+      "name": "Cory Carson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.uaa.k12.tr/en/Icerik/okul-yoneticilerimizin-mesaji/305/"
+    },
+    "uwc-south-east-asia-east-campus-uwcsea-east|singapore": {
+      "name": "Seema Desai",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.uwcsea.edu.sg/about/college-leadership-teams"
+    },
+    "uwc-thailand|thailand": {
+      "name": "David Griffiths",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.uwcthailand.ac.th/about-uwc-thailand/meet-our-team"
+    },
+    "verbier-international-school|switzerland": {
+      "name": "Grant Ferguson",
+      "verifiedOn": "2026-10-28",
+      "source": "https://verbierinternationalschool.ch/about-us/meet-our-leadership-team/"
+    },
+    "wellington-college-international-school-bangkok|thailand": {
+      "name": "Christopher Nicholls",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.wellingtoncollege.ac.th/about-us/welcome-from-the-master"
+    },
+    "wes-academy-changsha|china": {
+      "name": "Simon Weight",
+      "verifiedOn": "2026-10-28",
+      "source": "https://wes-cwa.org/h-col-148.html"
+    },
+    "westbourne-college-singapore|singapore": {
+      "name": "Dr Vahagn Vardanyan",
+      "verifiedOn": "2026-10-28",
+      "source": "https://westbournecollege.com.sg/about-us/our-team/"
+    },
+    "westlink-international-school-hanoi|vietnam": {
+      "name": "Ms. Hillary Hinchliff",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.westlink.edu.vn/"
+    },
+    "westminster-college-bangkok|thailand": {
+      "name": "Richard Hallows",
+      "verifiedOn": "2026-10-28",
+      "source": "https://westminster.ac.th/about-us/"
+    },
+    "westminster-international-school-in-tashkent|uzbekistan": {
+      "name": "Timothy Aviss",
+      "verifiedOn": "2026-10-28",
+      "source": "https://wistedu.com/"
+    },
+    "windfield-international-school-chiang-mai|thailand": {
+      "name": "Dr. Kerem Karacaer",
+      "verifiedOn": "2026-10-28",
+      "source": "https://chiangmai.windfield.ac.th/about-us/"
+    },
+    "wycombe-abbey-school-hangzhou|china": {
+      "name": "Dr Simon Probert",
+      "verifiedOn": "2026-10-28",
+      "source": "https://waishz.com/en/"
+    },
+    "yes-international-school|japan": {
+      "name": "Kaoru Takeuchi",
+      "verifiedOn": "2026-10-28",
+      "source": "https://www.yesinternationalschool.com/"
+    }
+  }
+}
