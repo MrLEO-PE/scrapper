@@ -9,12 +9,12 @@
  *
  * Its focus is Asia, which is where most of the configured countries are.
  *
- * The limit, stated plainly: the board is a React app whose filters run in
- * the browser, so every query string returns the same page. What the server
- * does send is the newest twenty vacancies, embedded in the React Flight
- * payload. That is what this reads — the same arrangement as Teacher
- * Horizons, and for the same reason it is still worth having: run daily, the
- * database accumulates what each day's twenty brought.
+ * The vacancies arrive embedded in the React Flight payload, twenty a page.
+ * The board's front page only ever shows the newest twenty, which is all this
+ * read at first. reverse-api-engineer found that the search page,
+ * www.teachingnomad.com/jobs?page=N, pages through the whole board in the same
+ * payload, so every page is now read until one comes back empty. robots.txt
+ * allows /jobs and disallows only /api and the account pages.
  */
 
 import { fetchText } from "../core/http.ts";
@@ -22,6 +22,9 @@ import type { RawJob, Salary } from "../core/types.ts";
 import type { ScrapeContext, Source } from "./base.ts";
 
 const BOARD = "https://jobs.teachingnomad.com/";
+const SEARCH = "https://www.teachingnomad.com/jobs";
+/** 45 vacancies made three pages in November 2026; the cap only stops a runaway. */
+const MAX_PAGES = 20;
 
 /**
  * Reassemble the Flight stream from its `self.__next_f.push([1,"…"])` chunks.
@@ -179,21 +182,30 @@ export function toRawJob(j: NomadJob): RawJob | null {
 }
 
 async function collect(ctx: ScrapeContext): Promise<RawJob[]> {
-  const html = await fetchText(BOARD, {
-    soft: true, fresh: ctx.fresh, retries: 1, timeoutMs: 25000, label: "teachingnomad",
-  });
-  if (!html) return [];
+  const jobs = new Map<string, RawJob>();
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const html = await fetchText(page > 1 ? `${SEARCH}?page=${page}` : SEARCH, {
+      soft: true, fresh: ctx.fresh, retries: 1, timeoutMs: 25000, label: `teachingnomad p${page}`,
+    });
+    if (!html) break;
 
-  const jobs = extractJobs(readFlight(html))
-    .map(toRawJob)
-    .filter((j): j is RawJob => j !== null);
+    const before = jobs.size;
+    for (const j of extractJobs(readFlight(html))) {
+      const job = toRawJob(j);
+      if (job) jobs.set(job.sourceJobId, job);
+    }
+    // An empty page, or one adding nothing new, is the end of the board.
+    if (jobs.size === before) break;
+    if (ctx.maxJobs && jobs.size >= ctx.maxJobs) break;
+  }
 
-  return ctx.maxJobs ? jobs.slice(0, ctx.maxJobs) : jobs;
+  const out = [...jobs.values()];
+  return ctx.maxJobs ? out.slice(0, ctx.maxJobs) : out;
 }
 
 export const teachingNomadSource: Source = {
   id: "teachingnomad",
   label: "Teaching Nomad",
-  note: "the newest ~20 vacancies the board renders; carries salary and package benefits",
+  note: "the whole board, twenty a page; carries salary and package benefits",
   collect,
 };

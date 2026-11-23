@@ -71,6 +71,11 @@ npm run run-all
 | **School careers pages** | Target schools checked directly | They often post before the boards — see [below](#your-target-schools) |
 | **Email alerts** | `.eml` files you drop in `data/inbox/` | How the paid services reach the sheet — see [below](#paid-services-via-email-alerts) |
 | **European Chamber China** | Single server-rendered board | Mostly commercial, but China international schools post occasionally |
+| **Edvectus** | Public JSON search behind its Blazor vacancies page, PE + subject-leadership roles | Agency board, strong on China, Malaysia and the Gulf; states pay on most posts but never names the school |
+| **Eteach** | Public JSON search behind its app, `international=true` (~70 non-UK posts) | Gulf, Spain, Switzerland; school named on every post, full advert with `--deep` |
+| **Wellington College China** | Server-rendered Avature hiring site, robots-allowed `/en_GB/jobs` route (~105 posts) | Wellington and Hiba schools across China; the school is read for PE posts; no posting dates |
+| **Cognita** | Cornerstone JSON search, using the visitor token its careers page embeds | **Opt-in only** (`--sources cognita`), not in the daily run |
+| **School hiring sites** | Public JSON lists of schools on BambooHR and Recruitee (`src/sources/schoolats.ts`) | Green School Bali, Chiang Mai Intl, Canadian Academy, ISB Busan, Harbour School, Dipont group (China). Found by scanning 1,442 careers pages for the hiring system they use; add a school by its subdomain |
 
 The last two are *employers* rather than boards, which matters: roles appear on a group's own
 careers site that never reach an aggregator, and the school is named directly. Both run on
@@ -871,12 +876,11 @@ so they are not re-attempted.
 |---|---|
 | **Most school careers pages** | The page loads, but the vacancy list does not — it is rendered client-side by an ATS widget. Concordia Shanghai serves 69 anchors and not one is a role. See below |
 | **Harrow International** | Recruits through TIC Recruitment, whose robots.txt cannot be fetched, so it is not crawled |
-| **Dulwich College International, Wellington College China** | Careers pages are JavaScript shells: 21 KB and 150 KB respectively, zero role links in the HTML |
-| **SABIS** | 14 KB shell, no roles server-rendered |
+| **Dulwich College International** | Careers page is a JavaScript shell: 21 KB, zero role links in the HTML |
+| **SABIS** | The jobs are on careers.sabis.net (server-rendered, public), but in November 2026 it listed 56 posts, almost all in the Gulf and Middle East, with 1 PE post |
 | **Randstad / Teachanywhere** | Its international teaching section returns *no results at all*; the PE jobs it does list are UK domestic. Teachanywhere.com redirects to Randstad — one source, not two |
 | **TopTutorJob** | Behind Cloudflare bot protection (HTTP 403, "Just a moment…"). That is an access control, and working around it is not something this tool does |
-| **FOBISIA on Eteach** | The fair page states "The event has now ended" and lists nothing. Eteach's own job search is a 2.7 KB JavaScript shell, so it needs a real browser |
-| **Cognita** | Cornerstone ATS, rendered client-side — would need Apify or Playwright |
+| **FOBISIA on Eteach** | The fair page states "The event has now ended" and lists nothing. Eteach's own international search is now read through its JSON API (see the table above) |
 | **Dulwich College International** | No job links in `/careers`, and `/careers/search` is disallowed by robots.txt |
 | **Workable** | A hosting platform rather than a board; only useful per named employer |
 | **Monster Thailand, spill.org** | Aggregators — the underlying posting is better read at its source |
@@ -885,6 +889,22 @@ so they are not re-attempted.
 
 Adding a JavaScript-rendered source would mean a headless browser, which is the one dependency
 this project avoids. If you want Cognita or Eteach badly enough, that is the trade to make.
+
+There is a cheaper route first. A "JavaScript shell" usually fetches its data from a JSON API,
+and that API can often be read directly with no browser. [reverse-api-engineer](https://github.com/kalil0321/reverse-api-engineer)
+finds it by recording what the page loads; that is how Edvectus came off this list. It runs once
+on the developer's machine, not in the scheduled job, and an endpoint it finds is still checked
+against robots.txt before use.
+
+The same tool is the quickest repair when a source goes quiet. Run it against the board's page,
+compare the requests it records with what the reader in `src/sources/` expects, and update the
+reader:
+
+```bash
+reverse-api-engineer agent --headless -u <board page> -p "find the JSON API or HTML the vacancy list loads from"
+```
+
+It writes a client to a `scripts/` folder in the current directory, so run it outside this repo.
 
 ## A note on Teacher Horizons
 

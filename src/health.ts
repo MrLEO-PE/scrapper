@@ -100,5 +100,7 @@ export function healthMarkdown(h: SourceHealth[]): string {
     ...bad.map((x) => `- **${x.source}** — ${x.message}`),
     "",
     "A board that suddenly returns nothing has usually changed its page or feed, so the roles it carried are not being picked up. Open the run log to see what it printed.",
+    "",
+    "If the page changed, record it again with reverse-api-engineer to see what it now loads (see \"Sources assessed and not added\" in the README), then update the reader in `src/sources/`.",
   ].join("\n");
 }

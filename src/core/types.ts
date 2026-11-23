@@ -21,6 +21,11 @@ export type SourceId =
   // General boards, added so no single board carries the feed.
   | "seekteachers"
   | "teachingnomad"
+  | "edvectus"
+  | "eteach"
+  | "cognita"
+  | "wellington"
+  | "schoolats"
   // School groups running their own Workday career site.
   | "isp"
   // Smaller boards with a public listing.

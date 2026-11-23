@@ -41,6 +41,11 @@ import { teachawaySource } from "./sources/teachaway.ts";
 import { teacherHorizonsSource } from "./sources/teacherhorizons.ts";
 import { seekTeachersSource } from "./sources/seekteachers.ts";
 import { teachingNomadSource } from "./sources/teachingnomad.ts";
+import { edvectusSource } from "./sources/edvectus.ts";
+import { eteachSource } from "./sources/eteach.ts";
+import { cognitaSource } from "./sources/cognita.ts";
+import { wellingtonSource } from "./sources/wellington.ts";
+import { schoolAtsSource } from "./sources/schoolats.ts";
 import { successFactorsSources } from "./sources/successfactors.ts";
 import { workdaySources } from "./sources/workday.ts";
 import { wishlistSource } from "./sources/wishlist.ts";
@@ -77,6 +82,11 @@ export const ALL_SOURCES: Source[] = [
   teacherHorizonsSource,
   seekTeachersSource,
   teachingNomadSource,
+  edvectusSource,
+  eteachSource,
+  cognitaSource,
+  wellingtonSource,
+  schoolAtsSource,
   wishlistSource,
   teastSource,
   ...successFactorsSources,
@@ -97,8 +107,8 @@ export const ALL_SOURCES: Source[] = [
 //
 // SeekTeachers is deliberately absent even though it is walked page by page:
 // the walk stops at a page cap, so "not seen this run" can mean "past the
-// cap" rather than "taken down". Teaching Nomad shows a rolling twenty, where
-// absence means nothing at all.
+// cap" rather than "taken down". Teaching Nomad and Edvectus are now read in
+// full, but are kept out until a few runs show their paging is stable.
 const ENUMERATED: SourceId[] = ["tes", "teachaway", "nordanglia", "inspired", "europeanchamber", "isp", "wishlist", "mailalert"];
 
 export interface ScrapeOptions {
