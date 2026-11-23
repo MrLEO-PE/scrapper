@@ -377,6 +377,149 @@
       "careers": "https://www.dulwich.org/careers/find-your-career",
       "country": "China",
       "on": true
+    },
+    {
+      "name": "Harrow International School Shanghai",
+      "website": "https://www.harrowshanghai.cn",
+      "careers": "https://www.harrowshanghai.cn/work-with-us/",
+      "country": "China",
+      "city": "Shanghai",
+      "on": true
+    },
+    {
+      "name": "Harrow International School Hong Kong",
+      "website": "https://www.harrowhongkong.hk",
+      "country": "Hong Kong",
+      "city": "Hong Kong",
+      "on": true
+    },
+    {
+      "name": "Hong Kong International School",
+      "website": "https://www.hkis.edu.hk",
+      "careers": "https://www.hkis.edu.hk/careers/job-openings",
+      "country": "Hong Kong",
+      "city": "Hong Kong",
+      "on": true
+    },
+    {
+      "name": "Kellett School",
+      "website": "https://www.kellettschool.com",
+      "country": "Hong Kong",
+      "city": "Hong Kong",
+      "on": true
+    },
+    {
+      "name": "Canadian International School of Hong Kong",
+      "website": "https://www.cdnis.edu.hk",
+      "careers": "https://www.cdnis.edu.hk/en/careers/current-openings/",
+      "country": "Hong Kong",
+      "city": "Hong Kong",
+      "on": true
+    },
+    {
+      "name": "German Swiss International School",
+      "website": "https://www.gsis.edu.hk",
+      "careers": "https://careers.gsis.edu.hk/",
+      "country": "Hong Kong",
+      "city": "Hong Kong",
+      "on": true
+    },
+    {
+      "name": "Nanjing International School",
+      "website": "https://www.nanjing-school.com",
+      "country": "China",
+      "city": "Nanjing",
+      "on": true
+    },
+    {
+      "name": "Taipei American School",
+      "website": "https://www.tas.edu.tw",
+      "careers": "https://careers.tas.edu.tw/jobs-in-taiwan",
+      "country": "Taiwan",
+      "city": "Taipei",
+      "on": true
+    },
+    {
+      "name": "Jakarta Intercultural School",
+      "website": "https://www.jisedu.or.id",
+      "country": "Indonesia",
+      "city": "Jakarta",
+      "on": true
+    },
+    {
+      "name": "British School Jakarta",
+      "website": "https://www.bsj.sch.id",
+      "country": "Indonesia",
+      "on": true
+    },
+    {
+      "name": "International School Manila",
+      "website": "https://www.ismanila.org",
+      "country": "Philippines",
+      "on": true
+    },
+    {
+      "name": "British School Manila",
+      "website": "https://www.britishschoolmanila.org",
+      "country": "Philippines",
+      "on": true
+    },
+    {
+      "name": "Korea International School",
+      "website": "https://www.kis.or.kr",
+      "country": "South Korea",
+      "on": true
+    },
+    {
+      "name": "Dwight School Seoul",
+      "website": "https://www.dwight.or.kr",
+      "careers": "https://dwight.or.kr/about/careers/",
+      "country": "South Korea",
+      "city": "Seoul",
+      "on": true
+    },
+    {
+      "name": "Brighton College Bangkok",
+      "website": "https://www.brightoncollege.ac.th",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true
+    },
+    {
+      "name": "King's College International School Bangkok",
+      "website": "https://www.kingsbangkok.ac.th",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "on": true
+    },
+    {
+      "name": "Rugby School Thailand",
+      "website": "https://www.rugbyschool.ac.th",
+      "country": "Thailand",
+      "on": true
+    },
+    {
+      "name": "International School of Kuala Lumpur",
+      "website": "https://www.iskl.edu.my",
+      "country": "Malaysia",
+      "city": "Kuala Lumpur",
+      "on": true
+    },
+    {
+      "name": "Yokohama International School",
+      "website": "https://www.yis.ac.jp",
+      "careers": "https://yis.ac.jp/employment/current-vacancies/",
+      "country": "Japan",
+      "city": "Yokohama",
+      "on": true
+    },
+    {
+      "name": "American Embassy School New Delhi",
+      "website": "https://www.aes.ac.in",
+      "careers": "https://www.aes.ac.in/community/employment/vacancies",
+      "country": "India",
+      "city": "New Delhi",
+      "on": true
     }
   ]
 }

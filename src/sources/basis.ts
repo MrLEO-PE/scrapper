@@ -65,7 +65,8 @@ export function toRawJob(j: PhenomJob): RawJob | null {
 async function collect(ctx: ScrapeContext): Promise<RawJob[]> {
   const jobs = new Map<string, RawJob>();
   for (let page = 0; page < MAX_PAGES; page++) {
-    const html = await fetchText(`${ORIGIN}/search-results?from=${page * PAGE_SIZE}&s=1`, {
+    // The default order shifts between requests and skipped ~14 of 120 jobs; date order is stable.
+    const html = await fetchText(`${ORIGIN}/search-results?from=${page * PAGE_SIZE}&sortBy=Most%20recent`, {
       soft: true, fresh: ctx.fresh, retries: 1, timeoutMs: 25000, label: `basis p${page + 1}`,
     });
     const res = html ? embeddedJobs(html) : null;
