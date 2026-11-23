@@ -133,10 +133,13 @@ async function collectSite(site: WorkdaySite, ctx: ScrapeContext): Promise<RawJo
         headers: { "Content-Type": "application/json" },
         soft: true,
         fresh: ctx.fresh,
-        retries: 1,
+        // On GitHub's runners this search fails in most runs (0 of 72+ postings)
+        // while working from a home connection, so back off harder before giving up.
+        retries: 3,
         timeoutMs: 25000,
         label: `workday ${site.id} "${searchText}" @${offset}`,
       });
+      if (!res) log.warn(`${site.label}: Workday refused the "${searchText}" search at offset ${offset}`);
 
       const postings = res?.jobPostings ?? [];
       if (!postings.length) break;
