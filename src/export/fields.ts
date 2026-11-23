@@ -82,6 +82,8 @@ export const SOURCE_LABELS: Record<string, string> = {
   wellington: "Wellington College China",
   basis: "BASIS International",
   ycyw: "Yew Chung / Yew Wah",
+  harrow: "Harrow International (AISL)",
+  brighton: "Brighton College International",
   schoolats: "School hiring site",
   nordanglia: "Nord Anglia",
   inspired: "Inspired Education",

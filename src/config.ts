@@ -93,6 +93,8 @@ export const DEFAULT_TARGETS: Targets = {
     "wellington",
     "basis",
     "ycyw",
+    "harrow",
+    "brighton",
     "cognita",
     "schoolats",
     "wishlist",

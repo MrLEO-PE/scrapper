@@ -30,14 +30,15 @@
       "match": "dulwich",
       "portal": "https://www.dulwich.org/careers",
       "portalKind": "JS portal",
-      "portalNote": "Renders in the browser, so nothing is scrapable. Registration is the only route."
+      "portalNote": "The job list loads only through /careers/search, which robots.txt disallows, so it is not scraped. Dulwich posts also reach you via TES; use the Stay Updated email signup on dulwich.org/careers/find-your-career for the rest."
     },
     {
       "name": "Harrow International",
       "match": "harrow",
-      "portal": "https://www.harrowschools.com",
-      "portalKind": "robots-blocked",
-      "portalNote": "Checked 2026-10-04: this blocks automated requests AND a real browser (confirmed — a direct visit returned 403 Forbidden). I cannot find a working alternative URL. Try searching \"Harrow International School careers\" or look for the specific campus on LinkedIn instead."
+      "portal": "https://career.aisl-edu.com",
+      "portalKind": "own portal",
+      "portalNote": "Already scraped (2026-11-23): AISL's portal lists every Asian Harrow campus. The old harrowschools.com address does not exist. Register anyway for job alerts.",
+      "scraped": true
     },
     {
       "name": "Wellington College International",
@@ -58,7 +59,8 @@
       "match": "brighton college",
       "portal": "https://careers.brightoncollegeinternational.com/job-vacancies",
       "portalKind": "own page",
-      "portalNote": "All three are top-twenty. User-corrected 2026-10-04 — the old brightoncollege.net/vacancies URL was wrong."
+      "portalNote": "Already scraped (2026-11-23): the Asian schools' vacancy pages (Bangkok, Vibhavadi, Singapore, Vietnam, Kansai Gaidai) are read daily.",
+      "scraped": true
     },
     {
       "name": "Malvern College International",

@@ -27,6 +27,8 @@ export type SourceId =
   | "wellington"
   | "basis"
   | "ycyw"
+  | "harrow"
+  | "brighton"
   | "schoolats"
   // School groups running their own Workday career site.
   | "isp"

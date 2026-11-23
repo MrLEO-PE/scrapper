@@ -76,6 +76,8 @@ npm run run-all
 | **Wellington College China** | Server-rendered Avature hiring site, robots-allowed `/en_GB/jobs` route (~105 posts) | Wellington and Hiba schools across China; the school is read for PE posts; no posting dates |
 | **BASIS International** | Phenom careers site; the jobs are JSON inside each results page (~120 posts) | High-paying group, campuses across China; school named; five PE posts on 2026-11-23 |
 | **Yew Chung / Yew Wah** | Two ASP.NET recruitment sites, plain HTML table, paged by the site's own form links | Hong Kong and China campuses; campus named |
+| **Harrow International (AISL)** | AISL recruitment portal; every Asian Harrow campus on one plain-HTML page (~63 posts) | Beijing, Shanghai, Hong Kong, Shenzhen, Guangzhou, Haikou, Chongqing, Nanning, Hengqin, Bangkok, Appi; campus and closing date named |
+| **Brighton College International** | Each Asian school's page on the group careers site | Bangkok, Bangkok Vibhavadi, Singapore, Vietnam, Kansai Gaidai; school and closing date named |
 | **Cognita** | Cornerstone JSON search, using the visitor token its careers page embeds | Only PE posts in your countries (`config/directory.json`) are kept; school named |
 | **School hiring sites** | Public JSON lists of schools on BambooHR and Recruitee (`src/sources/schoolats.ts`) | Green School Bali, Chiang Mai Intl, Canadian Academy, ISB Busan, Harbour School, Dipont group (China). Found by scanning 1,442 careers pages for the hiring system they use; add a school by its subdomain |
 

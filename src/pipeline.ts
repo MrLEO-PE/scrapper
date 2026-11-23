@@ -47,6 +47,8 @@ import { cognitaSource } from "./sources/cognita.ts";
 import { wellingtonSource } from "./sources/wellington.ts";
 import { basisSource } from "./sources/basis.ts";
 import { ycywSource } from "./sources/ycyw.ts";
+import { harrowSource } from "./sources/harrow.ts";
+import { brightonSource } from "./sources/brighton.ts";
 import { schoolAtsSource } from "./sources/schoolats.ts";
 import { successFactorsSources } from "./sources/successfactors.ts";
 import { workdaySources } from "./sources/workday.ts";
@@ -90,6 +92,8 @@ export const ALL_SOURCES: Source[] = [
   wellingtonSource,
   basisSource,
   ycywSource,
+  harrowSource,
+  brightonSource,
   schoolAtsSource,
   wishlistSource,
   teastSource,
