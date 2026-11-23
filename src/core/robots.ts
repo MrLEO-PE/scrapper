@@ -115,7 +115,10 @@ async function load(origin: string, ua: string): Promise<RobotsFile> {
     }
     return parse(await res.text(), ua);
   } catch (err) {
-    log.warn(`robots: could not fetch ${url} (${(err as Error).message}); refusing to crawl`);
+    // "fetch failed" alone hid a dead domain (ENOTFOUND) behind what looked like a block.
+    const code = (err as { cause?: { code?: string } }).cause?.code;
+    const why = code === "ENOTFOUND" ? "domain does not exist — check the address" : code ?? (err as Error).message;
+    log.warn(`robots: could not fetch ${url} (${why}); refusing to crawl`);
     return DENY;
   }
 }
