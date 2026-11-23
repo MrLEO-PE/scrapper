@@ -102,12 +102,53 @@ function textFromContentStream(content: string): string {
   return out;
 }
 
+/** One file out of a zip archive, found through the central directory. */
+function zipEntry(buf: Buffer, wanted: string): Buffer | null {
+  const eocd = buf.lastIndexOf(Buffer.from("PK\x05\x06", "latin1"));
+  if (eocd < 0) return null;
+  let p = buf.readUInt32LE(eocd + 16);
+  for (let i = buf.readUInt16LE(eocd + 10); i > 0 && p + 46 <= buf.length; i--) {
+    if (buf.readUInt32LE(p) !== 0x02014b50) return null;
+    const method = buf.readUInt16LE(p + 10);
+    const size = buf.readUInt32LE(p + 20);
+    const nameLen = buf.readUInt16LE(p + 28);
+    const name = buf.subarray(p + 46, p + 46 + nameLen).toString("utf8");
+    if (name === wanted) {
+      const local = buf.readUInt32LE(p + 42);
+      const start = local + 30 + buf.readUInt16LE(local + 26) + buf.readUInt16LE(local + 28);
+      const data = buf.subarray(start, start + size);
+      try {
+        return method === 8 ? inflateRawSync(data) : method === 0 ? data : null;
+      } catch {
+        return null;
+      }
+    }
+    p += 46 + nameLen + buf.readUInt16LE(p + 30) + buf.readUInt16LE(p + 32);
+  }
+  return null;
+}
+
+/** The text of a Word .docx: its body lives in word/document.xml. */
+export function docxToText(buf: Buffer): string {
+  const xml = zipEntry(buf, "word/document.xml")?.toString("utf8");
+  if (!xml) return "";
+  return xml
+    .replace(/<w:tab\/>/g, "\t")
+    .replace(/<\/w:p>|<w:br\/>/g, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&")
+    .replace(/[ \t]+\n/g, "\n")
+    .trim();
+}
+
 /**
  * Extract as much text as we can from a PDF buffer.
  * Returns "" when the document has no recoverable text layer.
  */
 export function pdfToText(buf: Buffer, maxChars = 400_000): string {
   if (!buf?.length) return "";
+  // About one attached job pack in six is a Word .docx (a zip), often with no file extension in its link.
+  if (buf.subarray(0, 4).toString("latin1") === "PK\x03\x04") return docxToText(buf).slice(0, maxChars);
   // Quick sanity check on the header.
   if (buf.subarray(0, 5).toString("latin1") !== "%PDF-") {
     log.debug("pdf: not a PDF (bad header)");
