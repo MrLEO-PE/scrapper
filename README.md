@@ -79,7 +79,7 @@ npm run run-all
 | **Harrow International (AISL)** | AISL recruitment portal; every Asian Harrow campus on one plain-HTML page (~63 posts) | Beijing, Shanghai, Hong Kong, Shenzhen, Guangzhou, Haikou, Chongqing, Nanning, Hengqin, Bangkok, Appi; campus and closing date named |
 | **Brighton College International** | Each Asian school's page on the group careers site | Bangkok, Bangkok Vibhavadi, Singapore, Vietnam, Kansai Gaidai; school and closing date named |
 | **Cognita** | Cornerstone JSON search, using the visitor token its careers page embeds | Only PE posts in your countries (`config/directory.json`) are kept; school named |
-| **School hiring sites** | Public JSON lists of schools on BambooHR and Recruitee (`src/sources/schoolats.ts`) | Green School Bali, Chiang Mai Intl, Canadian Academy, ISB Busan, Harbour School, Dipont group (China). Found by scanning 1,442 careers pages for the hiring system they use; add a school by its subdomain |
+| **School hiring sites** | Public job lists of schools on BambooHR, Recruitee, Teamtailor (RSS) and Lever (`src/sources/schoolats.ts`) | Green School Bali, Chiang Mai Intl, Canadian Academy, ISB Busan, Harbour School, Dipont group (China), EtonHouse (Singapore, Japan, Thailand, Philippines, China), Vietnam Australia Intl, GESS Singapore. Found by scanning 1,442 careers pages for the hiring system they use; add a school by its subdomain |
 
 The last two are *employers* rather than boards, which matters: roles appear on a group's own
 careers site that never reach an aggregator, and the school is named directly. Both run on

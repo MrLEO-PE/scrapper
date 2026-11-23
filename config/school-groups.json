@@ -14,9 +14,10 @@
     {
       "name": "Cognita",
       "match": "cognita",
-      "portal": "https://www.cognita.com/careers",
-      "portalKind": "own page",
-      "portalNote": "Not to be confused with Cognia, which is an accreditation body, not an owner."
+      "portal": "https://cognitapeople.csod.com/ux/ats/careersite/1/home?c=cognitapeople",
+      "portalKind": "Cornerstone",
+      "portalNote": "Already scraped (2026-11-23): PE posts in your countries reach the sheet automatically.",
+      "scraped": true
     },
     {
       "name": "GEMS Education",
@@ -74,21 +75,23 @@
       "match": "repton",
       "portal": "https://www.reptonschools.com/careers",
       "portalKind": "JS portal",
-      "portalNote": "Renders in the browser."
+      "portalNote": "reptonschools.com is now a parked domain (it redirects to a /lander page), so there is nothing to read. Repton Dubai and Abu Dhabi post on TES."
     },
     {
       "name": "Yew Chung / Yew Wah",
       "match": "yew ?chung|yew ?wah|ycis|ywies",
-      "portal": "https://www.ycyw-edu.com/en/join-us",
+      "portal": "https://jobs.ycis-schools.com/Pages/JobSearch.aspx",
       "portalKind": "own page",
-      "portalNote": "Twelve schools, all in China."
+      "portalNote": "Already scraped (2026-11-23): both recruitment sites (YCIS and YWIES) are read daily.",
+      "scraped": true
     },
     {
       "name": "EtonHouse",
       "match": "etonhouse|eton ?house",
-      "portal": "https://www.etonhouse.com.sg",
-      "portalKind": "robots-blocked",
-      "portalNote": "Checked 2026-10-04: this times out for automated requests; I could not confirm whether it loads in a real browser. If it does not load for you either, search \"EtonHouse careers\" or find the specific campus on LinkedIn."
+      "portal": "https://careers.etonhouse.edu.sg/jobs",
+      "portalKind": "Teamtailor",
+      "portalNote": "Already scraped (2026-11-23) through its public jobs feed. The old etonhouse.com.sg address now redirects to etonhouse.edu.sg; it was never blocked.",
+      "scraped": true
     },
     {
       "name": "Invictus Education",
@@ -138,8 +141,9 @@
       "name": "BASIS International",
       "match": "basis ?international|basisinternational",
       "portal": "https://jobs.basisinternationalschools.com",
-      "portalKind": "JS portal",
-      "portalNote": "One jobs domain serves every BASIS school, so the scraper cannot tell campuses apart from it. Register once."
+      "portalKind": "Phenom",
+      "portalNote": "Already scraped (2026-11-23): every posting, with the campus named in each advert.",
+      "scraped": true
     },
     {
       "name": "Global Indian International",

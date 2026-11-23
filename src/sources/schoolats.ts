@@ -1,5 +1,5 @@
 /**
- * Schools' own hiring sites on BambooHR and Recruitee.
+ * Schools' own hiring sites on BambooHR, Recruitee, Teamtailor and Lever.
  *
  * The school careers source reads what a careers page shows in its HTML, and
  * a hiring-system widget shows nothing there. A scan of 1,442 schools'
@@ -10,20 +10,23 @@
  *
  *   BambooHR   https://{site}.bamboohr.com/careers/list
  *   Recruitee  https://{site}.recruitee.com/api/offers/
+ *   Teamtailor {careers host}/jobs.rss  (every opening, with location and campus)
+ *   Lever      https://api.lever.co/v0/postings/{site}?mode=json
  *
  * Each site below is a school or school group found by that scan. Add one by
  * its subdomain; the country is the school's, since BambooHR's own location
  * field is often blank.
  */
 
-import { fetchJson } from "../core/http.ts";
+import { fetchJson, fetchText } from "../core/http.ts";
 import { log } from "../core/logger.ts";
-import { htmlToText } from "../core/text.ts";
+import { decodeEntities, htmlToText } from "../core/text.ts";
 import type { RawJob } from "../core/types.ts";
 import type { ScrapeContext, Source } from "./base.ts";
 
 export interface AtsSite {
-  system: "bamboohr" | "recruitee";
+  system: "bamboohr" | "recruitee" | "teamtailor" | "lever";
+  /** The subdomain; for Teamtailor, the careers host itself. */
   site: string;
   /** The school; for a group, the department field names the school instead. */
   school?: string;
@@ -38,6 +41,9 @@ export const SITES: AtsSite[] = [
   { system: "bamboohr", site: "theharbourschool", school: "Harbour School", country: "Hong Kong" },
   { system: "bamboohr", site: "isl", school: "The Island Private School", country: "Cyprus" },
   { system: "recruitee", site: "diponteducation" },
+  { system: "teamtailor", site: "careers.etonhouse.edu.sg", school: "EtonHouse" },
+  { system: "teamtailor", site: "careers.vas.edu.vn", school: "Vietnam Australia International School", country: "Vietnam" },
+  { system: "lever", site: "gess", school: "German European School Singapore", country: "Singapore" },
 ];
 
 interface BambooOpening {
@@ -97,6 +103,62 @@ export function fromRecruitee(s: AtsSite, o: RecruiteeOffer): RawJob | null {
   };
 }
 
+/** The openings in a Teamtailor jobs.rss feed. */
+export function fromTeamtailor(s: AtsSite, rss: string): RawJob[] {
+  const out: RawJob[] = [];
+  for (const item of rss.match(/<item>[\s\S]*?<\/item>/g) ?? []) {
+    const tag = (t: string) => item.match(new RegExp(`<${t}>([\\s\\S]*?)</${t}>`))?.[1]?.trim();
+    const link = tag("link");
+    const title = tag("title");
+    const id = link?.match(/\/jobs\/(\d+)/)?.[1];
+    if (!link || !title || !id) continue;
+    const dept = tag("tt:department");
+    const pub = tag("pubDate");
+    const body = tag("description");
+    out.push({
+      source: "schoolats",
+      sourceJobId: `${s.site}:${id}`,
+      title: decodeEntities(title),
+      url: link,
+      schoolName: s.school && dept ? `${s.school} (${decodeEntities(dept)})` : s.school ?? dept,
+      country: tag("tt:country") || s.country,
+      city: tag("tt:city") || undefined,
+      postedAt: pub ? new Date(pub).toISOString() : undefined,
+      description: body ? htmlToText(decodeEntities(body)).slice(0, 8000) : undefined,
+      applicationUrl: link,
+      raw: { link, dept, role: tag("tt:role") },
+    });
+  }
+  return out;
+}
+
+export interface LeverPosting {
+  id: string;
+  text: string;
+  hostedUrl: string;
+  createdAt?: number;
+  categories?: { location?: string; team?: string; commitment?: string };
+  descriptionPlain?: string;
+}
+
+export function fromLever(s: AtsSite, o: LeverPosting): RawJob | null {
+  if (!o.id || !o.text || !o.hostedUrl) return null;
+  return {
+    source: "schoolats",
+    sourceJobId: `${s.site}:${o.id}`,
+    title: o.text.trim(),
+    url: o.hostedUrl,
+    schoolName: s.school,
+    country: s.country,
+    city: o.categories?.location || undefined,
+    contractTerm: o.categories?.commitment || undefined,
+    postedAt: o.createdAt ? new Date(o.createdAt).toISOString() : undefined,
+    description: o.descriptionPlain?.slice(0, 8000),
+    applicationUrl: `${o.hostedUrl}/apply`,
+    raw: { ...o, descriptionPlain: undefined },
+  };
+}
+
 async function collect(ctx: ScrapeContext): Promise<RawJob[]> {
   const jobs: RawJob[] = [];
   for (const s of SITES) {
@@ -107,6 +169,15 @@ async function collect(ctx: ScrapeContext): Promise<RawJob[]> {
         const job = fromBamboo(s, o);
         if (job) jobs.push(job);
       }
+    } else if (s.system === "lever") {
+      const res = await fetchJson<LeverPosting[]>(`https://api.lever.co/v0/postings/${s.site}?mode=json`, opts);
+      for (const o of res ?? []) {
+        const job = fromLever(s, o);
+        if (job) jobs.push(job);
+      }
+    } else if (s.system === "teamtailor") {
+      const rss = await fetchText(`https://${s.site}/jobs.rss`, opts);
+      if (rss) jobs.push(...fromTeamtailor(s, rss));
     } else {
       const res = await fetchJson<{ offers?: RecruiteeOffer[] }>(`https://${s.site}.recruitee.com/api/offers/`, opts);
       for (const o of res?.offers ?? []) {
@@ -123,6 +194,6 @@ async function collect(ctx: ScrapeContext): Promise<RawJob[]> {
 export const schoolAtsSource: Source = {
   id: "schoolats",
   label: "School hiring sites",
-  note: "schools' own BambooHR and Recruitee job lists (public JSON); school named",
+  note: "schools' own BambooHR, Recruitee, Teamtailor and Lever job lists (public JSON/RSS); school named",
   collect,
 };
