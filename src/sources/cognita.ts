@@ -18,12 +18,16 @@
  *
  * The search names no school; the detail record does (primaryLocation.title).
  * The career site asks for ten seconds between requests, so details are read
- * only for vacancies whose title already looks like PE.
+ * only for vacancies that are kept.
+ *
+ * Only PE posts in your countries (config/directory.json) are kept. Most of
+ * Cognita's 130-odd posts are in the UK, Spain, India, the Gulf and the US.
  */
 
 import { fetchJson, fetchText } from "../core/http.ts";
 import { log } from "../core/logger.ts";
-import { htmlToText } from "../core/text.ts";
+import { countryName, htmlToText } from "../core/text.ts";
+import { targetCountries, vacancyInScope } from "../directoryconfig.ts";
 import type { RawJob } from "../core/types.ts";
 import { classify } from "../match/classify.ts";
 import type { ScrapeContext, Source } from "./base.ts";
@@ -80,6 +84,11 @@ export function toRawJob(r: Requisition): RawJob | null {
   };
 }
 
+/** A PE post in one of the wanted countries (an unknown country is kept). */
+export function fitsYou(job: RawJob, targets: Set<string>): boolean {
+  return classify(job.title).isPe && vacancyInScope(countryName(job.country), targets);
+}
+
 async function collect(ctx: ScrapeContext): Promise<RawJob[]> {
   const page = await fetchText(`${SITE}/ux/ats/careersite/1/home?c=${CORP}`, {
     fresh: true, soft: true, retries: 1, timeoutMs: 25000, label: "cognita token",
@@ -112,11 +121,13 @@ async function collect(ctx: ScrapeContext): Promise<RawJob[]> {
     if (ctx.maxJobs && jobs.size >= ctx.maxJobs) break;
   }
 
-  const out = [...jobs.values()];
+  const targets = targetCountries();
+  const out = [...jobs.values()].filter((j) => fitsYou(j, targets));
+  log.debug(`Cognita: ${out.length} PE posts in your countries of ${jobs.size}`);
   const wanted = ctx.maxJobs ? out.slice(0, ctx.maxJobs) : out;
 
-  // School name (and, with --deep, the advert) only for the PE-looking ones.
-  for (const job of wanted.filter((j) => classify(j.title).isPe)) {
+  // School name (and, with --deep, the advert) for each kept post.
+  for (const job of wanted) {
     const d = await fetchJson<DetailResponse>(
       `${SITE}/services/x/job-requisition/v2/requisitions/${job.sourceJobId}/jobDetails?cultureId=2`,
       { headers, soft: true, fresh: ctx.fresh, retries: 0, timeoutMs: 20000, label: "cognita job" },
@@ -131,7 +142,7 @@ async function collect(ctx: ScrapeContext): Promise<RawJob[]> {
 export const cognitaSource: Source = {
   id: "cognita",
   label: "Cognita",
-  // Not in the default run: it reuses the career page's visitor token, which needs the user's explicit go-ahead.
-  note: "opt-in (--sources cognita); group careers site (Cornerstone) through its JSON search; school named on PE posts",
+  // Uses the visitor token the career page embeds; the user approved this on 2026-11-23.
+  note: "group careers site (Cornerstone) through its JSON search; only PE posts in your countries; school named",
   collect,
 };

@@ -61,6 +61,7 @@ const ALIASES = new Map([
   ["korea, republic of", "south korea"],
   ["republic of korea", "south korea"],
   ["viet nam", "vietnam"],
+  ["hong kong sar china", "hong kong"],
   ["timor leste", "timor-leste"],
   ["east timor", "timor-leste"],
   ["lao people's democratic republic", "laos"],

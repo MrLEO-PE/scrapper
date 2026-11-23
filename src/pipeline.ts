@@ -45,6 +45,8 @@ import { edvectusSource } from "./sources/edvectus.ts";
 import { eteachSource } from "./sources/eteach.ts";
 import { cognitaSource } from "./sources/cognita.ts";
 import { wellingtonSource } from "./sources/wellington.ts";
+import { basisSource } from "./sources/basis.ts";
+import { ycywSource } from "./sources/ycyw.ts";
 import { schoolAtsSource } from "./sources/schoolats.ts";
 import { successFactorsSources } from "./sources/successfactors.ts";
 import { workdaySources } from "./sources/workday.ts";
@@ -86,6 +88,8 @@ export const ALL_SOURCES: Source[] = [
   eteachSource,
   cognitaSource,
   wellingtonSource,
+  basisSource,
+  ycywSource,
   schoolAtsSource,
   wishlistSource,
   teastSource,

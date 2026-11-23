@@ -80,6 +80,8 @@ export const SOURCE_LABELS: Record<string, string> = {
   eteach: "Eteach",
   cognita: "Cognita",
   wellington: "Wellington College China",
+  basis: "BASIS International",
+  ycyw: "Yew Chung / Yew Wah",
   schoolats: "School hiring site",
   nordanglia: "Nord Anglia",
   inspired: "Inspired Education",

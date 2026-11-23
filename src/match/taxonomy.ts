@@ -53,7 +53,7 @@ export const SPORT_TERMS: Term[] = [
   { label: "director of sport", re: /\bdirector\s+of\s+(?:sports?|athletics?)\b/i, weight: 50 },
   { label: "athletic director", re: /\bathletics?\s+director\b/i, weight: 50 },
   { label: "head of sport", re: /\bhead\s+of\s+(?:sports?|athletics?)\b/i, weight: 50 },
-  { label: "sports coordinator", re: /\bsports?\s+co[\s-]?ordinator\b/i, weight: 42 },
+  { label: "sports coordinator", re: /\b(?:sports?|athletics?)\s+co[\s-]?ordinator\b/i, weight: 42 },
   { label: "sports department", re: /\bsports?\s+department\b/i, weight: 30 },
   { label: "sport/athletics", re: /\b(?:sports?|athletics?)\b/i, weight: 22 },
   { label: "strength and conditioning", re: /\bstrength\s*(?:&|and)\s*conditioning\b/i, weight: 35 },

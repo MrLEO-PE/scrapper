@@ -25,6 +25,8 @@ export type SourceId =
   | "eteach"
   | "cognita"
   | "wellington"
+  | "basis"
+  | "ycyw"
   | "schoolats"
   // School groups running their own Workday career site.
   | "isp"

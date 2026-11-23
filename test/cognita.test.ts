@@ -8,7 +8,7 @@
 
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { isoDate, tokenFrom, toRawJob } from "../src/sources/cognita.ts";
+import { fitsYou, isoDate, tokenFrom, toRawJob } from "../src/sources/cognita.ts";
 
 test("finds the anonymous token in the career page", () => {
   assert.equal(tokenFrom(`<script>window.csod={"token":"eyJhbGc.eyJzdWI.sig","x":1}</script>`), "eyJhbGc.eyJzdWI.sig");
@@ -35,4 +35,14 @@ test("maps a requisition to a vacancy", () => {
   assert.equal(job.city, "Singapore");
   assert.equal(job.postedAt, "2026-11-01");
   assert.equal(job.deadlineAt, "2026-11-30");
+});
+
+test("keeps only PE posts in the wanted countries", () => {
+  const targets = new Set(["singapore", "hong kong"]);
+  const job = (title: string, country?: string) => ({ source: "cognita", sourceJobId: "1", title, url: "u", country }) as never;
+  assert.equal(fitsYou(job("Head of PE", "SG"), targets), true);
+  assert.equal(fitsYou(job("Director of Sport", "HK"), targets), true);
+  assert.equal(fitsYou(job("Head of PE", "ES"), targets), false);
+  assert.equal(fitsYou(job("Teacher of Maths", "SG"), targets), false);
+  assert.equal(fitsYou(job("Head of PE"), targets), true);
 });

@@ -74,7 +74,9 @@ npm run run-all
 | **Edvectus** | Public JSON search behind its Blazor vacancies page, PE + subject-leadership roles | Agency board, strong on China, Malaysia and the Gulf; states pay on most posts but never names the school |
 | **Eteach** | Public JSON search behind its app, `international=true` (~70 non-UK posts) | Gulf, Spain, Switzerland; school named on every post, full advert with `--deep` |
 | **Wellington College China** | Server-rendered Avature hiring site, robots-allowed `/en_GB/jobs` route (~105 posts) | Wellington and Hiba schools across China; the school is read for PE posts; no posting dates |
-| **Cognita** | Cornerstone JSON search, using the visitor token its careers page embeds | **Opt-in only** (`--sources cognita`), not in the daily run |
+| **BASIS International** | Phenom careers site; the jobs are JSON inside each results page (~120 posts) | High-paying group, campuses across China; school named; five PE posts on 2026-11-23 |
+| **Yew Chung / Yew Wah** | Two ASP.NET recruitment sites, plain HTML table, paged by the site's own form links | Hong Kong and China campuses; campus named |
+| **Cognita** | Cornerstone JSON search, using the visitor token its careers page embeds | Only PE posts in your countries (`config/directory.json`) are kept; school named |
 | **School hiring sites** | Public JSON lists of schools on BambooHR and Recruitee (`src/sources/schoolats.ts`) | Green School Bali, Chiang Mai Intl, Canadian Academy, ISB Busan, Harbour School, Dipont group (China). Found by scanning 1,442 careers pages for the hiring system they use; add a school by its subdomain |
 
 The last two are *employers* rather than boards, which matters: roles appear on a group's own
