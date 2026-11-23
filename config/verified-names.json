@@ -671,10 +671,20 @@
       "verifiedOn": "2026-10-28",
       "source": "http://www.diabarsha.com/"
     },
+    "dulwich-college-beijing|china": {
+      "name": "Dr Cameron Pyke",
+      "verifiedOn": "2026-10-30",
+      "source": "https://beijing.dulwich.org/"
+    },
     "dulwich-college-seoul|south-korea": {
       "name": "Alison Derbyshire",
       "verifiedOn": "2026-10-28",
       "source": "https://seoul.dulwich.org"
+    },
+    "dulwich-college-shanghai|china": {
+      "name": "Mr. Garry Russell",
+      "verifiedOn": "2026-10-30",
+      "source": "https://shanghai.dulwich.org/"
     },
     "dulwich-college-singapore|singapore": {
       "name": "David Ingram",
@@ -1806,6 +1816,11 @@
       "verifiedOn": "2026-10-28",
       "source": "http://www.sji-international.edu.my/"
     },
+    "st-margaret-s-college|new-zealand": {
+      "name": "Diana Patchett",
+      "verifiedOn": "2026-10-30",
+      "source": "https://stmargarets.school.nz/explore-our-college/meet-our-people/meet-our-principal/"
+    },
     "st-mark-s-school|new-zealand": {
       "name": "Betty Brown",
       "verifiedOn": "2026-10-28",
@@ -1875,6 +1890,11 @@
       "name": "Mr. David Frankenberg",
       "verifiedOn": "2026-10-28",
       "source": "https://www.tas.edu.tw/about/school-leadership"
+    },
+    "takapuna-normal-intermediate|new-zealand": {
+      "name": "Zane Wilson",
+      "verifiedOn": "2026-10-30",
+      "source": "https://tnis.school.nz/principals-message/"
     },
     "tanarata-international-school|malaysia": {
       "name": "Barnali Guha",
@@ -1995,6 +2015,11 @@
       "name": "Dr Vahagn Vardanyan",
       "verifiedOn": "2026-10-28",
       "source": "https://westbournecollege.com.sg/about-us/our-team/"
+    },
+    "westlake-girls-high-school-int-l|new-zealand": {
+      "name": "Jane Stanley",
+      "verifiedOn": "2026-10-30",
+      "source": "https://www.westlakegirls.school.nz/about/principals-message/"
     },
     "westlake-international-school|malaysia": {
       "name": "May King",
