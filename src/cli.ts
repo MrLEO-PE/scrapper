@@ -716,6 +716,16 @@ async function main(): Promise<void> {
       break;
     }
 
+    case "ats-scan": {
+      // npm run ats-scan -- [--country Thailand] [--limit N]: hiring systems not read yet.
+      const { runAtsScan } = await import("./atsscan.ts");
+      const r = await runAtsScan({ country: str(args, "country"), limit: num(args, "limit"), concurrency: num(args, "concurrency") });
+      log.step(`${r.hits.length} hiring-system accounts not read yet, from ${r.scanned} schools`);
+      for (const h of r.hits)
+        log.plain(`  ${h.system.padEnd(15)} ${h.account.padEnd(34)} ${h.schools.map((s) => `${s.name} (${s.country ?? "?"})`).join("; ").slice(0, 120)}`);
+      break;
+    }
+
     case "db": {
       // Long-term keeping of the database: npm run db -- backup | merge <file> | sync | status
       const { backupDb, mergeDb, syncFromGitHub, dbStatus } = await import("./dbtools.ts");
@@ -969,11 +979,15 @@ async function main(): Promise<void> {
   }
 }
 
+// AbortSignal.timeout's timer does not hold the process open, so when only
+// stalled requests were left Node exited mid-command, silently, results unprinted.
+const keepAlive = setInterval(() => {}, 60_000);
 try {
   await main();
 } catch (err) {
   log.error((err as Error).stack ?? String(err));
   process.exitCode = 1;
 } finally {
+  clearInterval(keepAlive);
   closeDb();
 }

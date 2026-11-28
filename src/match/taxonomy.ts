@@ -101,11 +101,12 @@ export const VETO_TERMS: Term[] = [
 export const SENIORITY_RULES: { re: RegExp; level: Seniority; label: string }[] = [
   { label: "director of sport", level: "director_of_sport", re: /\b(?:director\s+of\s+(?:sports?|athletics?|physical)|athletics?\s+director|head\s+of\s+(?:whole[\s-]school\s+)?(?:sport|athletics))/i },
   { label: "vice/deputy principal", level: "director_of_sport", re: /\b(?:vice|deputy)\s+(?:principal|head)\b/i },
-  { label: "head of department", level: "head_of_department", re: /\b(?:head\s+of\s+(?:department|faculty|dept|pe|p\.e|physical\s+education|games)|hod\b|head\s+of\s+subject|subject\s+(?:leader|lead|head)|curriculum\s+(?:leader|lead|head)|faculty\s+(?:leader|head))/i },
+  { label: "head of department", level: "head_of_department", re: /\b(?:head\s+of\s+(?:department|faculty|dept|pe|p\.e|physical\s+education|games|health|hpe|phe|pdhpe|learning)|hod\b|head\s+of\s+subject|subject\s+(?:leader|lead|head)|curriculum\s+(?:leader|lead|head)|faculty\s+(?:leader|head))/i },
   { label: "second in department", level: "second_in_department", re: /\b(?:second\s+in\s+(?:department|charge|dept)|2nd\s+in\s+(?:department|charge|dept)|assistant\s+head\s+of|deputy\s+head\s+of|assistant\s+(?:subject|curriculum)\s+leader)\b/i },
   { label: "coordinator", level: "coordinator", re: /\bco[\s-]?ordinator\b|\bcoordinator\b|\blead\s+(?:teacher|practitioner)\b/i },
-  { label: "teacher", level: "teacher", re: /\b(?:teacher|teaching|lecturer|instructor|master|mistress|educator)\b/i },
-  { label: "coach", level: "coach", re: /\bcoach(?:ing)?\b/i },
+  // Plurals too: "2 Teachers of PE" otherwise falls through to the advert's text. Kaiako is te reo Māori for teacher.
+  { label: "teacher", level: "teacher", re: /\b(?:teachers?|teaching|lecturers?|instructors?|masters?|mistress(?:es)?|educators?|kaiako)\b/i },
+  { label: "coach", level: "coach", re: /\bcoach(?:es|ing)?\b/i },
   { label: "support", level: "support", re: /\b(?:assistant|apprentice|intern(?:ship)?|graduate|technician|trainee|volunteer|gap\s*(?:year|student))\b/i },
 ];
 

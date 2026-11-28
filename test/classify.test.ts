@@ -133,6 +133,15 @@ test("places leadership roles on the ladder", () => {
   assert.equal(detectSeniority("Basketball Coach"), "coach");
 });
 
+test("reads the titles the NZ and ESF posts use", () => {
+  assert.equal(detectSeniority("Head of Health and Teacher of Health and Physical Education"), "head_of_department");
+  assert.equal(detectSeniority("Head of Learning Physical Education/Health and Physical Education Teacher"), "head_of_department");
+  // A plural title must not fall through to the advert's "reporting to the Head of Department".
+  assert.equal(detectSeniority("Expressions of Interest Physical Education Teachers - All ESF Primary Schools", "You will report to the Head of Department."), "teacher");
+  assert.equal(detectSeniority("2 Teachers of Physical Education and Health"), "teacher");
+  assert.equal(detectSeniority("Secondary Kaiako - Health and Physical Education"), "teacher");
+});
+
 test("leadership roles outrank classroom roles", () => {
   const hod = classify("Head of PE");
   const teacher = classify("PE Teacher");
