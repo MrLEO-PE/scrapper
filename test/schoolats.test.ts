@@ -8,7 +8,7 @@
 
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { fromBamboo, fromLever, fromRecruitee, fromTeamtailor } from "../src/sources/schoolats.ts";
+import { fromBamboo, fromLever, fromRecruitee, fromTeamtailor, fromWorkable } from "../src/sources/schoolats.ts";
 
 test("a BambooHR opening carries the configured school", () => {
   const job = fromBamboo(
@@ -68,4 +68,24 @@ test("maps a Lever posting", () => {
   assert.equal(job.applicationUrl, "https://jobs.lever.co/gess/abc/apply");
   assert.equal(job.contractTerm, "Full-time");
   assert.equal(fromLever({ system: "lever", site: "x" }, { id: "", text: "", hostedUrl: "" }), null);
+});
+
+test("reads a Workable widget job", () => {
+  const job = fromWorkable({ system: "workable", site: "elevate-7" }, {
+    title: "Physical Education PE Teacher",
+    shortcode: "5CC7003618",
+    url: "https://apply.workable.com/j/5CC7003618",
+    application_url: "https://apply.workable.com/j/5CC7003618/apply",
+    published_on: "2026-11-27",
+    employment_type: "Full-time",
+    country: "China",
+    city: "Beijing",
+    description: "<p>Salary 380,000 to 480,000 RMB</p>",
+  })!;
+  assert.equal(job.sourceJobId, "elevate-7:5CC7003618");
+  assert.equal(job.schoolName, undefined);
+  assert.equal(job.country, "China");
+  assert.equal(job.applicationUrl, "https://apply.workable.com/j/5CC7003618/apply");
+  assert.equal(job.description, "Salary 380,000 to 480,000 RMB");
+  assert.equal(fromWorkable({ system: "workable", site: "x" }, { title: "", shortcode: "" }), null);
 });

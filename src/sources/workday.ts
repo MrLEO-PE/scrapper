@@ -36,6 +36,11 @@ export interface WorkdaySite {
    * search misses roles the group files under a sport rather than a subject.
    */
   searches: string[];
+  /**
+   * For a group in one country, whose locations read "School, District"
+   * rather than ISP's "School, Country, City".
+   */
+  country?: string;
 }
 
 export const WORKDAY_SITES: WorkdaySite[] = [
@@ -46,6 +51,17 @@ export const WORKDAY_SITES: WorkdaySite[] = [
     tenant: "internationalschools",
     site: "ISPCareers",
     searches: ["physical education", "PE teacher", "sport", "swimming", "games"],
+  },
+  {
+    // English Schools Foundation, Hong Kong: Island School, KGV, Renaissance,
+    // Discovery College and the rest post here first. ~75 posts, so all are read.
+    id: "esf",
+    label: "English Schools Foundation",
+    host: "esf.wd102.myworkdayjobs.com",
+    tenant: "esf",
+    site: "ESF",
+    searches: [""],
+    country: "Hong Kong",
   },
 ];
 
@@ -95,9 +111,11 @@ function linksIn(html: string): { url: string; text?: string }[] {
  * first element is the school. Two elements means no city was recorded; a
  * single element is a school with no location at all, which happens.
  */
-export function splitLocations(value?: string): { school?: string; country?: string; city?: string } {
-  if (!value) return {};
+export function splitLocations(value?: string, country?: string): { school?: string; country?: string; city?: string } {
+  // "2 Locations" is Workday's summary for a multi-site post, not a school.
+  if (!value || /^\d+\s+locations?$/i.test(value.trim())) return country ? { country } : {};
   const parts = value.split(",").map((p) => p.trim()).filter(Boolean);
+  if (country) return { school: parts[0], country, city: parts.slice(1).join(", ") || undefined };
   if (parts.length >= 3) {
     // Anything past the third is a sub-campus; the city is the last element.
     return { school: parts[0], country: parts[1], city: parts[parts.length - 1] };
@@ -124,7 +142,9 @@ async function collectSite(site: WorkdaySite, ctx: ScrapeContext): Promise<RawJo
     if (ctx.maxJobs && found.size >= ctx.maxJobs) break;
 
     // Workday pages in blocks of 20 and reports the total, so stop at the end
-    // rather than guessing a page count.
+    // rather than guessing a page count. It reports the total on the first
+    // page only (later pages say 0), so that one is kept.
+    let total = 0;
     for (let offset = 0; offset < 200; offset += 20) {
       const body = JSON.stringify({ appliedFacets: {}, limit: 20, offset, searchText });
       const res = await fetchJson<ListResponse>(cxs(site) + "/jobs", {
@@ -143,13 +163,14 @@ async function collectSite(site: WorkdaySite, ctx: ScrapeContext): Promise<RawJo
 
       const postings = res?.jobPostings ?? [];
       if (!postings.length) break;
+      if (offset === 0) total = res?.total ?? 0;
 
       for (const p of postings) {
         if (!p.title || !p.externalPath) continue;
         const id = p.bulletFields?.[0] ?? p.externalPath;
         if (found.has(id)) continue;
 
-        const where = splitLocations(p.locationsText);
+        const where = splitLocations(p.locationsText, site.country);
         found.set(id, {
           source: site.id,
           sourceJobId: id,
@@ -163,7 +184,7 @@ async function collectSite(site: WorkdaySite, ctx: ScrapeContext): Promise<RawJo
         });
       }
 
-      if (offset + postings.length >= (res?.total ?? 0)) break;
+      if (offset + postings.length >= total) break;
     }
   }
 
@@ -203,7 +224,9 @@ export function createWorkdaySource(site: WorkdaySite): Source {
   return {
     id: site.id,
     label: site.label,
-    note: `${site.searches.length} searches against the group's Workday site`,
+    note: site.searches.some(Boolean)
+      ? `${site.searches.length} searches against the group's Workday site`
+      : "every post on the group's Workday site; school named",
     async collect(ctx: ScrapeContext): Promise<RawJob[]> {
       try {
         return await collectSite(site, ctx);

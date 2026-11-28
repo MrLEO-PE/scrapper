@@ -43,6 +43,9 @@ import { seekTeachersSource } from "./sources/seekteachers.ts";
 import { teachingNomadSource } from "./sources/teachingnomad.ts";
 import { edvectusSource } from "./sources/edvectus.ts";
 import { eteachSource } from "./sources/eteach.ts";
+import { myCareersFutureSource } from "./sources/mycareersfuture.ts";
+import { nzGazetteSource } from "./sources/nzgazette.ts";
+import { seekSource } from "./sources/seek.ts";
 import { cognitaSource } from "./sources/cognita.ts";
 import { wellingtonSource } from "./sources/wellington.ts";
 import { basisSource } from "./sources/basis.ts";
@@ -88,6 +91,9 @@ export const ALL_SOURCES: Source[] = [
   teachingNomadSource,
   edvectusSource,
   eteachSource,
+  myCareersFutureSource,
+  nzGazetteSource,
+  seekSource,
   cognitaSource,
   wellingtonSource,
   basisSource,

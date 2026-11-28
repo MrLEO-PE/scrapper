@@ -23,6 +23,9 @@ export type SourceId =
   | "teachingnomad"
   | "edvectus"
   | "eteach"
+  | "mycareersfuture"
+  | "nzgazette"
+  | "seek"
   | "cognita"
   | "wellington"
   | "basis"
@@ -32,6 +35,7 @@ export type SourceId =
   | "schoolats"
   // School groups running their own Workday career site.
   | "isp"
+  | "esf"
   // Smaller boards with a public listing.
   | "wishlist"
   | "teast";

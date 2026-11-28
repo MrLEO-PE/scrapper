@@ -78,6 +78,9 @@ export const SOURCE_LABELS: Record<string, string> = {
   teachingnomad: "Teaching Nomad",
   edvectus: "Edvectus",
   eteach: "Eteach",
+  mycareersfuture: "MyCareersFuture (Singapore)",
+  nzgazette: "Education Gazette (New Zealand)",
+  seek: "JobsDB / SEEK",
   cognita: "Cognita",
   wellington: "Wellington College China",
   basis: "BASIS International",
@@ -91,6 +94,7 @@ export const SOURCE_LABELS: Record<string, string> = {
   mailalert: "Email alert",
   europeanchamber: "European Chamber",
   isp: "Intl Schools Partnership",
+  esf: "English Schools Foundation",
   wishlist: "WISHlistjobs",
   teast: "Teast",
 };

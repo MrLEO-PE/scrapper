@@ -1,5 +1,5 @@
 /**
- * Schools' own hiring sites on BambooHR, Recruitee, Teamtailor and Lever.
+ * Schools' own hiring sites on BambooHR, Recruitee, Teamtailor, Lever and Workable.
  *
  * The school careers source reads what a careers page shows in its HTML, and
  * a hiring-system widget shows nothing there. A scan of 1,442 schools'
@@ -12,6 +12,8 @@
  *   Recruitee  https://{site}.recruitee.com/api/offers/
  *   Teamtailor {careers host}/jobs.rss  (every opening, with location and campus)
  *   Lever      https://api.lever.co/v0/postings/{site}?mode=json
+ *   Workable   https://apply.workable.com/api/v1/widget/accounts/{site}?details=true
+ *              (the public jobs widget an employer embeds on its own site)
  *
  * Each site below is a school or school group found by that scan. Add one by
  * its subdomain; the country is the school's, since BambooHR's own location
@@ -25,7 +27,7 @@ import type { RawJob } from "../core/types.ts";
 import type { ScrapeContext, Source } from "./base.ts";
 
 export interface AtsSite {
-  system: "bamboohr" | "recruitee" | "teamtailor" | "lever";
+  system: "bamboohr" | "recruitee" | "teamtailor" | "lever" | "workable";
   /** The subdomain; for Teamtailor, the careers host itself. */
   site: string;
   /** The school; for a group, the department field names the school instead. */
@@ -44,6 +46,8 @@ export const SITES: AtsSite[] = [
   { system: "teamtailor", site: "careers.etonhouse.edu.sg", school: "EtonHouse" },
   { system: "teamtailor", site: "careers.vas.edu.vn", school: "Vietnam Australia International School", country: "Vietnam" },
   { system: "lever", site: "gess", school: "German European School Singapore", country: "Singapore" },
+  // A recruiter for schools in China (526 posts, ~20 PE, most with the salary stated); it does not name the school.
+  { system: "workable", site: "elevate-7" },
 ];
 
 interface BambooOpening {
@@ -159,6 +163,37 @@ export function fromLever(s: AtsSite, o: LeverPosting): RawJob | null {
   };
 }
 
+export interface WorkableJob {
+  title: string;
+  shortcode: string;
+  url?: string;
+  application_url?: string;
+  published_on?: string;
+  employment_type?: string;
+  country?: string;
+  city?: string;
+  description?: string;
+}
+
+export function fromWorkable(s: AtsSite, o: WorkableJob): RawJob | null {
+  if (!o.shortcode || !o.title) return null;
+  const url = o.url || `https://apply.workable.com/${s.site}/j/${o.shortcode}/`;
+  return {
+    source: "schoolats",
+    sourceJobId: `${s.site}:${o.shortcode}`,
+    title: o.title.trim(),
+    url,
+    schoolName: s.school,
+    country: o.country || s.country,
+    city: o.city || undefined,
+    contractType: o.employment_type || undefined,
+    postedAt: o.published_on || undefined,
+    description: o.description ? htmlToText(o.description).slice(0, 8000) : undefined,
+    applicationUrl: o.application_url || url,
+    raw: { ...o, description: undefined },
+  };
+}
+
 async function collect(ctx: ScrapeContext): Promise<RawJob[]> {
   const jobs: RawJob[] = [];
   for (const s of SITES) {
@@ -173,6 +208,12 @@ async function collect(ctx: ScrapeContext): Promise<RawJob[]> {
       const res = await fetchJson<LeverPosting[]>(`https://api.lever.co/v0/postings/${s.site}?mode=json`, opts);
       for (const o of res ?? []) {
         const job = fromLever(s, o);
+        if (job) jobs.push(job);
+      }
+    } else if (s.system === "workable") {
+      const res = await fetchJson<{ jobs?: WorkableJob[] }>(`https://apply.workable.com/api/v1/widget/accounts/${s.site}?details=true`, opts);
+      for (const o of res?.jobs ?? []) {
+        const job = fromWorkable(s, o);
         if (job) jobs.push(job);
       }
     } else if (s.system === "teamtailor") {
@@ -194,6 +235,6 @@ async function collect(ctx: ScrapeContext): Promise<RawJob[]> {
 export const schoolAtsSource: Source = {
   id: "schoolats",
   label: "School hiring sites",
-  note: "schools' own BambooHR, Recruitee, Teamtailor and Lever job lists (public JSON/RSS); school named",
+  note: "schools' own BambooHR, Recruitee, Teamtailor, Lever and Workable job lists (public JSON/RSS)",
   collect,
 };
